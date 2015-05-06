@@ -10,6 +10,7 @@
 using LitJson;
 using NUnit.Framework;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace LitJson.Test {
@@ -230,5 +231,24 @@ namespace LitJson.Test {
 				Assert.AreEqual(json, data.ToJson());
 			}
 		}
+
+		/*
+		#region New Tests
+		[Test]
+		public void LinqTest() {
+			JsonData data = new JsonData();
+			
+			data.Add(1);
+			data.Add(2);
+			data.Add(3);
+			data.Add("Launch!");
+			
+			Assert.IsTrue(data.IsArray, "A1");
+			Assert.AreEqual("[1,2,3,\"Launch!\"]", data.ToJson(), "A2");
+
+			string concatted = string.Join(", ", data.Select(x => x.ToString()).ToArray());
+			Assert.AreEqual(concatted, "1, 2, 3, Launch!");
+		}
+		#endregion*/
 	}
 }
