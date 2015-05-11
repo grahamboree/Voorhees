@@ -1,4 +1,3 @@
-#region Header
 /**
  * Lexer.cs
  *   JSON lexer implementation based on a finite state machine.
@@ -6,7 +5,7 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,54 +13,33 @@ using System.Text;
 
 namespace LitJson {
 	internal class FsmContext {
-		public bool  Return;
-		public int   NextState;
+		public bool Return;
+		public int NextState;
 		public Lexer L;
-		public int   StateStack;
+		public int StateStack;
 	}
 
 	internal class Lexer {
         #region Fields
 		private delegate bool StateHandler(FsmContext ctx);
 
-		private static int[]          fsm_return_table;
+		private static int[] fsm_return_table;
 		private static StateHandler[] fsm_handler_table;
-		private bool          allow_comments;
-		private bool          allow_single_quoted_strings;
-		private bool          end_of_input;
-		private FsmContext    fsm_context;
-		private int           input_buffer;
-		private int           input_char;
-		private TextReader    reader;
-		private int           state;
+		private FsmContext fsm_context;
+		private int input_buffer;
+		private int input_char;
+		private TextReader reader;
+		private int state;
 		private StringBuilder string_buffer;
-		private string        string_value;
-		private int           token;
-		private int           unichar;
+		private int unichar;
         #endregion
 
         #region Properties
-		public bool AllowComments {
-			get { return allow_comments; }
-			set { allow_comments = value; }
-		}
-
-		public bool AllowSingleQuotedStrings {
-			get { return allow_single_quoted_strings; }
-			set { allow_single_quoted_strings = value; }
-		}
-
-		public bool EndOfInput {
-			get { return end_of_input; }
-		}
-
-		public int Token {
-			get { return token; }
-		}
-
-		public string StringValue {
-			get { return string_value; }
-		}
+		public bool AllowComments { get; set; }
+		public bool AllowSingleQuotedStrings { get; set; }
+		public bool EndOfInput { get; private set; }
+		public int Token { get; private set; }
+		public string StringValue { get; private set; }
         #endregion
 
         #region Constructors
@@ -70,20 +48,19 @@ namespace LitJson {
 		}
 
 		public Lexer(TextReader reader) {
-			allow_comments = true;
-			allow_single_quoted_strings = true;
+			AllowComments = true;
+			AllowSingleQuotedStrings = true;
 
 			input_buffer = 0;
 			string_buffer = new StringBuilder(128);
 			state = 1;
-			end_of_input = false;
+			EndOfInput = false;
 			this.reader = reader;
 
 			fsm_context = new FsmContext();
 			fsm_context.L = this;
 		}
         #endregion
-
 
         #region Static Methods
 		private static int HexValue(int digit) {
@@ -249,7 +226,7 @@ namespace LitJson {
 					ctx.NextState = 9;
 					return true;
 				case '\'':
-					if (! ctx.L.allow_single_quoted_strings)
+					if (! ctx.L.AllowSingleQuotedStrings)
 						return false;
 
 					ctx.L.input_char = '"';
@@ -258,7 +235,7 @@ namespace LitJson {
 					return true;
 
 				case '/':
-					if (! ctx.L.allow_comments)
+					if (! ctx.L.AllowComments)
 						return false;
 
 					ctx.NextState = 25;
@@ -791,13 +768,12 @@ namespace LitJson {
 			return true;
 		}
         #endregion
-
-
+		
 		private bool GetChar() {
 			if ((input_char = NextChar()) != -1)
 				return true;
 
-			end_of_input = true;
+			EndOfInput = true;
 			return false;
 		}
 
@@ -822,16 +798,16 @@ namespace LitJson {
 				if (! handler(fsm_context))
 					throw new JsonException(input_char);
 
-				if (end_of_input)
+				if (EndOfInput)
 					return false;
 
 				if (fsm_context.Return) {
-					string_value = string_buffer.ToString();
+					StringValue = string_buffer.ToString();
 					string_buffer.Remove(0, string_buffer.Length);
-					token = fsm_return_table[state - 1];
+					Token = fsm_return_table[state - 1];
 
-					if (token == (int)ParserToken.Char)
-						token = input_char;
+					if (Token == (int)ParserToken.Char)
+						Token = input_char;
 
 					state = fsm_context.NextState;
 
