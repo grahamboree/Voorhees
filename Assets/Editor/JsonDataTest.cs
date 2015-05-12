@@ -45,23 +45,23 @@ namespace LitJson.Test {
 		}
 
 		[Test]
-		public void AsDoubleTest() {
+		public void AsFloatTest() {
 			JsonData data;
 
-			data = 3e6;
-			Assert.IsTrue(data.IsDouble, "A1");
-			Assert.AreEqual(3e6, (double)data, "A2");
+			data = 3e6f;
+			Assert.IsTrue(data.IsFloat, "A1");
+			Assert.AreEqual(3e6, (float)data, "A2");
 			Assert.AreEqual("3000000.0", data.ToJson(), "A3");
 
-			data = 3.14;
-			Assert.IsTrue(data.IsDouble, "A4");
-			Assert.AreEqual(3.14, (double)data, "A5");
+			data = 3.14f;
+			Assert.IsTrue(data.IsFloat, "A4");
+			Assert.AreEqual(3.14, (float)data, "A5");
 			Assert.AreEqual("3.14", data.ToJson(), "A6");
 
-			data = 0.123;
-			double n = 0.123;
+			data = 0.123f;
+			float n = 0.123f;
 
-			Assert.AreEqual(n, (double)data, "A7");
+			Assert.AreEqual(n, (float)data, "A7");
 		}
 
 		[Test]
@@ -142,11 +142,11 @@ namespace LitJson.Test {
 			Assert.IsFalse(a.Equals(b), "A6");
 
 			// Compare doubles
-			a = 78.9;
-			b = 78.9;
+			a = 78.9f;
+			b = 78.9f;
 			Assert.IsTrue(a.Equals(b), "A7");
 
-			b = 78.899999;
+			b = 78.899999f;
 			Assert.IsFalse(a.Equals(b), "A8");
 
 			// Compare booleans
@@ -232,7 +232,6 @@ namespace LitJson.Test {
 			}
 		}
 
-		/*
 		#region New Tests
 		[Test]
 		public void LinqTest() {
@@ -249,6 +248,6 @@ namespace LitJson.Test {
 			string concatted = string.Join(", ", data.Select(x => x.ToString()).ToArray());
 			Assert.AreEqual(concatted, "1, 2, 3, Launch!");
 		}
-		#endregion*/
+		#endregion
 	}
 }

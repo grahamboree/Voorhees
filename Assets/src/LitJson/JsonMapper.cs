@@ -432,28 +432,24 @@ namespace LitJson {
 
 			IJsonWrapper instance = factory();
 
-			if (reader.Token == JsonToken.String) { instance.SetString((string)reader.Value);
+			if (reader.Token == JsonToken.String) { instance.StringValue = (string)reader.Value;
 				return instance;
 			}
 
-			if (reader.Token == JsonToken.Double) { instance.SetDouble((double)reader.Value);
+			if (reader.Token == JsonToken.Double) { instance.FloatValue = (float)reader.Value;
 				return instance;
 			}
 
-			if (reader.Token == JsonToken.Int) { instance.SetInt((int)reader.Value);
+			if (reader.Token == JsonToken.Int) { instance.IntValue = (int)reader.Value;
 				return instance;
 			}
 
-			if (reader.Token == JsonToken.Long) { instance.SetLong((long)reader.Value);
-				return instance;
-			}
-
-			if (reader.Token == JsonToken.Boolean) { instance.SetBoolean((bool)reader.Value);
+			if (reader.Token == JsonToken.Boolean) { instance.BooleanValue = (bool)reader.Value;
 				return instance;
 			}
 
 			if (reader.Token == JsonToken.ArrayStart) {
-				instance.SetJsonType(JsonType.Array);
+				instance.Type = JsonType.Array;
 
 				while (true) {
 					IJsonWrapper item = ReadValue(factory, reader);
@@ -464,7 +460,7 @@ namespace LitJson {
 					((IList)instance).Add(item);
 				}
 			} else if (reader.Token == JsonToken.ObjectStart) {
-				instance.SetJsonType(JsonType.Object);
+				instance.Type = JsonType.Object;
 
 				while (true) {
 					reader.Read();
@@ -483,7 +479,8 @@ namespace LitJson {
 		}
 
 		private static void ReadSkip(JsonReader reader) {
-			ToWrapper(delegate { return new JsonMockWrapper(); }, reader);
+			//TODO
+			//ToWrapper(delegate { return new JsonMockWrapper(); }, reader);
 		}
 
 		private static void RegisterBaseExporters() {

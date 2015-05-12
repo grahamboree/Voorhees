@@ -9,7 +9,7 @@
  **/
 #endregion
 
-
+#if false
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -95,3 +95,4 @@ namespace LitJson {
         void IOrderedDictionary.RemoveAt(int i) {}
     }
 }
+#endif
