@@ -6,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,22 +13,18 @@ using System.Collections.Specialized;
 using System.IO;
 
 namespace LitJson {
-	public class JsonData : IJsonWrapper, IEquatable<JsonData> {
+	public class JsonData : IJsonWrapper, IEquatable<JsonData>, IEnumerable<JsonData> {
 		#region Fields
-		private IList<JsonData> arrayValue;
-		private IDictionary<string, JsonData> inst_object;
+		private List<JsonData> arrayValue;
+		private Dictionary<string, JsonData> inst_object;
 
 		private bool booleanValue;
 		private float floatValue;
 		private int intValue;
 		private string stringValue;
-		private JsonType type;
+		private JsonType type = JsonType.None;
 
 		private string cachedJsonString;
-		#endregion
-
-		#region ICollection Properties
-		public int Count { get { return EnsureList().Count; } }
 		#endregion
 
 		#region Constructors
@@ -56,14 +51,14 @@ namespace LitJson {
 		}
 		#endregion
 
-		#region Implicit Conversions
+		#region Implicit Conversions from other types to JsonData
 		public static implicit operator JsonData(bool data) { return new JsonData(data); }
 		public static implicit operator JsonData(float data) { return new JsonData(data); }
 		public static implicit operator JsonData(int data) { return new JsonData(data); }
 		public static implicit operator JsonData(string data) { return new JsonData(data); }
 		#endregion
 
-		#region Explicit Conversions
+		#region Explicit Conversions from JsonData to other types
 		public static explicit operator bool(JsonData data) {
 			if (!data.IsBoolean) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
@@ -73,7 +68,7 @@ namespace LitJson {
 		}
 
 		public static explicit operator float(JsonData data) {
-			if (data.type != JsonType.Float) {
+			if (!data.IsFloat) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a float");
 			}
 
@@ -81,15 +76,15 @@ namespace LitJson {
 		}
 
 		public static explicit operator int(JsonData data) {
-			if (data.type != JsonType.Int) {
+			if (!data.IsInt) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold an int");
 			}
 
 			return data.intValue;
 		}
 
-		public static explicit operator String(JsonData data) {
-			if (data.type != JsonType.String) {
+		public static explicit operator string(JsonData data) {
+			if (!data.IsString) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a string");
 			}
 
@@ -179,7 +174,7 @@ namespace LitJson {
 		}*/
 		#endregion
 
-		#region IEnumerable Methods
+		#region IEnumerable
 		IEnumerator<JsonData> IEnumerable<JsonData>.GetEnumerator() { return EnsureList().GetEnumerator(); }
 		IEnumerator IEnumerable.GetEnumerator() { return EnsureCollection().GetEnumerator(); }
 		#endregion
@@ -192,20 +187,11 @@ namespace LitJson {
 		public bool IsObject { get { return type == JsonType.Object; } }
 		public bool IsString { get { return type == JsonType.String; } }
 
-		public JsonType Type {
-			get {
-				return type;
-			}
-			set {
-				type = value;
-			}
-		}
+		public JsonType Type { get { return type; } set { type = value; } }
+
 		public bool BooleanValue {
 			get {
-				if (type != JsonType.Boolean) {
-					throw new InvalidOperationException("JsonData instance doesn't hold a boolean");
-				}
-				return booleanValue;
+				return (bool)this;
 			}
 			set {
 				type = JsonType.Boolean;
@@ -215,10 +201,7 @@ namespace LitJson {
 		}
 		public float FloatValue {
 			get {
-				if (type != JsonType.Float) {
-					throw new InvalidOperationException("JsonData instance doesn't hold a double");
-				}
-				return floatValue;
+				return (float)this;
 			}
 			set {
 				type = JsonType.Float;
@@ -228,10 +211,7 @@ namespace LitJson {
 		}
 		public int IntValue {
 			get {
-				if (type != JsonType.Int) {
-					throw new InvalidOperationException("JsonData instance doesn't hold an int");
-				}
-				return intValue;
+				return (int)this;
 			}
 			set {
 				type = JsonType.Int;
@@ -241,10 +221,7 @@ namespace LitJson {
 		}
 		public string StringValue {
 			get {
-				if (type != JsonType.String) {
-					throw new InvalidOperationException("JsonData instance doesn't hold a string");
-				}
-				return stringValue;
+				return (string)this;
 			}
 			set {
 				type = JsonType.String;
@@ -252,12 +229,10 @@ namespace LitJson {
 				cachedJsonString = null;
 			}
 		}
-
-		string IJsonWrapper.ToJson() { return ToJson(); }
-		void IJsonWrapper.ToJson(JsonWriter writer) { ToJson(writer); }
 		#endregion
 
-		#region IList Methods
+		#region IList
+		public int Count { get { return EnsureList().Count; } }
 		public bool IsReadOnly { get { return EnsureList().IsReadOnly; } }
 
 		public void Add(JsonData value) {
@@ -372,56 +347,61 @@ namespace LitJson {
 			return null;
 		}
 
-		private static void WriteJson(IJsonWrapper obj, JsonWriter writer) {
-			if (obj == null) {
+#if false
+		private static void WriteJson(JsonData data, JsonWriter writer) {
+			if (data == null) {
 				writer.Write(null);
 				return;
 			}
 
-			if (obj.IsString) {
-				writer.Write(obj.StringValue);
+			if (data.IsString) {
+				writer.Write(data.StringValue);
 				return;
 			}
 
-			if (obj.IsBoolean) {
-				writer.Write(obj.BooleanValue);
+			if (data.IsBoolean) {
+				writer.Write(data.BooleanValue);
 				return;
 			}
 
-			if (obj.IsFloat) {
-				writer.Write(obj.FloatValue);
+			if (data.IsFloat) {
+				writer.Write(data.FloatValue);
 				return;
 			}
 
-			if (obj.IsInt) {
-				writer.Write(obj.IntValue);
+			if (data.IsInt) {
+				writer.Write(data.IntValue);
 				return;
 			}
 
-			if (obj.IsArray) {
+			if (data.IsArray) {
 				writer.WriteArrayStart();
-				foreach (object elem in (IList) obj) {
-					WriteJson((JsonData)elem, writer);
+				foreach (var elem in data) {
+					WriteJson(elem, writer);
 				}
 				writer.WriteArrayEnd();
-
 				return;
 			}
 
-			if (obj.IsObject) {
+			if (data.IsObject) {
 				writer.WriteObjectStart();
 
-				foreach (DictionaryEntry entry in ((IDictionary) obj)) {
+				// TODO 
+				/*
+				foreach (DictionaryEntry entry in ((IDictionary) data)) {
 					writer.WritePropertyName((string)entry.Key);
-					WriteJson((JsonData)entry.Value, writer);
+					WriteJson(entry.Value, writer);
 				}
+				*/ 
 				writer.WriteObjectEnd();
 
 				return;
 			}
 		}
+#endif
 		#endregion
 
+		#region IEquatable
 		public bool Equals(JsonData x) {
 			if (x == null) {
 				return false;
@@ -456,21 +436,27 @@ namespace LitJson {
 
 			return false;
 		}
+		#endregion
 
 		public string ToJson() {
 			if (cachedJsonString != null)
 				return cachedJsonString;
 
+			// TODO
+#if false
 			StringWriter sw = new StringWriter();
 			JsonWriter writer = new JsonWriter(sw);
 			writer.Validate = false;
 
 			WriteJson(this, writer);
 			cachedJsonString = sw.ToString();
+#endif
 
 			return cachedJsonString;
 		}
 
+		// TODO
+#if false
 		public void ToJson(JsonWriter writer) {
 			bool old_validate = writer.Validate;
 
@@ -480,6 +466,7 @@ namespace LitJson {
 
 			writer.Validate = old_validate;
 		}
+#endif
 
 		public override string ToString() {
 			switch (type) {

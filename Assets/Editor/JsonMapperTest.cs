@@ -1,6 +1,4 @@
-
-
-#region Header
+#if false
 /**
  * JsonMapperTest.cs
  *   Tests for the JsonMapper class.
@@ -8,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
 using LitJson;
 using NUnit.Framework;
 using System;
@@ -155,16 +152,16 @@ namespace LitJson.Test {
 	}
 
 #if false
-    public class CompoundNullableTypesTest
-    {
-        public CompoundNullableType<int>? TestNested;
-        public CompoundNullableType<int>?[] TestNullableTypeArray;
-    }
+	public class CompoundNullableTypesTest
+	{
+		public CompoundNullableType<int>? TestNested;
+		public CompoundNullableType<int>?[] TestNullableTypeArray;
+	}
 	
-    public struct CompoundNullableType<T>
-    {
-        public T TestValue;
-    }
+	public struct CompoundNullableType<T>
+	{
+		public T TestValue;
+	}
 #endif
 
 	public enum NullableEnum {
@@ -183,7 +180,7 @@ namespace LitJson.Test {
 		public void CustomExporterTest() {
 			// Custom DateTime exporter that only uses the Year value
 			ExporterFunc<DateTime> exporter =
-                delegate (DateTime obj, JsonWriter writer) {
+				delegate (DateTime obj, JsonWriter writer) {
 				writer.Write(obj.Year);
 			};
 
@@ -206,7 +203,7 @@ namespace LitJson.Test {
 			// Custom DateTime importer that only uses the Year value
 			// (assuming January 1st of that year)
 			ImporterFunc<int, DateTime> importer =
-                delegate (int obj) {
+				delegate (int obj) {
 				return new DateTime(obj, 1, 1);
 			};
 
@@ -215,7 +212,7 @@ namespace LitJson.Test {
 			string json = "{ \"TestDateTime\" : 1980 }";
 
 			ValueTypesTest sample =
-                JsonMapper.ToObject<ValueTypesTest>(json);
+				JsonMapper.ToObject<ValueTypesTest>(json);
 
 			JsonMapper.UnregisterImporters();
 
@@ -320,9 +317,9 @@ namespace LitJson.Test {
 
 			string expected = @"
 {
-    ""rolling"" : ""stones"",
-    ""flaming"" : ""pie"",
-    ""nine""    : 9
+	""rolling"" : ""stones"",
+	""flaming"" : ""pie"",
+	""nine""    : 9
 }";
 
 			JsonWriter writer = new JsonWriter();
@@ -337,9 +334,9 @@ namespace LitJson.Test {
 
 			expected = @"
 {
-        ""rolling"" : ""stones"",
-        ""flaming"" : ""pie"",
-        ""nine""    : 9
+		""rolling"" : ""stones"",
+		""flaming"" : ""pie"",
+		""nine""    : 9
 }";
 			JsonMapper.ToJson(sample, writer);
 
@@ -362,7 +359,7 @@ namespace LitJson.Test {
 
 			string json = JsonMapper.ToJson(test);
 			string expected =
-                "{\"TestByte\":200,\"TestChar\":\"P\",\"TestDateTime\":" +
+				"{\"TestByte\":200,\"TestChar\":\"P\",\"TestDateTime\":" +
 				"\"12/22/2012 00:00:00\",\"TestDecimal\":10.333," +
 				"\"TestSByte\":-5,\"TestShort\":1024,\"TestUShort\":30000" +
 				",\"TestUInt\":90000000,\"TestULong\":18446744073709551615}";
@@ -373,11 +370,11 @@ namespace LitJson.Test {
 		[Test]
 		public void ImportArrayOfStringsTest() {
 			string json = @"[
-                ""Adam"",
-                ""Danny"",
-                ""James"",
-                ""Justin""
-            ]";
+				""Adam"",
+				""Danny"",
+				""James"",
+				""Justin""
+			]";
 
 			string[] names = JsonMapper.ToObject<string[]>(json);
 
@@ -388,10 +385,10 @@ namespace LitJson.Test {
 		[Test]
 		public void ImportEnumsTest() {
 			string json = @"
-                {
-                    ""FavouritePlanet"" : 4,
-                    ""Band"" : 6
-                }";
+				{
+					""FavouritePlanet"" : 4,
+					""Band"" : 6
+				}";
 
 			EnumsTest e_test = JsonMapper.ToObject<EnumsTest>(json);
 
@@ -403,16 +400,16 @@ namespace LitJson.Test {
 		[Test]
 		public void ImportExtendedGrammarTest() {
 			string json = @"
-                {
-                    // The domain name
-                    ""domain"" : ""example.com"",
+				{
+					// The domain name
+					""domain"" : ""example.com"",
 
-                    /******************
-                     * The IP address *
-                     ******************/
-                    'ip_address' : '127.0.0.1'
-                }
-                ";
+					/******************
+					 * The IP address *
+					 ******************/
+					'ip_address' : '127.0.0.1'
+				}
+				";
 
 			JsonData data = JsonMapper.ToObject(json);
 
@@ -428,24 +425,24 @@ namespace LitJson.Test {
 			Assembly asmb = typeof(JsonMapperTest).Assembly;
 
 			StreamReader stream = new StreamReader(
-                asmb.GetManifestResourceStream("json-example.txt"));
+				asmb.GetManifestResourceStream("json-example.txt"));
 
 			using (stream) {
 				data = JsonMapper.ToObject(stream);
 			}
 
 			Assert.AreEqual(
-                "cofaxCDS",
-                (string)data["web-app"]["servlet"][0]["servlet-name"],
-                "A1");
+				"cofaxCDS",
+				(string)data["web-app"]["servlet"][0]["servlet-name"],
+				"A1");
 			Assert.AreEqual(
-                false,
-                (bool)data["web-app"]["servlet"][0]["init-param"]["useJSP"],
-                "A2");
+				false,
+				(bool)data["web-app"]["servlet"][0]["init-param"]["useJSP"],
+				"A2");
 			Assert.AreEqual(
-                "cofax.tld",
-                (string)data["web-app"]["taglib"]["taglib-uri"],
-                "A1");
+				"cofax.tld",
+				(string)data["web-app"]["taglib"]["taglib-uri"],
+				"A1");
 #endif
 		}
 
@@ -462,10 +459,10 @@ namespace LitJson.Test {
 		[Test]
 		public void ImportManyJsonTextPiecesTest() {
 			string json_arrays = @"
-                [ true, true, false, false ]
-                [ 10, 0, -10 ]
-                [ ""war is over"", ""if you want it"" ]
-                ";
+				[ true, true, false, false ]
+				[ 10, 0, -10 ]
+				[ ""war is over"", ""if you want it"" ]
+				";
 
 			JsonReader reader;
 			JsonData arrays;
@@ -496,20 +493,20 @@ namespace LitJson.Test {
 			reader.Close();
 
 			string json_objects = @"
-                {
-                  ""title""  : ""First"",
-                  ""name""   : ""First Window"",
-                  ""width""  : 640,
-                  ""height"" : 480
-                }
+				{
+				  ""title""  : ""First"",
+				  ""name""   : ""First Window"",
+				  ""width""  : 640,
+				  ""height"" : 480
+				}
 
-                {
-                  ""title""  : ""Second"",
-                  ""name""   : ""Second Window"",
-                  ""width""  : 800,
-                  ""height"" : 600
-                }
-                ";
+				{
+				  ""title""  : ""Second"",
+				  ""name""   : ""Second Window"",
+				  ""width""  : 800,
+				  ""height"" : 600
+				}
+				";
 
 			reader = new JsonReader(json_objects);
 			UiWindow window;
@@ -574,12 +571,12 @@ namespace LitJson.Test {
 			Assert.IsNull(data[2][1], "B8");
 
 			json = @"{
-                ""numbers"" : [ [ 0, 1, 2 ], [], [ 2, 3, 5, 7, 11 ] ],
-                ""strings"" : [
-                    [ [ ""abc"", ""def"" ], [ ""hi there"" ], null ],
-                    [ [ ""Bob Marley is in the house"" ] ]
-                ]
-            }";
+				""numbers"" : [ [ 0, 1, 2 ], [], [ 2, 3, 5, 7, 11 ] ],
+				""strings"" : [
+					[ [ ""abc"", ""def"" ], [ ""hi there"" ], null ],
+					[ [ ""Bob Marley is in the house"" ] ]
+				]
+			}";
 
 			var obj = JsonMapper.ToObject<NestedArrays>(json);
 			Assert.IsNotNull(obj, "C1");
@@ -622,33 +619,33 @@ namespace LitJson.Test {
 			string json = @"
 {
   ""widget"": {
-    ""debug"": true,
+	""debug"": true,
 
-    ""window"": {
-      ""title"": ""Sample Widget"",
-      ""name"": ""main_window"",
-      ""width"": 500,
-      ""height"": 500
-    },
+	""window"": {
+	  ""title"": ""Sample Widget"",
+	  ""name"": ""main_window"",
+	  ""width"": 500,
+	  ""height"": 500
+	},
 
-    ""image"": {
-      ""src"": ""Images/Sun.png"",
-      ""name"": ""sun1"",
-      ""hOffset"": 250,
-      ""vOffset"": 250,
-      ""alignment"": ""center""
-    },
+	""image"": {
+	  ""src"": ""Images/Sun.png"",
+	  ""name"": ""sun1"",
+	  ""hOffset"": 250,
+	  ""vOffset"": 250,
+	  ""alignment"": ""center""
+	},
 
-    ""text"": {
-      ""data"": ""Click Here"",
-      ""size"": 36,
-      ""style"": ""bold"",
-      ""name"": ""text1"",
-      ""hOffset"": 250,
-      ""vOffset"": 100,
-      ""alignment"": ""center"",
-      ""onMouseUp"": ""sun1.opacity = (sun1.opacity / 100) * 90;""
-    }
+	""text"": {
+	  ""data"": ""Click Here"",
+	  ""size"": 36,
+	  ""style"": ""bold"",
+	  ""name"": ""text1"",
+	  ""hOffset"": 250,
+	  ""vOffset"": 100,
+	  ""alignment"": ""center"",
+	  ""onMouseUp"": ""sun1.opacity = (sun1.opacity / 100) * 90;""
+	}
   }
 }";
 
@@ -656,7 +653,7 @@ namespace LitJson.Test {
 
 			Assert.IsNotNull(sample, "A1");
 			Assert.AreEqual("Sample Widget", sample.widget.window.title,
-                             "A2");
+							 "A2");
 			Assert.AreEqual(500, sample.widget.window.width, "A3");
 			Assert.AreEqual("sun1", sample.widget.image.name, "A4");
 			Assert.AreEqual("Click Here", sample.widget.text.data, "A5");
@@ -666,38 +663,38 @@ namespace LitJson.Test {
 		public void ImportObjectSkipNonMembersTest() {
 			string json = @"
 {
-    ""title""  : ""First"",
+	""title""  : ""First"",
 
-    ""extra_bool"": false,
-    ""extra_object"":  {
-      ""title""  : ""Sample Widget"",
-      ""name""   : ""main_window"",
-      ""width""  : 500,
-      ""height"" : 500
-    },
+	""extra_bool"": false,
+	""extra_object"":  {
+	  ""title""  : ""Sample Widget"",
+	  ""name""   : ""main_window"",
+	  ""width""  : 500,
+	  ""height"" : 500
+	},
 
-    ""name""   : ""First Window"",
+	""name""   : ""First Window"",
 
-    ""extra_array"" :[1, 2, 3],
+	""extra_array"" :[1, 2, 3],
 
-    ""width""  : 640,
+	""width""  : 640,
 
-    ""extra_array_object"" : [
-        {
-            ""obj1"": { ""checked"": false },
-            ""obj2"": [ 7, 6, 5 ]
-        },
-        {
-            ""member1"": false,
-            ""member2"": true,
-            ""member3"": -1,
-            ""member4"": ""vars2"",
-            ""member5"": [9, 8, 7],
-            ""member6"": { ""checked"": true }
-        }
-    ],
+	""extra_array_object"" : [
+		{
+			""obj1"": { ""checked"": false },
+			""obj2"": [ 7, 6, 5 ]
+		},
+		{
+			""member1"": false,
+			""member2"": true,
+			""member3"": -1,
+			""member4"": ""vars2"",
+			""member5"": [9, 8, 7],
+			""member6"": { ""checked"": true }
+		}
+	],
 
-    ""height"" : 480
+	""height"" : 480
 
 }";
 
@@ -715,13 +712,13 @@ namespace LitJson.Test {
 		public void ImportObjectNonMembersTest() {
 			string json = @"
 {
-    ""title""  : ""First"",
+	""title""  : ""First"",
 
-    ""extra_string"": ""Hello world"",
+	""extra_string"": ""Hello world"",
 
-    ""name""   : ""First Window"",
-    ""width""  : 640,
-    ""height"" : 480
+	""name""   : ""First Window"",
+	""width""  : 640,
+	""height"" : 480
 
 }";
 
@@ -736,12 +733,12 @@ namespace LitJson.Test {
 		[ExpectedException (typeof (JsonException))]
 		public void ImportStrictCommentsTest() {
 			string json = @"
-                [
-                    /* This is a comment */
-                    1,
-                    2,
-                    3
-                ]";
+				[
+					/* This is a comment */
+					1,
+					2,
+					3
+				]";
 
 			JsonReader reader = new JsonReader(json);
 			reader.AllowComments = false;
@@ -786,7 +783,7 @@ namespace LitJson.Test {
 			Assert.AreEqual(200, test.TestByte, "A1");
 			Assert.AreEqual('P', test.TestChar, "A2");
 			Assert.AreEqual(new DateTime(2012, 12, 22),
-                             test.TestDateTime, "A3");
+							 test.TestDateTime, "A3");
 			Assert.AreEqual(10.333m, test.TestDecimal, "A4");
 			Assert.AreEqual(-5, test.TestSByte, "A5");
 			Assert.AreEqual(1024, test.TestShort, "A6");
@@ -822,7 +819,7 @@ namespace LitJson.Test {
 			Assert.AreEqual("{\"X\":10,\"Y\":20}", json, "A1");
 
 			PropertyReadOnly p_obj2 =
-                JsonMapper.ToObject<PropertyReadOnly>(json);
+				JsonMapper.ToObject<PropertyReadOnly>(json);
 
 			Assert.AreEqual(10, p_obj2.X, "A2");
 			Assert.AreEqual(20, p_obj2.Y, "A3");
@@ -833,7 +830,7 @@ namespace LitJson.Test {
 			string json = " { \"X\" : 3 } ";
 
 			PropertyWriteOnly p_obj =
-                JsonMapper.ToObject<PropertyWriteOnly>(json);
+				JsonMapper.ToObject<PropertyWriteOnly>(json);
 
 			Assert.AreEqual(3, p_obj.GetX(), "A1");
 
@@ -845,14 +842,14 @@ namespace LitJson.Test {
 		[Test]
 		public void NullableTypesImportTest() {
 			string json = @" {
-                ""TestNullableInt"": 42
-            }";
+				""TestNullableInt"": 42
+			}";
 			var value = JsonMapper.ToObject<NullableTypesTest>(json);
 			Assert.AreEqual(value.TestNullableInt, 42);
 
 			json = @" {
-                ""TestNullableInt"": null
-            }";
+				""TestNullableInt"": null
+			}";
 			value = JsonMapper.ToObject<NullableTypesTest>(json);
 			Assert.AreEqual(value.TestNullableInt, null);
 		}
@@ -869,97 +866,97 @@ namespace LitJson.Test {
 		}
 
 #if false
-        [Test]
-        public void CompoundNullableTypesImportTest()
-        {
+		[Test]
+		public void CompoundNullableTypesImportTest()
+		{
 
-            string json = @" {
-                ""TestNested"": {
-                    ""TestValue"": 42
-                }
-            }";
-            JsonReader reader = new JsonReader(json);
-            reader.SkipNonMembers = false;
+			string json = @" {
+				""TestNested"": {
+					""TestValue"": 42
+				}
+			}";
+			JsonReader reader = new JsonReader(json);
+			reader.SkipNonMembers = false;
 
-            var value = JsonMapper.ToObject<CompoundNullableTypesTest>(reader);
-            Assert.AreNotEqual(value.TestNested, null);
-            var innerValue = (CompoundNullableType<int>)value.TestNested;
-            Assert.AreEqual(innerValue.TestValue, 42);
+			var value = JsonMapper.ToObject<CompoundNullableTypesTest>(reader);
+			Assert.AreNotEqual(value.TestNested, null);
+			var innerValue = (CompoundNullableType<int>)value.TestNested;
+			Assert.AreEqual(innerValue.TestValue, 42);
 
-            json = @" {
-                ""TestNested"": null
-            }";
-            value = JsonMapper.ToObject<CompoundNullableTypesTest>(json);
-            Assert.AreEqual(value.TestNested, null);
+			json = @" {
+				""TestNested"": null
+			}";
+			value = JsonMapper.ToObject<CompoundNullableTypesTest>(json);
+			Assert.AreEqual(value.TestNested, null);
 
-            json = @" {
-                ""TestNullableTypeArray"": [
-                    { ""TestValue"": 42 },
-                    { ""TestValue"": 43 },
-                    { ""TestValue"": 44 }
-                ]
-            }";
-            value = JsonMapper.ToObject<CompoundNullableTypesTest>(json);
-            Assert.AreNotEqual(value.TestNullableTypeArray, null);
-            Assert.AreEqual(value.TestNullableTypeArray.Length, 3);
+			json = @" {
+				""TestNullableTypeArray"": [
+					{ ""TestValue"": 42 },
+					{ ""TestValue"": 43 },
+					{ ""TestValue"": 44 }
+				]
+			}";
+			value = JsonMapper.ToObject<CompoundNullableTypesTest>(json);
+			Assert.AreNotEqual(value.TestNullableTypeArray, null);
+			Assert.AreEqual(value.TestNullableTypeArray.Length, 3);
 
-            Assert.AreNotEqual(value.TestNullableTypeArray[0], null);
-            innerValue =
-                (CompoundNullableType<int>)value.TestNullableTypeArray[0];
-            Assert.AreEqual(innerValue.TestValue, 42);
+			Assert.AreNotEqual(value.TestNullableTypeArray[0], null);
+			innerValue =
+				(CompoundNullableType<int>)value.TestNullableTypeArray[0];
+			Assert.AreEqual(innerValue.TestValue, 42);
 
-            Assert.AreNotEqual(value.TestNullableTypeArray[1], null);
-            innerValue =
-                (CompoundNullableType<int>)value.TestNullableTypeArray[1];
-            Assert.AreEqual(innerValue.TestValue, 43);
+			Assert.AreNotEqual(value.TestNullableTypeArray[1], null);
+			innerValue =
+				(CompoundNullableType<int>)value.TestNullableTypeArray[1];
+			Assert.AreEqual(innerValue.TestValue, 43);
 
-            Assert.AreNotEqual(value.TestNullableTypeArray[2], null);
-            innerValue =
-                (CompoundNullableType<int>)value.TestNullableTypeArray[2];
-            Assert.AreEqual(innerValue.TestValue, 44);
-        }
+			Assert.AreNotEqual(value.TestNullableTypeArray[2], null);
+			innerValue =
+				(CompoundNullableType<int>)value.TestNullableTypeArray[2];
+			Assert.AreEqual(innerValue.TestValue, 44);
+		}
 
-        [Test]
-        public void CompoundNullableTypesExportTest()
-        {
-            CompoundNullableTypesTest value = new CompoundNullableTypesTest() {
-                TestNested = new CompoundNullableType<int>() { TestValue = 42 }
-            };
-            var expectedJson =
-                "{\"TestNested\":{\"TestValue\":42}," +
-                "\"TestNullableTypeArray\":null}";
-            Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
+		[Test]
+		public void CompoundNullableTypesExportTest()
+		{
+			CompoundNullableTypesTest value = new CompoundNullableTypesTest() {
+				TestNested = new CompoundNullableType<int>() { TestValue = 42 }
+			};
+			var expectedJson =
+				"{\"TestNested\":{\"TestValue\":42}," +
+				"\"TestNullableTypeArray\":null}";
+			Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
 
-            value = new CompoundNullableTypesTest() {
-                TestNullableTypeArray = new[] {
-                    new Nullable<CompoundNullableType<int>>(
-                        new CompoundNullableType<int>() { TestValue = 42 }),
-                    new Nullable<CompoundNullableType<int>>(
-                        new CompoundNullableType<int>() { TestValue = 43 }),
-                    new Nullable<CompoundNullableType<int>>(
-                        new CompoundNullableType<int>() { TestValue = 44 })
-                }
-            };
-            expectedJson =
-                "{\"TestNested\":null,\"TestNullableTypeArray\":" +
-                "[{\"TestValue\":42},{\"TestValue\":43},{\"TestValue\":44}]}";
-            Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
-        }
+			value = new CompoundNullableTypesTest() {
+				TestNullableTypeArray = new[] {
+					new Nullable<CompoundNullableType<int>>(
+						new CompoundNullableType<int>() { TestValue = 42 }),
+					new Nullable<CompoundNullableType<int>>(
+						new CompoundNullableType<int>() { TestValue = 43 }),
+					new Nullable<CompoundNullableType<int>>(
+						new CompoundNullableType<int>() { TestValue = 44 })
+				}
+			};
+			expectedJson =
+				"{\"TestNested\":null,\"TestNullableTypeArray\":" +
+				"[{\"TestValue\":42},{\"TestValue\":43},{\"TestValue\":44}]}";
+			Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
+		}
 #endif
 
 		[Test]
 		public void NullableEnumImportTest() {
 			string json = @"{
-                ""TestEnum"": 1
-            }";
+				""TestEnum"": 1
+			}";
 			var value = JsonMapper.ToObject<NullableEnumTest>(json);
 			Assert.AreNotEqual(value.TestEnum, null);
 			var enumValue = (NullableEnum)value.TestEnum;
 			Assert.AreEqual(enumValue, NullableEnum.TestVal1);
 
 			json = @"{
-                ""TestEnum"": null
-            }";
+				""TestEnum"": null
+			}";
 			value = JsonMapper.ToObject<NullableEnumTest>(json);
 			Assert.AreEqual(value.TestEnum, null);
 		}
@@ -967,7 +964,7 @@ namespace LitJson.Test {
 		[Test]
 		public void NullableEnumExportTest() {
 			var value = new NullableEnumTest() {
-                TestEnum = NullableEnum.TestVal2 };
+				TestEnum = NullableEnum.TestVal2 };
 			string expectedJson = "{\"TestEnum\":2}";
 			Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
 
@@ -977,3 +974,4 @@ namespace LitJson.Test {
 		}
 	}
 }
+#endif

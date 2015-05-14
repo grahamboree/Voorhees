@@ -1,4 +1,4 @@
-#region Header
+#if false
 /**
  * JsonReaderTest.cs
  *   Tests for the JsonReader class.
@@ -6,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
 using LitJson;
 using NUnit.Framework;
 using System;
@@ -34,15 +33,15 @@ namespace LitJson.Test {
 		[Test]
 		public void CommentsTest() {
 			string json = @"
-                {
-                    // This is the first property
-                    ""foo"" : ""bar"",
+				{
+					// This is the first property
+					""foo"" : ""bar"",
 
-                    /**
-                     * This is the second property
-                     **/
-                     ""baz"": ""blah""
-                }";
+					/**
+					 * This is the second property
+					 **/
+					 ""baz"": ""blah""
+				}";
 
 			JsonReader reader = new JsonReader(json);
 
@@ -62,35 +61,35 @@ namespace LitJson.Test {
 		[Test]
 		public void DoubleTest() {
 			string json = @"[ 0.0, -0.0, 3.1416, 8e-3, 7E-5, -128.000009,
-                   144e+3, 0.1e2 ]";
+				   144e+3, 0.1e2 ]";
 
 			JsonReader reader = new JsonReader(json);
 			reader.Read();
 
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 0.0,
-                             Double.Epsilon, "A1");
+							 Double.Epsilon, "A1");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 0.0,
-                             Double.Epsilon, "A2");
+							 Double.Epsilon, "A2");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 3.1416,
-                             Double.Epsilon, "A3");
+							 Double.Epsilon, "A3");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 0.008,
-                             Double.Epsilon, "A4");
+							 Double.Epsilon, "A4");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 0.00007,
-                             Double.Epsilon, "A5");
+							 Double.Epsilon, "A5");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, -128.000009,
-                             Double.Epsilon, "A6");
+							 Double.Epsilon, "A6");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 144000.0,
-                             Double.Epsilon, "A7");
+							 Double.Epsilon, "A7");
 			reader.Read();
 			Assert.AreEqual((double)reader.Value, 10.0,
-                             Double.Epsilon, "A8");
+							 Double.Epsilon, "A8");
 
 			reader.Close();
 		}
@@ -149,13 +148,13 @@ namespace LitJson.Test {
 		[Test]
 		public void FromFileTest() {
 #if flase // TODO
-            Assembly asmb = typeof (JsonReaderTest).Assembly;
-            StreamReader stream = new StreamReader (
-                asmb.GetManifestResourceStream ("json-example.txt"));
+			Assembly asmb = typeof (JsonReaderTest).Assembly;
+			StreamReader stream = new StreamReader (
+				asmb.GetManifestResourceStream ("json-example.txt"));
 
-            JsonReader reader = new JsonReader (stream);
+			JsonReader reader = new JsonReader (stream);
 
-            while (reader.Read ());
+			while (reader.Read ());
 #endif
 		}
 
@@ -217,7 +216,7 @@ namespace LitJson.Test {
 		[Test]
 		[Category ("RuntimeBug")]
 		// Int32.TryParse in mono 1.2.5
-        public void LongTest() {
+		public void LongTest() {
 			string json = "[ 2147483648, -10000000000 ]";
 
 			JsonReader reader = new JsonReader(json);
@@ -323,8 +322,8 @@ namespace LitJson.Test {
 		[ExpectedException (typeof (JsonException))]
 		public void ParserErrorObjectClosingTest() {
 			string json = @"{
-                ""sports"": [
-                    ""football"", ""baseball"", ""basketball"" ] ]";
+				""sports"": [
+					""football"", ""baseball"", ""basketball"" ] ]";
 
 			JsonReader reader = new JsonReader(json);
 
@@ -372,9 +371,9 @@ namespace LitJson.Test {
 		[Test]
 		public void QuickObjectTest() {
 			string json = @"{
-                ""vehicle"": ""submarine"",
-                ""color"":   ""yellow""
-            }";
+				""vehicle"": ""submarine"",
+				""color"":   ""yellow""
+			}";
 
 			JsonReader reader = new JsonReader(json);
 
@@ -402,12 +401,12 @@ namespace LitJson.Test {
 		[ExpectedException (typeof (JsonException))]
 		public void StrictCommentsTest() {
 			string json = @"
-                [
-                    // This is a comment
-                    1,
-                    2,
-                    3
-                ]";
+				[
+					// This is a comment
+					1,
+					2,
+					3
+				]";
 
 			JsonReader reader = new JsonReader(json);
 			reader.AllowComments = false;
@@ -431,7 +430,7 @@ namespace LitJson.Test {
 		[Test]
 		public void StringsTest() {
 			string json =
-                "[ \"abc 123 \\n\\f\\b\\t\\r \\\" \\\\ \\u263a \\u25CF\" ]";
+				"[ \"abc 123 \\n\\f\\b\\t\\r \\\" \\\\ \\u263a \\u25CF\" ]";
 
 			string str = "abc 123 \n\f\b\t\r \" \\ \u263a \u25cf";
 
@@ -456,3 +455,4 @@ namespace LitJson.Test {
 		}
 	}
 }
+#endif

@@ -38,9 +38,7 @@ namespace LitJson {
 		int IntValue { get; set; }
 		string StringValue { get; set; }
 
-
-
 		string ToJson();
-		void ToJson(JsonWriter writer);
+		//void ToJson(JsonWriter writer);
 	}
 }

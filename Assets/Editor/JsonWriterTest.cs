@@ -1,4 +1,4 @@
-#region Header
+#if false
 /**
  * JsonWriterTest.cs
  *   Tests for the JsonWriter class.
@@ -6,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
 using LitJson;
 using NUnit.Framework;
 using System;
@@ -126,7 +125,7 @@ namespace LitJson.Test {
 			writer.WriteObjectStart();
 			writer.WritePropertyName("title");
 			writer.Write(
-                "Structure and Interpretation of Computer Programs");
+				"Structure and Interpretation of Computer Programs");
 			writer.WritePropertyName("details");
 			writer.WriteObjectStart();
 			writer.WritePropertyName("pages");
@@ -209,17 +208,17 @@ namespace LitJson.Test {
 
 			string json = @"
 [
-    {
-        ""precision"" : ""zip"",
-        ""Latitude""  : 37.7668,
-        ""Longitude"" : -122.3959,
-        ""City""      : ""SAN FRANCISCO""
-    },
+	{
+		""precision"" : ""zip"",
+		""Latitude""  : 37.7668,
+		""Longitude"" : -122.3959,
+		""City""      : ""SAN FRANCISCO""
+	},
   {
-    ""precision"" : ""zip"",
-    ""Latitude""  : 37.371991,
-    ""Longitude"" : -122.02602,
-    ""City""      : ""SUNNYVALE""
+	""precision"" : ""zip"",
+	""Latitude""  : 37.371991,
+	""Longitude"" : -122.02602,
+	""City""      : ""SUNNYVALE""
   }
 ]";
 
@@ -264,7 +263,7 @@ namespace LitJson.Test {
 			writer.WriteArrayEnd();
 
 			Assert.AreEqual(sb.ToString(),
-                             "[\"like a lizard on a window pane\"]");
+							 "[\"like a lizard on a window pane\"]");
 		}
 
 		[Test]
@@ -279,10 +278,11 @@ namespace LitJson.Test {
 			writer.WriteArrayEnd();
 
 			string json =
-                "[\"Hello World!\",\"\\n\\r\\b\\f\\t\",\"I \\u2665 you\"" +
+				"[\"Hello World!\",\"\\n\\r\\b\\f\\t\",\"I \\u2665 you\"" +
 				",\"She said, \\\"I know what it's like to be dead\\\"\"]";
 
 			Assert.AreEqual(json, writer.ToString(), "A1");
 		}
 	}
 }
+#endif

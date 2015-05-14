@@ -1,4 +1,4 @@
-#region Header
+#if false
 /**
  * JsonReader.cs
  *   Stream-like access to JSON text.
@@ -6,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +33,7 @@ namespace LitJson {
 	}
 
 	public class JsonReader {
-        #region Fields
+		#region Fields
 		private static IDictionary<int, IDictionary<int, int[]>> parse_table;
 		private Stack<int> automaton_stack;
 		private int        current_input;
@@ -50,10 +49,10 @@ namespace LitJson {
 		private bool       skip_non_members;
 		private object     token_value;
 		private JsonToken  token;
-        #endregion
+		#endregion
 
 
-        #region Public Properties
+		#region Public Properties
 		public bool AllowComments {
 			get { return lexer.AllowComments; }
 			set { lexer.AllowComments = value; }
@@ -84,20 +83,20 @@ namespace LitJson {
 		public object Value {
 			get { return token_value; }
 		}
-        #endregion
+		#endregion
 
 
-        #region Constructors
+		#region Constructors
 		static JsonReader() {
 			PopulateParseTable();
 		}
 
 		public JsonReader(string json_text) :
-            this (new StringReader (json_text), true) {
+			this (new StringReader (json_text), true) {
 		}
 
 		public JsonReader(TextReader reader) :
-            this (reader, false) {
+			this (reader, false) {
 		}
 
 		private JsonReader(TextReader reader, bool owned) {
@@ -122,10 +121,10 @@ namespace LitJson {
 			this.reader = reader;
 			reader_is_owned = owned;
 		}
-        #endregion
+		#endregion
 
 
-        #region Static Methods
+		#region Static Methods
 		private static void PopulateParseTable() {
 			// See section A.2. of the manual for details
 			parse_table = new Dictionary<int, IDictionary<int, int[]>>();
@@ -185,10 +184,10 @@ namespace LitJson {
 		private static void TableAddRow(ParserToken rule) {
 			parse_table.Add((int)rule, new Dictionary<int, int[]>());
 		}
-        #endregion
+		#endregion
 
 
-        #region Private Methods
+		#region Private Methods
 		private void ProcessNumber(string number) {
 			if (number.IndexOf('.') != -1 ||
 				number.IndexOf('e') != -1 ||
@@ -306,7 +305,7 @@ namespace LitJson {
 
 			return true;
 		}
-        #endregion
+		#endregion
 
 
 		public void Close() {
@@ -390,3 +389,4 @@ namespace LitJson {
 		}
 	}
 }
+#endif

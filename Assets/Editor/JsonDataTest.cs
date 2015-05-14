@@ -1,4 +1,4 @@
-#region Header
+#if false
 /**
  * JsonDataTest.cs
  *   Tests for the JsonData class.
@@ -6,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-#endregion
 using LitJson;
 using NUnit.Framework;
 using System;
@@ -113,7 +112,7 @@ namespace LitJson.Test {
 			Assert.IsTrue(data.IsString, "A1");
 			Assert.AreEqual("All you need is love", (string)data, "A2");
 			Assert.AreEqual("\"All you need is love\"", data.ToJson(),
-                             "A3");
+							 "A3");
 		}
 
 		[Test]
@@ -251,3 +250,4 @@ namespace LitJson.Test {
 		#endregion
 	}
 }
+#endif

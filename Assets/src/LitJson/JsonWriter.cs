@@ -1,3 +1,4 @@
+#if false
 /**
  * JsonWriter.cs
  *   Stream-like facility to output JSON text.
@@ -29,7 +30,7 @@ namespace LitJson {
 	}
 
 	public class JsonWriter {
-        #region Fields
+		#region Fields
 		private static NumberFormatInfo number_format;
 		private WriterContext        context;
 		private Stack<WriterContext> ctx_stack;
@@ -38,9 +39,9 @@ namespace LitJson {
 		private int                  indentation;
 		private int                  indent_value;
 		private StringBuilder        inst_string_builder;
-        #endregion
+		#endregion
 
-        #region Properties
+		#region Properties
 		public int IndentValue {
 			get { return indent_value; }
 			set {
@@ -52,9 +53,9 @@ namespace LitJson {
 		public bool PrettyPrint { get; set; }
 		public TextWriter TextWriter { get; private set; }
 		public bool Validate { get; set; }
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 		static JsonWriter() {
 			number_format = NumberFormatInfo.InvariantInfo;
 		}
@@ -76,10 +77,10 @@ namespace LitJson {
 
 			Init();
 		}
-        #endregion
+		#endregion
 
 
-        #region Private Methods
+		#region Private Methods
 		private void DoValidation(Condition cond) {
 			if (! context.ExpectingValue)
 				context.Count++;
@@ -225,7 +226,7 @@ namespace LitJson {
 			if (PrettyPrint)
 				indentation -= indent_value;
 		}
-        #endregion
+		#endregion
 
 		public override string ToString() {
 			if (inst_string_builder == null)
@@ -396,3 +397,4 @@ namespace LitJson {
 		}
 	}
 }
+#endif

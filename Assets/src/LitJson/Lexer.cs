@@ -1,3 +1,4 @@
+#if false
 /**
  * Lexer.cs
  *   JSON lexer implementation based on a finite state machine.
@@ -5,7 +6,6 @@
  * The authors disclaim copyright to this source code. For more details, see
  * the COPYING file included with this distribution.
  **/
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +20,7 @@ namespace LitJson {
 	}
 
 	internal class Lexer {
-        #region Fields
+		#region Fields
 		private delegate bool StateHandler(FsmContext ctx);
 
 		private static int[] fsm_return_table;
@@ -32,17 +32,17 @@ namespace LitJson {
 		private int state;
 		private StringBuilder string_buffer;
 		private int unichar;
-        #endregion
+		#endregion
 
-        #region Properties
+		#region Properties
 		public bool AllowComments { get; set; }
 		public bool AllowSingleQuotedStrings { get; set; }
 		public bool EndOfInput { get; private set; }
 		public int Token { get; private set; }
 		public string StringValue { get; private set; }
-        #endregion
+		#endregion
 
-        #region Constructors
+		#region Constructors
 		static Lexer() {
 			PopulateFsmTables();
 		}
@@ -60,9 +60,9 @@ namespace LitJson {
 			fsm_context = new FsmContext();
 			fsm_context.L = this;
 		}
-        #endregion
+		#endregion
 
-        #region Static Methods
+		#region Static Methods
 		private static int HexValue(int digit) {
 			switch (digit) {
 			case 'a':
@@ -98,66 +98,66 @@ namespace LitJson {
 			// See section A.1. of the manual for details of the finite
 			// state machine.
 			fsm_handler_table = new StateHandler[28] {
-                State1,
-                State2,
-                State3,
-                State4,
-                State5,
-                State6,
-                State7,
-                State8,
-                State9,
-                State10,
-                State11,
-                State12,
-                State13,
-                State14,
-                State15,
-                State16,
-                State17,
-                State18,
-                State19,
-                State20,
-                State21,
-                State22,
-                State23,
-                State24,
-                State25,
-                State26,
-                State27,
-                State28
-            };
+				State1,
+				State2,
+				State3,
+				State4,
+				State5,
+				State6,
+				State7,
+				State8,
+				State9,
+				State10,
+				State11,
+				State12,
+				State13,
+				State14,
+				State15,
+				State16,
+				State17,
+				State18,
+				State19,
+				State20,
+				State21,
+				State22,
+				State23,
+				State24,
+				State25,
+				State26,
+				State27,
+				State28
+			};
 
 			fsm_return_table = new int[28] {
-                (int)ParserToken.Char,
-                0,
-                (int)ParserToken.Number,
-                (int)ParserToken.Number,
-                0,
-                (int)ParserToken.Number,
-                0,
-                (int)ParserToken.Number,
-                0,
-                0,
-                (int)ParserToken.True,
-                0,
-                0,
-                0,
-                (int)ParserToken.False,
-                0,
-                0,
-                (int)ParserToken.Null,
-                (int)ParserToken.CharSeq,
-                (int)ParserToken.Char,
-                0,
-                0,
-                (int)ParserToken.CharSeq,
-                (int)ParserToken.Char,
-                0,
-                0,
-                0,
-                0
-            };
+				(int)ParserToken.Char,
+				0,
+				(int)ParserToken.Number,
+				(int)ParserToken.Number,
+				0,
+				(int)ParserToken.Number,
+				0,
+				(int)ParserToken.Number,
+				0,
+				0,
+				(int)ParserToken.True,
+				0,
+				0,
+				0,
+				(int)ParserToken.False,
+				0,
+				0,
+				(int)ParserToken.Null,
+				(int)ParserToken.CharSeq,
+				(int)ParserToken.Char,
+				0,
+				0,
+				(int)ParserToken.CharSeq,
+				(int)ParserToken.Char,
+				0,
+				0,
+				0,
+				0
+			};
 		}
 
 		private static char ProcessEscChar(int esc_char) {
@@ -178,7 +178,7 @@ namespace LitJson {
 			case 'f':
 				return '\f';
 			default:
-                // Unreachable
+				// Unreachable
 				return '?';
 			}
 		}
@@ -632,7 +632,7 @@ namespace LitJson {
 			case 'r':
 			case 't':
 				ctx.L.string_buffer.Append(
-                    ProcessEscChar(ctx.L.input_char));
+					ProcessEscChar(ctx.L.input_char));
 				ctx.NextState = ctx.StateStack;
 				return true;
 
@@ -660,7 +660,7 @@ namespace LitJson {
 
 					if (counter == 4) {
 						ctx.L.string_buffer.Append(
-                            Convert.ToChar(ctx.L.unichar));
+							Convert.ToChar(ctx.L.unichar));
 						ctx.NextState = ctx.StateStack;
 						return true;
 					}
@@ -767,7 +767,7 @@ namespace LitJson {
 
 			return true;
 		}
-        #endregion
+		#endregion
 		
 		private bool GetChar() {
 			if ((input_char = NextChar()) != -1)
@@ -823,3 +823,4 @@ namespace LitJson {
 		}
 	}
 }
+#endif
