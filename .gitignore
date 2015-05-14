@@ -1,5 +1,6 @@
 # Unity VS
 Assets/UnityVS
+Assets/UnityVS.meta
 
 # Unity stuff we can ignore...
 Library/*
