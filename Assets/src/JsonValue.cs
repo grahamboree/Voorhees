@@ -17,6 +17,7 @@ public enum JsonType {
 }
 
 class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
+	#region Fields
 	JsonType type = JsonType.None;
 
 	List<JsonValue> arrayValue;
@@ -25,6 +26,109 @@ class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<J
 	bool boolValue;
 	float floatValue;
 	int intValue;
+	#endregion
+
+	#region Type Properties
+	public bool IsObject { get { return type == JsonType.Object; } }
+	public bool IsArray { get { return type == JsonType.Array; } }
+	public bool IsString { get { return type == JsonType.String; } }
+	public bool IsBoolean { get { return type == JsonType.Boolean; } }
+	public bool IsInt { get { return type == JsonType.Int; } }
+	public bool IsFloat { get { return type == JsonType.Float; } }
+
+	public JsonValue Type {
+		get {
+			return type;
+		} set {
+			type = value;
+			switch (type) {
+			case JsonType.Object:
+				objectValue = new Dictionary<string, JsonValue>();
+				break;
+			case JsonType.Array:
+				arrayValue = new List<JsonValue>();
+				break;
+			case JsonType.Float:
+				floatValue = 0f;
+				break;
+			case JsonType.Int:
+				intValue = 0;
+				break;
+			case JsonType.Boolean:
+				boolValue = false;
+				break;
+			case JsonType.String:
+				stringValue = "";
+					break;
+			}
+		}
+	}
+	#endregion
+	
+	#region Constructors
+	public JsonValue() { }
+	
+	public JsonValue(bool boolean) {
+		type = JsonType.Boolean;
+		boolValue = boolean;
+	}
+	
+	public JsonValue(float number) {
+		type = JsonType.Float;
+		floatValue = number;
+	}
+	
+	public JsonValue(int number) {
+		type = JsonType.Int;
+		intValue = number;
+	}
+	
+	public JsonValue(string str) {
+		type = JsonType.String;
+		stringValue = str;
+	}
+	#endregion
+
+	#region Implicit Conversions from other types to JsonData
+	public static implicit operator JsonValue(bool data) { return new JsonValue(data); }
+	public static implicit operator JsonValue(float data) { return new JsonValue(data); }
+	public static implicit operator JsonValue(int data) { return new JsonValue(data); }
+	public static implicit operator JsonValue(string data) { return new JsonValue(data); }
+	#endregion
+	
+	#region Explicit Conversions from JsonData to other types
+	public static explicit operator bool(JsonValue data) {
+		if (!data.IsBoolean) {
+			throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
+		}
+		
+		return data.boolValue;
+	}
+	
+	public static explicit operator float(JsonValue data) {
+		if (!data.IsFloat) {
+			throw new InvalidCastException("Instance of JsonData doesn't hold a float");
+		}
+		
+		return data.floatValue;
+	}
+	
+	public static explicit operator int(JsonValue data) {
+		if (!data.IsInt) {
+			throw new InvalidCastException("Instance of JsonData doesn't hold an int");
+		}
+		
+		return data.intValue;
+	}
+	
+	public static explicit operator string(JsonValue data) {
+		if (!data.IsString) {
+			throw new InvalidCastException("Instance of JsonData doesn't hold a string");
+		}
+		
+		return data.stringValue;
+	}
+	#endregion
 	
 	#region IEnumerable
 	public IEnumerator<JsonValue> GetEnumerator() { return EnsureList().GetEnumerator(); }
