@@ -248,4 +248,30 @@ class JsonValueTest {
 		Assert.That(one.Equals(two), Is.True);
 		Assert.That(one.Equals(three), Is.False);
 	}
+
+	[Test]
+	public void KVPCollection() {
+		JsonValue test = new JsonValue() {
+			{"one", 1},
+			{"two", 2},
+			{"three", 3},
+		};
+
+		test.Remove(new KeyValuePair<string, JsonValue>("one", 1));
+		Assert.That(test.Count, Is.EqualTo(2));
+		Assert.Throws<KeyNotFoundException>(() => test["one"].ToString());
+
+		KeyValuePair<string, JsonValue>[] dest = new KeyValuePair<string, JsonValue>[2];
+		test.CopyTo(dest, 0);
+		for (int i = 0; i < 2; ++i) {
+			Assert.That(test[dest[i].Key].Equals(dest[i].Value));
+		}
+
+		Assert.That(test.Contains(new KeyValuePair<string, JsonValue>("two", 2)));
+
+		test.Add(new KeyValuePair<string, JsonValue>("four", 4));
+
+		Assert.That(test.ContainsKey("four"), Is.True);
+		Assert.That((int)test["four"], Is.EqualTo(4));
+	}
 }
