@@ -164,4 +164,33 @@ class JsonValueTest {
 		Assert.That(test.IsInt, Is.False);
 		Assert.That(test.IsFloat, Is.True);
 	}
+
+	[Test]
+	public void ArrayOperations() {
+		JsonValue test = new JsonValue() { 1, 2, 3 };
+
+		Assert.That(test.Count, Is.EqualTo(3));
+		Assert.That(test.Contains(1), Is.True);
+		Assert.That(test.Contains(4), Is.False);
+
+		JsonValue[] values = new JsonValue[3];
+		test.CopyTo(values, 0);
+		for (int i = 0; i < 3; i++) {
+			Assert.That((int)values[i], Is.EqualTo((int)test[i]));
+		}
+		
+		test.Remove(2);
+		Assert.That(test.Contains(1), Is.True);
+		Assert.That(test.Contains(2), Is.False);
+		Assert.That(test.Contains(3), Is.True);
+
+		Assert.That(test.IsReadOnly, Is.False);
+
+		test.Clear();
+		Assert.That(test.Count, Is.EqualTo(0));
+
+		test.Add(5);
+		Assert.That(test.Count, Is.EqualTo(1));
+		Assert.That((int)test[0], Is.EqualTo(5));
+	}
 }
