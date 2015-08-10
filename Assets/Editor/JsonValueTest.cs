@@ -274,4 +274,47 @@ class JsonValueTest {
 		Assert.That(test.ContainsKey("four"), Is.True);
 		Assert.That((int)test["four"], Is.EqualTo(4));
 	}
+
+	[Test]
+	public void IDictionary() {
+		JsonValue test = new JsonValue() {
+			{"one", 1},
+			{"two", 2},
+			{"three", 3}
+		};
+
+		Assert.That((int)test["one"], Is.EqualTo(1));
+		test["one"] = 5;
+		Assert.That((int)test["one"], Is.EqualTo(5));
+		test["one"] = 1;
+
+		var keys = test.Keys;
+		Assert.That(keys.Count, Is.EqualTo(3));
+		Assert.That(keys.Contains("one"), Is.True);
+		Assert.That(keys.Contains("two"), Is.True);
+		Assert.That(keys.Contains("three"), Is.True);
+
+		var values = test.Values;
+		Assert.That(values.Count, Is.EqualTo(3));
+		var intvalues = values.Select(x => (int)x).ToArray();
+		Array.Sort(intvalues);
+		for (int i = 0; i < 3; i++) {
+			Assert.That(intvalues[i], Is.EqualTo(i + 1));
+		}
+
+		test.Add("four", 4);
+		Assert.That(test.Count, Is.EqualTo(4));
+		Assert.That((int)test["four"], Is.EqualTo(4));
+
+		JsonValue val;
+		Assert.That(test.TryGetValue("one", out val), Is.True);
+		Assert.That((int)val, Is.EqualTo(1));
+		Assert.That(test.TryGetValue("seven", out val), Is.False);
+		Assert.That(val, Is.Null);
+
+		Assert.That(test.ContainsKey("four"), Is.True);
+		test.Remove("four");
+		Assert.That(test.Count, Is.EqualTo(3));
+		Assert.That(test.ContainsKey("four"), Is.False);
+	}
 }
