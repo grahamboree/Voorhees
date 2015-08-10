@@ -183,7 +183,7 @@ namespace UnityTest
             //Unity 5.0.0 quirk throws an exception on setting the postion when in batch mode
             if( !UnityEditorInternal.InternalEditorUtility.inBatchMode ) 
                 position = new Rect(position.xMin, position.yMin, 300, 100);
-            title = "Test run monitor";
+			titleContent = new GUIContent("Test run monitor");
             Instance = this;
             m_StatusLabel = "Initializing...";
             if (EditorApplication.isCompiling) return;
