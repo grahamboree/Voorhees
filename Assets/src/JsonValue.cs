@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -206,17 +207,31 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 			case JsonType.None:
 				return true;
 			case JsonType.Object:
-				return objectValue.Equals(other.objectValue);
+				{
+					if (objectValue.Count != other.objectValue.Count) {
+						return false;
+					}
+					foreach(var kvp in objectValue) {
+						JsonValue bValue;
+						if (!other.objectValue.TryGetValue(kvp.Key, out bValue)) {
+							return false; // key missing in b
+						}
+						if (!kvp.Value.Equals(bValue)) {
+							return false; // value is different
+						}
+					}
+					return true;
+				}
 			case JsonType.Array:
-				return arrayValue.Equals(other.arrayValue);
+				return arrayValue.SequenceEqual(other.arrayValue);
 			case JsonType.String:
-				return stringValue.Equals(other.stringValue);
+				return stringValue == other.stringValue;
 			case JsonType.Boolean:
-				return boolValue.Equals(other.boolValue);
+				return boolValue == other.boolValue;
 			case JsonType.Int:
-				return intValue.Equals(other.intValue);
+				return intValue == other.intValue;
 			case JsonType.Float:
-				return floatValue.Equals(other.floatValue);
+				return floatValue == other.floatValue;
 		}
 		return false;
 	}
