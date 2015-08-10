@@ -16,6 +16,7 @@ public enum JsonType {
 	Float,
 }
 
+
 class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
 	#region Fields
 	JsonType type = JsonType.None;
@@ -36,7 +37,7 @@ class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<J
 	public bool IsInt { get { return type == JsonType.Int; } }
 	public bool IsFloat { get { return type == JsonType.Float; } }
 
-	public JsonValue Type {
+	public JsonType Type {
 		get {
 			return type;
 		} set {
