@@ -203,4 +203,49 @@ class JsonValueTest {
 		Assert.That(test.Count, Is.EqualTo(1));
 		Assert.That((int)test[0], Is.EqualTo(5));
 	}
+
+	[Test]
+	public void Equality() {
+		// object
+		JsonValue one = new JsonValue { {"one", 1}, {"two", 2} };
+		JsonValue two = new JsonValue { {"one", 1}, {"two", 2} };
+		JsonValue three = new JsonValue { {"one", 1}, {"two", 2}, {"three", 3} };
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+
+		// array
+		one = new JsonValue { 1, 2, 3 };
+		two = new JsonValue { 1, 2, 3 };
+		three = new JsonValue { 3, 2, 1 };
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+
+		// string
+		one = "one";
+		two = "one";
+		three = "two";
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+
+		// bool
+		one = true;
+		two = true;
+		three = false;
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+
+		// int
+		one = 1;
+		two = 1;
+		three = 2;
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+
+		// float
+		one = 1f;
+		two = 1f;
+		three = 2f;
+		Assert.That(one.Equals(two), Is.True);
+		Assert.That(one.Equals(three), Is.False);
+	}
 }
