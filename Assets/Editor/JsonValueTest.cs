@@ -186,6 +186,16 @@ class JsonValueTest {
 
 		Assert.That(test.IsReadOnly, Is.False);
 
+		Assert.That(test.IndexOf(1), Is.EqualTo(0));
+
+		test.Insert(1, 2);
+		Assert.That((int)test[1], Is.EqualTo(2));
+		Assert.That(test.Count, Is.EqualTo(3));
+
+		test.RemoveAt(1);
+		Assert.That((int)test[1], Is.EqualTo(3));
+		Assert.That(test.Count, Is.EqualTo(2));
+
 		test.Clear();
 		Assert.That(test.Count, Is.EqualTo(0));
 
