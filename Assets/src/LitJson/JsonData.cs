@@ -1,18 +1,13 @@
-/**
- * JsonData.cs
- *   Generic type to hold JSON data (objects, arrays, and so on). This is
- *   the default type returned by JsonMapper.ToObject().
- *
- * The authors disclaim copyright to this source code. For more details, see
- * the COPYING file included with this distribution.
- **/
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 
+
 namespace LitJson {
+	/// Generic type to hold JSON data (objects, arrays, and so on). This is 
+	/// the default type returned by JsonMapper.ToObject().
 	public class JsonData : IJsonWrapper, IEquatable<JsonData>, IEnumerable<JsonData> {
 		#region Fields
 		private List<JsonData> arrayValue;
