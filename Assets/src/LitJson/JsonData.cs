@@ -1,3 +1,5 @@
+#if false
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -665,3 +667,4 @@ namespace LitJson {
 		public void Reset() { list_enumerator.Reset(); }
 	}*/
 }
+#endif

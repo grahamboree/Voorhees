@@ -8,6 +8,7 @@
  * the COPYING file included with this distribution.
  **/
 
+ #if false
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -42,3 +43,4 @@ namespace LitJson {
 		//void ToJson(JsonWriter writer);
 	}
 }
+#endif
