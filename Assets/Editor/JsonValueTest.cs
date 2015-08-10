@@ -87,17 +87,81 @@ class JsonValueTest {
 			{"blast", "off!"}
 		};
 		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+
 		Assert.That(test.ContainsKey("three"), Is.True);
 		Assert.That(test.ContainsKey("two"), Is.True);
 		Assert.That(test.ContainsKey("one"), Is.True);
 		Assert.That(test.ContainsKey("blast"), Is.True);
+
 		Assert.That(test["three"].Type, Is.EqualTo(JsonType.Int));
 		Assert.That(test["two"].Type, Is.EqualTo(JsonType.Int));
 		Assert.That(test["one"].Type, Is.EqualTo(JsonType.Int));
 		Assert.That(test["blast"].Type, Is.EqualTo(JsonType.String));
+
 		Assert.That((int)test["three"], Is.EqualTo(3));
 		Assert.That((int)test["two"], Is.EqualTo(2));
 		Assert.That((int)test["one"], Is.EqualTo(1));
 		Assert.That((string)test["blast"], Is.EqualTo("off!"));
+	}
+
+	[Test]
+	public void TypeProperties() {
+		// object
+		JsonValue test = new JsonValue() {
+			{"one", 1},
+			{"two", 2},
+			{"three", 3}
+		};
+		Assert.That(test.IsObject, Is.True);
+		Assert.That(test.IsArray, Is.False);
+		Assert.That(test.IsString, Is.False);
+		Assert.That(test.IsBoolean, Is.False);
+		Assert.That(test.IsInt, Is.False);
+		Assert.That(test.IsFloat, Is.False);
+
+		// array
+		test = new JsonValue() { 1, 2, 3 };
+		Assert.That(test.IsObject, Is.False);
+		Assert.That(test.IsArray, Is.True);
+		Assert.That(test.IsString, Is.False);
+		Assert.That(test.IsBoolean, Is.False);
+		Assert.That(test.IsInt, Is.False);
+		Assert.That(test.IsFloat, Is.False);
+		
+		// string
+		test = "test";
+		Assert.That(test.IsObject, Is.False);
+		Assert.That(test.IsArray, Is.False);
+		Assert.That(test.IsString, Is.True);
+		Assert.That(test.IsBoolean, Is.False);
+		Assert.That(test.IsInt, Is.False);
+		Assert.That(test.IsFloat, Is.False);
+
+		// boolean
+		test = false;
+		Assert.That(test.IsObject, Is.False);
+		Assert.That(test.IsArray, Is.False);
+		Assert.That(test.IsString, Is.False);
+		Assert.That(test.IsBoolean, Is.True);
+		Assert.That(test.IsInt, Is.False);
+		Assert.That(test.IsFloat, Is.False);
+
+		// int
+		test = 1;
+		Assert.That(test.IsObject, Is.False);
+		Assert.That(test.IsArray, Is.False);
+		Assert.That(test.IsString, Is.False);
+		Assert.That(test.IsBoolean, Is.False);
+		Assert.That(test.IsInt, Is.True);
+		Assert.That(test.IsFloat, Is.False);
+
+		// float
+		test = 1f;
+		Assert.That(test.IsObject, Is.False);
+		Assert.That(test.IsArray, Is.False);
+		Assert.That(test.IsString, Is.False);
+		Assert.That(test.IsBoolean, Is.False);
+		Assert.That(test.IsInt, Is.False);
+		Assert.That(test.IsFloat, Is.True);
 	}
 }
