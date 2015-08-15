@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public enum JsonType {
-	None,
+	Null,
 
 	Object,
 	Array,
@@ -18,7 +18,7 @@ public enum JsonType {
 
 public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
 	#region Fields
-	JsonType type = JsonType.None;
+	JsonType type = JsonType.Null;
 
 	List<JsonValue> arrayValue;
 	Dictionary<string, JsonValue> objectValue;
@@ -36,6 +36,7 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 	public bool IsBoolean { get { return type == JsonType.Boolean; } }
 	public bool IsInt { get { return type == JsonType.Int; } }
 	public bool IsFloat { get { return type == JsonType.Float; } }
+	public bool IsNull { get { return Type == JsonType.Null; } }
 
 	public JsonType Type {
 		get {
@@ -83,8 +84,12 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 	}
 
 	public JsonValue(string str) {
-		type = JsonType.String;
-		stringValue = str;
+		if (str == null) {
+			type = JsonType.Null;
+		} else {
+			type = JsonType.String;
+			stringValue = str;
+		}
 	}
 	#endregion
 
@@ -204,7 +209,7 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 			return false;
 		}
 		switch (type) {
-			case JsonType.None:
+			case JsonType.Null:
 				return true;
 			case JsonType.Object:
 				{
@@ -259,7 +264,7 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 
 	#region Private methods.
 	private IDictionary<string, JsonValue> EnsureObject() {
-		if (type == JsonType.None) {
+		if (type == JsonType.Null) {
 			type = JsonType.Object;
 			objectValue = new Dictionary<string, JsonValue>();
 		}
@@ -276,7 +281,7 @@ public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEqua
 			return arrayValue;
 		}
 
-		if (type != JsonType.None) {
+		if (type != JsonType.Null) {
 			throw new InvalidOperationException("Instance of JsonValue is not a list");
 		}
 

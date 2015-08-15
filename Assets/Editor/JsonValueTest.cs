@@ -9,7 +9,7 @@ class JsonValueTest {
 	[Test]
 	public void Constructors() {
 		JsonValue test = new JsonValue();
-		Assert.That(test.Type, Is.EqualTo(JsonType.None));
+		Assert.That(test.Type, Is.EqualTo(JsonType.Null));
 
 		test = new JsonValue(false);
 		Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
