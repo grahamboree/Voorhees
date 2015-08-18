@@ -195,4 +195,26 @@ public class JsonReaderTest {
 		Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
 		Assert.That((int)test[0], Is.EqualTo(5));
 	}
+
+	[Test]
+	public void ArrayOfAllTypes() {
+		JsonValue test;
+		test = JsonReader.Read("[1, 1.5, \"test\", true, false, nulll, []]");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Array));
+		Assert.That(test.Count, Is.EqualTo(7));
+
+		Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test[0], Is.EqualTo(1));
+		Assert.That(test[1].Type, Is.EqualTo(JsonType.Float));
+		Assert.That((float)test[1], Is.EqualTo(1.5));
+		Assert.That(test[2].Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test[2], Is.EqualTo("test"));
+		Assert.That(test[3].Type, Is.EqualTo(JsonType.Boolean));
+		Assert.That((bool)test[3], Is.True);
+		Assert.That(test[4].Type, Is.EqualTo(JsonType.Boolean));
+		Assert.That((bool)test[4], Is.False);
+		Assert.That(test[5].Type, Is.EqualTo(JsonType.Null));
+		Assert.That(test[6].Type, Is.EqualTo(JsonType.Array));
+		Assert.That(test[6].Count, Is.EqualTo(0));
+	}
 }
