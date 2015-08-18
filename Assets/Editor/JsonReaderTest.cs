@@ -238,4 +238,12 @@ public class JsonReaderTest {
 			JsonReader.Read("[1, 2");
 		});
 	}
+
+	[Test]
+	public void EmptyObject() {
+		JsonValue test;
+		test = JsonReader.Read("{}");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test.Count, Is.EqualTo(0));
+	}
 }

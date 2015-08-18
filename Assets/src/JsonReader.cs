@@ -44,6 +44,15 @@ public class JsonReader {
 					throw new InvalidJsonException("Too many ending array tokens!");
 				}
 				addToStack(valueStack.Pop());
+			} else if (json[i] == '{') { // object start
+				var obj = new JsonValue();
+				obj.Type = JsonType.Object;
+				valueStack.Push(obj);
+			} else if (json[i] == '}') { // object end
+				if (valueStack.Count == 0) {
+					throw new InvalidJsonException("Too many ending object tokens!");
+				}
+				addToStack(valueStack.Pop());
 			} else if (json[i] == '"') { // string
 				i++;
 				int startIndex = i;
