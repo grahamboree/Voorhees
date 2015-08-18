@@ -199,7 +199,7 @@ public class JsonReaderTest {
 	[Test]
 	public void ArrayOfAllTypes() {
 		JsonValue test;
-		test = JsonReader.Read("[1, 1.5, \"test\", true, false, nulll, []]");
+		test = JsonReader.Read(@"[1, 1.5, ""test"", true, false, null, []]");
 		Assert.That(test.Type, Is.EqualTo(JsonType.Array));
 		Assert.That(test.Count, Is.EqualTo(7));
 
@@ -216,5 +216,12 @@ public class JsonReaderTest {
 		Assert.That(test[5].Type, Is.EqualTo(JsonType.Null));
 		Assert.That(test[6].Type, Is.EqualTo(JsonType.Array));
 		Assert.That(test[6].Count, Is.EqualTo(0));
+	}
+
+	[Test]
+	public void CheckForCommas() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[1 2]");
+		});
 	}
 }
