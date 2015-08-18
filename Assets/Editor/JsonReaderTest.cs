@@ -224,4 +224,18 @@ public class JsonReaderTest {
 			JsonReader.Read("[1 2]");
 		});
 	}
+
+	[Test]
+	public void TooManyClosingArrays() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[1, 2]]");
+		});
+	}
+
+	[Test]
+	public void TooFewClosingArrays() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[1, 2");
+		});
+	}
 }

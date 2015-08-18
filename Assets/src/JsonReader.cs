@@ -40,6 +40,9 @@ public class JsonReader {
 				array.Type = JsonType.Array;
 				valueStack.Push(array);
 			} else if (json[i] == ']') { // end array
+				if (valueStack.Count == 0) {
+					throw new InvalidJsonException("Too many ending array tokens!");
+				}
 				addToStack(valueStack.Pop());
 			} else if (json[i] == '"') { // string
 				i++;
@@ -82,6 +85,10 @@ public class JsonReader {
 				i += 3;
 				addToStack(new JsonValue());
 			}
+		}
+
+		if (valueStack.Count > 0) {
+			throw new InvalidJsonException("Nested tokens are imbalanced.  There are missing closing tokens!");
 		}
 		return result;
 	}
