@@ -219,9 +219,30 @@ public class JsonReaderTest {
 	}
 
 	[Test]
-	public void CheckForCommas() {
+	public void MissingComma() {
 		Assert.Throws<InvalidJsonException>(() => {
 			JsonReader.Read("[1 2]");
+		});
+	}
+
+	[Test]
+	public void ExtraLeadingComma() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[,1, 2]");
+		});
+	}
+
+	[Test]
+	public void ExtraSeparatingComma() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[1,, 2]");
+		});
+	}
+
+	[Test]
+	public void ExtraTrailingComma() {
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("[1, 2,]");
 		});
 	}
 
