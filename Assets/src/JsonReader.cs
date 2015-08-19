@@ -1,104 +1,140 @@
 ﻿using System;
-using System.Collections.Generic;
 
-public class InvalidJsonException : System.Exception {
+public class InvalidJsonException : Exception {
 	public InvalidJsonException(string message) : base(message) {
 	}
 }
 
 public class JsonReader {
 	public static JsonValue Read(string json) {
-		JsonValue result = new JsonValue();
-		Stack<JsonValue> valueStack = new Stack<JsonValue>();
+		JsonValue result = null;
+		try {
+			// Read the json.
+			int i = 0;
+			result = ReadValue(json, ref i);
 
-		bool expectingComma = false;
-
-		Action<JsonValue> addToStack = (val) => {
-			if (valueStack.Count > 0) {
-				valueStack.Peek().Add(val);
-				expectingComma = true;
-			} else {
-				result = val;
+			// Make sure there's no additional json in the buffer.
+			SkipWhitespace(json, ref i);
+			if (i <= json.Length - 1) {
+				throw new InvalidJsonException("Expected end of file at column " + i + "!");
 			}
-		};
 
-		for (int i = 0; i < json.Length; ++i) {
-			while (i < json.Length && Char.IsWhiteSpace(json[i])) {
-				i++;
-			}
-			if (expectingComma) {
-				if (json[i] == ',') {
-					expectingComma = false;
-				} else if (json[i] == ']') {
-					expectingComma = false;
-					addToStack(valueStack.Pop());
-				} else {
-					throw new InvalidJsonException("Expected comma, but found none at column " + i + "!");
-				}
-			} else if (json[i] == '[') { // start array
-				var array = new JsonValue();
-				array.Type = JsonType.Array;
-				valueStack.Push(array);
-			} else if (json[i] == ']') { // end array
-				if (valueStack.Count == 0) {
-					throw new InvalidJsonException("Too many ending array tokens!");
-				}
-				addToStack(valueStack.Pop());
-			} else if (json[i] == '{') { // object start
-				var obj = new JsonValue();
-				obj.Type = JsonType.Object;
-				valueStack.Push(obj);
-			} else if (json[i] == '}') { // object end
-				if (valueStack.Count == 0) {
-					throw new InvalidJsonException("Too many ending object tokens!");
-				}
-				addToStack(valueStack.Pop());
-			} else if (json[i] == '"') { // string
-				i++;
-				int startIndex = i;
-				while (!(json[i] == '"' && (json[i - 1] != '\\' || i >= 2 || json[i - 2] == '\\'))) {
-					i++;
-				}
-				addToStack(new JsonValue(json.Substring(startIndex, i - startIndex)));
-			} else if (json[i] == '-' || (json[i] <= '9' && json[i] >= '0')) { // number
-				int startIndex = i;
-				i++;
-				while (i < json.Length && 
-				       ((json[i] >= '0' && json[i] <= '9') ||
-						 json[i] == '.' || json[i] == 'e' ||
-						 json[i] == 'E' || json[i] == '-' ||
-						 json[i] == '+'))
-				{
-					i++;
-				}
-				string numberString = json.Substring(startIndex, i - startIndex);
-				int intVal;
-				float floatVal;
-				JsonValue value;
-				if (int.TryParse(numberString, out intVal)) {
-					value = intVal;
-				} else if (float.TryParse(numberString, out floatVal)) {
-					value = floatVal;
-				} else {
-					throw new InvalidJsonException("string '" + numberString + "' is not a number");
-				}
-				--i; // Because we read past the end of the number.
-				addToStack(value);
-			} else if (json.Length - i >= 4 && json.Substring(i, 4) == "true") { // boolean
-				i += 3;
-				addToStack(new JsonValue(true));
-			} else if (json.Length - i >= 5 && json.Substring(i, 5) == "false") { // boolean
-				i += 4;
-				addToStack(new JsonValue(false));
-			} else if (json.Length - i >= 4 && json.Substring(i, 4) == "null") { // null
-				i += 3;
-				addToStack(new JsonValue());
-			}
-		}
-
-		if (valueStack.Count > 0) {
-			throw new InvalidJsonException("Nested tokens are imbalanced.  There are missing closing tokens!");
+		} catch (IndexOutOfRangeException) {
+			throw new InvalidJsonException("Unexpected end of file!");
 		}
 		return result;
+    }
+
+	static JsonValue ReadNumber(string json, ref int i) {
+		int startIndex = i;
+		i++;
+		while (i < json.Length && 
+			   ((json[i] >= '0' && json[i] <= '9') ||
+				 json[i] == '.' || json[i] == 'e' ||
+				 json[i] == 'E' || json[i] == '-' ||
+				 json[i] == '+'))
+		{
+			i++;
+		}
+		string numberString = json.Substring(startIndex, i - startIndex);
+
+		int intVal;
+		if (int.TryParse(numberString, out intVal)) {
+			return intVal;
+		}
+
+		float floatVal;
+		if (float.TryParse(numberString, out floatVal)) {
+			return floatVal;
+		} 
+
+		throw new InvalidJsonException("string '" + numberString + "' is not a number");
+	}
+
+	static JsonValue ReadString(string json, ref int i) {
+		i++; // Skip the '"'
+		int startIndex = i;
+		while (!(json[i] == '"' && (json[i - 1] != '\\' || i >= 2 || json[i - 2] == '\\'))) {
+			i++;
+		}
+		var value = new JsonValue(json.Substring(startIndex, i - startIndex));
+        i++; // Skip the '"'
+		return value;
+	}
+
+	static JsonValue ReadArray(string json, ref int i) {
+		i++; // Skip the '['
+		SkipWhitespace(json, ref i);
+
+		JsonValue arrayval = new JsonValue();
+		arrayval.Type = JsonType.Array;
+
+		bool expectingValue = false;
+		while (json[i] != ']') {
+			expectingValue = false;
+			arrayval.Add(ReadValue(json, ref i));
+			SkipWhitespace(json, ref i);
+			if (json[i] == ',') {
+				expectingValue = true;
+				i++;
+				SkipWhitespace(json, ref i);
+			} else if (json[i] != ']') {
+				throw new InvalidJsonException("Expected end array token at column " + i + "!");
+			}
+		}
+
+		if (expectingValue) {
+			throw new InvalidJsonException("Unexpected end array token at column " + i + "!");
+		}
+
+		i++; // Skip the ']'
+		return arrayval;
+	}
+
+	static JsonValue ReadValue(string json, ref int i) {
+		SkipWhitespace(json, ref i);
+		if (json[i] == '[') { // array
+			return ReadArray(json, ref i);
+		} else if (json[i] == '{') { // object
+			return ReadObject(json, ref i);
+		} else if (json[i] == '"') { // string
+			return ReadString(json, ref i);
+		} else if (json[i] == '-' || (json[i] <= '9' && json[i] >= '0')) { // number
+			return ReadNumber(json, ref i);
+		} else if (json.Length - i >= 4 && json.Substring(i, 4) == "true") { // boolean
+			i += 4;
+			return true;
+		} else if (json.Length - i >= 5 && json.Substring(i, 5) == "false") { // boolean
+			i += 5;
+			return false;
+		} else if (json.Length - i >= 4 && json.Substring(i, 4) == "null") { // null
+			i += 4;
+			return new JsonValue();
+		}
+		throw new InvalidJsonException("Unexpected character '" + json[i] + "' at column " + i + "!");
+	}
+
+	static JsonValue ReadObject(string json, ref int i) {
+		var obj = new JsonValue();
+		obj.Type = JsonType.Object;
+		i++; // Skip the '{'
+
+		SkipWhitespace(json, ref i);
+		if (json[i] != '}') {
+			//ReadElements(obj, json, ref i);
+		}
+		if (json[i] != '}') {
+			throw new InvalidJsonException("Expected closing object token at column " + i + "!");
+		}
+
+		i++; // Skip the '}'
+
+		return obj;
+	}
+
+	static void SkipWhitespace(string json, ref int i) {
+		while (i < json.Length && Char.IsWhiteSpace(json[i])) {
+			i++;
+		}
 	}
 }
