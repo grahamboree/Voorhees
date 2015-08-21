@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 public class InvalidJsonException : Exception {
 	public InvalidJsonException(string message) : base(message) {
@@ -122,6 +123,7 @@ public class JsonReader {
 		SkipWhitespace(json, ref i);
 		if (json[i] != '}') {
 			//ReadElements(obj, json, ref i);
+			ReadMembers(obj, json, ref i);
 		}
 		if (json[i] != '}') {
 			throw new InvalidJsonException("Expected closing object token at column " + i + "!");
@@ -130,6 +132,30 @@ public class JsonReader {
 		i++; // Skip the '}'
 
 		return obj;
+	}
+
+	static void ReadMembers(JsonValue obj, string json, ref int i) {
+		SkipWhitespace(json, ref i);
+		var values = ReadPair(json, ref i);
+		SkipWhitespace(json, ref i);
+		obj.Add((string)values[0], values[1]);
+		if (json[i] == ',') {
+			i++; // Skip the ','
+			SkipWhitespace(json, ref i);
+			ReadMembers(obj, json, ref i);
+		}
+	}
+
+	static List<JsonValue> ReadPair(string json, ref int i) {
+		var key = ReadString(json, ref i);
+		SkipWhitespace(json, ref i);
+		if (json[i] != ':') {
+			throw new InvalidJsonException("Expceted ':' at column " + i + "!");
+		}
+		++i; // Skip the ':'
+		SkipWhitespace(json, ref i);
+		var value = ReadValue(json, ref i);
+		return new List<JsonValue>{ key, value };
 	}
 
 	static void SkipWhitespace(string json, ref int i) {

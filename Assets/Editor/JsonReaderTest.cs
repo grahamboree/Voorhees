@@ -267,4 +267,60 @@ public class JsonReaderTest {
 		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
 		Assert.That(test.Count, Is.EqualTo(0));
 	}
+
+	[Test]
+	public void SimpleObject() {
+		JsonValue test;
+		test = JsonReader.Read("{\"test\": 1}");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test.Count, Is.EqualTo(1));
+		Assert.That(test.ContainsKey("test"), Is.True);
+		Assert.That(test["test"].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test["test"], Is.EqualTo(1));
+	}
+
+	[Test]
+	public void MultiObject() {
+		JsonValue test;
+		test = JsonReader.Read("{\"test\": 1, \"test2\": 2}");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test.Count, Is.EqualTo(2));
+
+		Assert.That(test.ContainsKey("test"), Is.True);
+		Assert.That(test["test"].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test["test"], Is.EqualTo(1));
+
+		Assert.That(test.ContainsKey("test2"), Is.True);
+		Assert.That(test["test2"].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test["test2"], Is.EqualTo(2));
+	}
+
+	[Test]
+	public void NestedObject() {
+		JsonValue test;
+		test = JsonReader.Read("{\"test\": {\"test2\": 1}}");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test.Count, Is.EqualTo(1));
+		Assert.That(test.ContainsKey("test"), Is.True);
+		Assert.That(test["test"].Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test["test"].ContainsKey("test2"), Is.True);
+		Assert.That(test["test"]["test2"].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test["test"]["test2"], Is.EqualTo(1));
+	}
+	
+	[Test]
+	public void ObjectMappingToArray() {
+		JsonValue test;
+		test = JsonReader.Read("{\"test\": [1, 2, 3]}");
+		Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+		Assert.That(test.Count, Is.EqualTo(1));
+		Assert.That(test.ContainsKey("test"), Is.True);
+		Assert.That(test["test"].Type, Is.EqualTo(JsonType.Array));
+		Assert.That(test["test"].Count, Is.EqualTo(3));
+
+		for (int i = 0; i < 3; ++i) {
+			Assert.That(test["test"][i].Type, Is.EqualTo(JsonType.Int));
+			Assert.That((int)test["test"][i], Is.EqualTo(i + 1));
+		}
+	}
 }
