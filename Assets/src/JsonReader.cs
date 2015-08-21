@@ -49,7 +49,7 @@ public class JsonReader {
 			return floatVal;
 		} 
 
-		throw new InvalidJsonException("string '" + numberString + "' is not a number");
+		throw new InvalidJsonException("'" + numberString + "' is not a number");
 	}
 
 	static JsonValue ReadString(string json, ref int i) {
@@ -87,6 +87,9 @@ public class JsonReader {
 					done = true;
 					break;
 				default:
+					if (json[i] <= 0x1F || json[i] == 0x7F || (json[i] >= 0x80 && json[i] <= 0x9F)) {
+						throw new InvalidJsonException("Disallowed control character in string at column " + i + "!");
+					}
 					stringData.Append(json[i]);
 					break;
 				}

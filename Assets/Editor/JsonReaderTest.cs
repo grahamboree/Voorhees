@@ -369,4 +369,25 @@ public class JsonReaderTest {
 		Assert.That(test.Type, Is.EqualTo(JsonType.String));
 		Assert.That((string)test, Is.EqualTo("\u2603"));
 	}
+
+	[Test]
+	public void DisallowControlCharacters() {
+		for (int i = 0; i < 0x20; i++) {
+			string controlChar = char.ConvertFromUtf32(i);
+			Assert.Throws<InvalidJsonException>(() => {
+				JsonReader.Read("\"" + controlChar + "\"");
+			});
+		}
+
+		Assert.Throws<InvalidJsonException>(() => {
+			JsonReader.Read("\"" + char.ConvertFromUtf32(0x7F) + "\"");
+		});
+
+		for (int i = 0x80; i <= 0x9F; i++) {
+			string controlChar = char.ConvertFromUtf32(i);
+			Assert.Throws<InvalidJsonException>(() => {
+				JsonReader.Read("\"" + controlChar + "\"");
+			});
+		}
+	}
 }
