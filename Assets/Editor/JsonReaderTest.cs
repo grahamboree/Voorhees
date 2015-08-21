@@ -95,7 +95,7 @@ public class JsonReaderTest {
 		JsonValue test;
 		test = JsonReader.Read("\"\\\\\"");
 		Assert.That(test.Type, Is.EqualTo(JsonType.String));
-		Assert.That((string)test, Is.EqualTo("\\\\"));
+		Assert.That((string)test, Is.EqualTo("\\"));
 	}
 	
 	[Test]
@@ -322,5 +322,46 @@ public class JsonReaderTest {
 			Assert.That(test["test"][i].Type, Is.EqualTo(JsonType.Int));
 			Assert.That((int)test["test"][i], Is.EqualTo(i + 1));
 		}
+	}
+
+	[Test]
+	public void SpecialCharacters() {
+		JsonValue test;
+		
+		test = JsonReader.Read("\"\\\\\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\\"));
+
+		test = JsonReader.Read("\"\\\"\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\""));
+
+		test = JsonReader.Read("\"\\/\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("/"));
+		
+		test = JsonReader.Read("\"\\b\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\b"));
+
+		test = JsonReader.Read("\"\\b\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\b"));
+
+		test = JsonReader.Read("\"\\f\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\f"));
+		
+		test = JsonReader.Read("\"\\n\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\n"));
+		
+		test = JsonReader.Read("\"\\r\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\r"));
+		
+		test = JsonReader.Read("\"\\t\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\t"));
 	}
 }

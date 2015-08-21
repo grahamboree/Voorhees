@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 public class InvalidJsonException : Exception {
 	public InvalidJsonException(string message) : base(message) {
@@ -53,13 +54,80 @@ public class JsonReader {
 
 	static JsonValue ReadString(string json, ref int i) {
 		i++; // Skip the '"'
-		int startIndex = i;
-		while (!(json[i] == '"' && (json[i - 1] != '\\' || i >= 2 || json[i - 2] == '\\'))) {
-			i++;
+		StringBuilder stringData = new StringBuilder();
+		bool backslash = false;
+		for (bool done = false; !done; ++i) {
+			switch (json[i]) {
+			case '\\':
+				if (backslash) {
+					stringData.Append('\\');
+				}
+				backslash = !backslash;
+				break;
+			case '"':
+				if (backslash) {
+					stringData.Append('"');
+					backslash = false;
+				} else {
+					done = true;
+				}
+				break;
+			case '/':
+				stringData.Append('/');
+				if (backslash) {
+					backslash = false;
+				}
+				break;
+			case 'b':
+				if (backslash) {
+					stringData.Append('\b');
+					backslash = false;
+				} else {
+					stringData.Append('b');
+				}
+				break;
+			case 'f':
+				if (backslash) {
+					stringData.Append('\f');
+					backslash = false;
+				} else {
+					stringData.Append('f');
+				}
+				break;
+			case 'n':
+				if (backslash) {
+					stringData.Append('\n');
+					backslash = false;
+				} else {
+					stringData.Append('n');
+				}
+				break;
+			case 'r':
+				if (backslash) {
+					stringData.Append('\r');
+					backslash = false;
+				} else {
+					stringData.Append('r');
+				}
+				break;
+			case 't':
+				if (backslash) {
+					stringData.Append('\t');
+					backslash = false;
+				} else {
+					stringData.Append('t');
+				}
+				break;
+			default:
+				if (backslash) {
+					throw new InvalidJsonException(
+						"Unknown escape character sequence: \\" + json[i] + " at column " + i + "!");
+				}
+				stringData.Append(json[i]);
+				break;
+			}
 		}
-		var value = new JsonValue(json.Substring(startIndex, i - startIndex));
-        i++; // Skip the '"'
-		return value;
+		return new JsonValue(stringData.ToString());
 	}
 
 	static JsonValue ReadArray(string json, ref int i) {
