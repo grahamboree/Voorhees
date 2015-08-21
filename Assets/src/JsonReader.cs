@@ -57,75 +57,41 @@ public class JsonReader {
 		StringBuilder stringData = new StringBuilder();
 		bool backslash = false;
 		for (bool done = false; !done; ++i) {
-			switch (json[i]) {
-			case '\\':
-				if (backslash) {
-					stringData.Append('\\');
-				}
-				backslash = !backslash;
-				break;
-			case '"':
-				if (backslash) {
-					stringData.Append('"');
-					backslash = false;
-				} else {
-					done = true;
-				}
-				break;
-			case '/':
-				stringData.Append('/');
-				if (backslash) {
-					backslash = false;
-				}
-				break;
-			case 'b':
-				if (backslash) {
-					stringData.Append('\b');
-					backslash = false;
-				} else {
-					stringData.Append('b');
-				}
-				break;
-			case 'f':
-				if (backslash) {
-					stringData.Append('\f');
-					backslash = false;
-				} else {
-					stringData.Append('f');
-				}
-				break;
-			case 'n':
-				if (backslash) {
-					stringData.Append('\n');
-					backslash = false;
-				} else {
-					stringData.Append('n');
-				}
-				break;
-			case 'r':
-				if (backslash) {
-					stringData.Append('\r');
-					backslash = false;
-				} else {
-					stringData.Append('r');
-				}
-				break;
-			case 't':
-				if (backslash) {
-					stringData.Append('\t');
-					backslash = false;
-				} else {
-					stringData.Append('t');
-				}
-				break;
-			default:
-				if (backslash) {
+			if (backslash) {
+				backslash = false;
+				switch (json[i]) {
+				case '\\': stringData.Append('\\'); break;
+				case '"': stringData.Append('"'); break;
+				case '/': stringData.Append('/'); break;
+				case 'b': stringData.Append('\b'); break;
+				case 'f': stringData.Append('\f'); break;
+				case 'n': stringData.Append('\n'); break;
+				case 'r': stringData.Append('\r'); break;
+				case 't': stringData.Append('\t'); break;
+				case 'u':
+						// Read 4 ints
+						Int16 codePoint = Convert.ToInt16(json.Substring(i + 1, 4), 16);
+						i += 4;
+						stringData.Append(char.ConvertFromUtf32(codePoint));
+					break;
+				default:
 					throw new InvalidJsonException(
 						"Unknown escape character sequence: \\" + json[i] + " at column " + i + "!");
 				}
-				stringData.Append(json[i]);
-				break;
+			} else {
+				switch (json[i]) {
+				case '\\':
+					backslash = true;
+					break;
+				case '"':
+					done = true;
+					break;
+				default:
+					stringData.Append(json[i]);
+					break;
+				}
 			}
+			
 		}
 		return new JsonValue(stringData.ToString());
 	}
@@ -196,7 +162,7 @@ public class JsonReader {
 				var key = ReadString(json, ref i);
 				SkipWhitespace(json, ref i);
 				if (json[i] != ':') {
-					throw new InvalidJsonException("Expceted ':' at column " + i + "!");
+					throw new InvalidJsonException("Expected ':' at column " + i + "!");
 				}
 				++i; // Skip the ':'
 				SkipWhitespace(json, ref i);

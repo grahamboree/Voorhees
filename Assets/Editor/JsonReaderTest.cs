@@ -363,5 +363,10 @@ public class JsonReaderTest {
 		test = JsonReader.Read("\"\\t\"");
 		Assert.That(test.Type, Is.EqualTo(JsonType.String));
 		Assert.That((string)test, Is.EqualTo("\t"));
+
+		// ☃
+		test = JsonReader.Read("\"\\u2603\"");
+		Assert.That(test.Type, Is.EqualTo(JsonType.String));
+		Assert.That((string)test, Is.EqualTo("\u2603"));
 	}
 }
