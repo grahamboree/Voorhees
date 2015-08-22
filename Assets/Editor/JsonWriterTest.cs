@@ -79,4 +79,17 @@ public class JsonWriterTest {
 		test.Type = JsonType.Object;
 		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\": 1}"));
 	}
+	
+	public void WriteNestedObject() {
+		JsonValue test = new JsonValue {
+			{
+				"test",
+				new JsonValue{
+					{"test2", 2}
+				}
+			}
+		};
+		test.Type = JsonType.Object;
+		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\": {\"test2\": 2}}"));
+	}
 }
