@@ -43,9 +43,6 @@ public class JsonWriter {
 				if (prettyPrint) {
 					result.Append("{\n");
 
-					// TODO remove this copy for performance.
-					var keys = value.Keys.ToList();
-
 					bool first = true;
 					foreach (var kvpair in value as IEnumerable<KeyValuePair<string, JsonValue>>) {
 						if (first) {
@@ -68,9 +65,6 @@ public class JsonWriter {
 					result.Append('}');
 				} else {
 					result.Append('{');
-
-					// TODO remove this copy for performance.
-					var keys = value.Keys.ToList();
 
 					bool first = true;
 					foreach (var kvpair in value as IEnumerable<KeyValuePair<string, JsonValue>>) {
