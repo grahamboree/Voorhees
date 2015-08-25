@@ -1,2 +1,9 @@
 language: csharp
 solution: voorhees.sln
+
+install:
+  - nuget restore voorhees.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release voorhees.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./voorhees_tests/bin/Release/voorhees_tests.dll
