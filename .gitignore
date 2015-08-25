@@ -1,6 +1,6 @@
 # Visual Studio stuff
-obj/*
-bin/*
+obj
+bin
 *.suo
 *.userprefs*
 
