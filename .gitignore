@@ -1,25 +1,12 @@
-# Unity VS
-Assets/UnityVS
-Assets/UnityVS.meta
-
-# Unity stuff we can ignore...
-Library/*
-Temp/*
-Build/*
+# Visual Studio stuff
 obj/*
+bin/*
+*.suo
+*.userprefs*
 
 # temp files
 *~
 *.swp
-
-# Visual Studio and Monodevelop files...
-*.booproj
-*.pidb
-*.csproj*
-*.unityproj
-*.sln*
-*.suo
-*.userprefs*
 
 # Mac crap
 .DS_Store
