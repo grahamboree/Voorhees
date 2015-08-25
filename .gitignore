@@ -1,6 +1,7 @@
 # Visual Studio stuff
 obj
 bin
+packages
 *.suo
 *.userprefs*
 
