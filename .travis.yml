@@ -9,6 +9,3 @@ script:
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./voorhees_tests/bin/Release/voorhees_tests.dll
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - .\packages\OpenCover.4.5.3522\OpenCover.Console.exe -register:user -target:"./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe" -targetargs:"/nologo ./voorhees_tests/bin/Release/voorhees_tests.dll /noshadow" -filter:"+[voorhees]voorhees*" -excludebyattribute:"System.CodeDom.Compiler.GeneratedCodeAttribute" -output:.\voorhees_coverage.xml
-  - pip install codecov
-  - codecov -f voorhees_coverage.xml
