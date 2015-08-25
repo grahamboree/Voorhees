@@ -1,42 +1,91 @@
 ﻿using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 
 public class JsonWriter {
-	public static string ToJson(JsonValue json) {
+	public static string ToJson(JsonValue json, bool prettyPrint = false) {
 		StringBuilder result = new StringBuilder();
-		WriteValue(result, json);
+		WriteValue(result, json, prettyPrint);
 		return result.ToString();
 	}
 
-	static void WriteValue(StringBuilder result, JsonValue value) {
+	static void WriteValue(StringBuilder result, JsonValue value, bool prettyPrint = false, int indentLevel = 0) {
 		switch (value.Type) {
 			case JsonType.Array:
-				result.Append('[');
-				for (int i = 0; i < value.Count; ++i) {
-					if (i != 0) {
-						result.Append(", ");
+				if (prettyPrint) {
+					result.Append("[\n");
+					for (int i = 0; i < value.Count; ++i) {
+						for (int j = 0; j < indentLevel + 1; ++j) {
+							result.Append('\t');
+						}
+						WriteValue(result, value[i], prettyPrint, indentLevel + 1);
+						if (i < value.Count -1) {
+							result.Append(",\n");
+						}
 					}
-					WriteValue(result, value[i]);
+					result.Append('\n');
+					for (int j = 0; j < indentLevel; ++j) {
+						result.Append('\t');
+					}
+					result.Append("]");
+				} else {
+					result.Append('[');
+					for (int i = 0; i < value.Count; ++i) {
+						if (i != 0) {
+							result.Append(", ");
+						}
+						WriteValue(result, value[i]);
+					}
+					result.Append(']');
 				}
-				result.Append(']');
 				break;
 			case JsonType.Object:
-				result.Append('{');
+				if (prettyPrint) {
+					result.Append("{\n");
 
-				// TODO remove this copy for performance.
-				var keys = value.Keys.ToList();
+					// TODO remove this copy for performance.
+					var keys = value.Keys.ToList();
 
-				for (int i = 0; i < keys.Count; ++i) {
-					if (i != 0) {
-						result.Append(", ");
+					bool first = true;
+					foreach (var kvpair in value as IEnumerable<KeyValuePair<string, JsonValue>>) {
+						if (first) {
+							first = false;
+						} else {
+							result.Append(",\n");
+						}
+						for (int j = 0; j < indentLevel + 1; ++j) {
+							result.Append('\t');
+						}
+						result.Append('\"');
+						result.Append(kvpair.Key);
+						result.Append("\": ");
+						WriteValue(result, kvpair.Value, true, indentLevel + 1);
 					}
-					result.Append('\"');
-					result.Append(keys[i]);
-					result.Append('\"');
-					result.Append(": ");
-					WriteValue(result, value[keys[i]]);
+					result.Append("\n");
+					for (int j = 0; j < indentLevel; ++j) {
+						result.Append('\t');
+					}
+					result.Append('}');
+				} else {
+					result.Append('{');
+
+					// TODO remove this copy for performance.
+					var keys = value.Keys.ToList();
+
+					bool first = true;
+					foreach (var kvpair in value as IEnumerable<KeyValuePair<string, JsonValue>>) {
+						if (first) {
+							first = false;
+						} else {
+							result.Append(", ");
+						}
+						result.Append('\"');
+						result.Append(kvpair.Key);
+						result.Append("\": ");
+						WriteValue(result, kvpair.Value);
+					}
+					result.Append('}');
 				}
-				result.Append('}');
 				break;
 			case JsonType.Float: result.Append((float)value); break;
 			case JsonType.Int: result.Append((int)value); break;
