@@ -9,4 +9,3 @@ script:
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./voorhees_tests/bin/Release/voorhees_tests.dll
 after_success:
   - .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -target:".\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe" -register:user -targetargs:""".\voorhees_tests\bin\Debug\voorhees_tests.dll"" /noshadow" -filter:"+[voorhees*]*" -output:.\voorhees_coverage.xml
-  - bash <(curl -s https://codecov.io/bash)
