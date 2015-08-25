@@ -4,8 +4,10 @@ solution: voorhees.sln
 install:
   - nuget restore voorhees.sln
   - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+  - nuget install coveralls.net -Version 0.6.0 -OutputDirectory coveralls
 script:
   - xbuild /p:Configuration=Release voorhees.sln
   - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./voorhees_tests/bin/Release/voorhees_tests.dll
 after_success:
-  - .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -target:".\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe" -register:user -targetargs:""".\voorhees_tests\bin\Debug\voorhees_tests.dll"" /noshadow" -filter:"+[voorhees*]*" -output:.\voorhees_coverage.xml
+  - mono ./packages/OpenCover.4.6.166/tools/OpenCover.Console.exe -register:user -target:"./packages/NUnit.Runners.2.6.4/tools/nunit-console.exe" -register:user -targetargs:"""./voorhees_tests/bin/Debug/voorhees_tests.dll"" /noshadow" -filter:"+[voorhees*]*" -output:./voorhees_coverage.xml
+  - mono ./coveralls/coveralls.net.0.6.0/tools/csmacnz.Coveralls.exe --opencover -i voorhees_coverage.xml --repoToken $COVERALLS_REPO_TOKEN --commitId $TRAVIS_COMMIT --commitBranch $TRAVIS_BRANCH --commitAuthor "$REPO_COMMIT_AUTHOR" --commitEmail "$REPO_COMMIT_AUTHOR_EMAIL" --commitMessage "$REPO_COMMIT_MESSAGE" --jobId $TRAVIS_JOB_ID  --serviceName travis-ci  --useRelativePaths
