@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Voorhees;
 
 [TestFixture]
@@ -119,10 +115,10 @@ public class JsonWriterTest {
 	[Test]
 	public void PrettyPrintNestedObject() {
 		JsonValue test = new JsonValue {
-			{ "test", 1},
+			{ "test", 1 },
 			{ "test2", new JsonValue {
-					{ "test3", 3},
-					{ "test4", 4}
+					{ "test3", 3 },
+					{ "test4", 4 }
 				}
 			}
 		};
