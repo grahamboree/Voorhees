@@ -20,5 +20,5 @@ build:
   project: voorhees.sln
 
 after_test:
-  - packages\NUnit.Console.3.0.1\tools\nunit3-console.exe voorhees_tests\bin\$(configuration)\voorhees_tests.dll
+  - packages\NUnit.Console.3.0.1\tools\nunit3-console.exe voorhees_tests\bin\{configuration}\voorhees_tests.dll
 
