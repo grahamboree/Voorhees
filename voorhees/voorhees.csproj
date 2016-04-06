@@ -46,6 +46,7 @@
     <Compile Include="JsonReader.cs" />
     <Compile Include="JsonValue.cs" />
     <Compile Include="JsonWriter.cs" />
+    <Compile Include="ObjectMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
