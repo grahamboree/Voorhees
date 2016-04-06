@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -227,8 +226,18 @@ namespace Voorhees {
 						}
 						return true;
 					}
-				case JsonType.Array:
-					return arrayValue.SequenceEqual(other.arrayValue);
+				case JsonType.Array: {
+						if (arrayValue.Count != other.arrayValue.Count) {
+							return false;
+						}
+
+						for (int i = 0; i < arrayValue.Count; ++i) {
+							if (!arrayValue[i].Equals(other.arrayValue[i])) {
+								return false;
+							}
+						}
+						return true;
+					}
 				case JsonType.String:
 					return stringValue == other.stringValue;
 				case JsonType.Boolean:
