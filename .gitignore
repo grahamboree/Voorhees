@@ -5,6 +5,9 @@ packages
 *.suo
 *.userprefs*
 
+*.meta
+.idea
+
 # temp files
 *~
 *.swp
