@@ -52,13 +52,13 @@ public class JsonWriterTest {
 	[Test]
 	public void WriteSimpleArray() {
 		JsonValue test = new JsonValue { 1, 2, 3, 4 };
-		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[1, 2, 3, 4]"));
+		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[1,2,3,4]"));
 	}
 
 	[Test]
 	public void WriteNestedArray() {
 		JsonValue test = new JsonValue { 1, new JsonValue { 2, 3 }, 4, 5 };
-		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[1, [2, 3], 4, 5]"));
+		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[1,[2,3],4,5]"));
 	}
 
 	[Test]
@@ -74,7 +74,7 @@ public class JsonWriterTest {
 			{ "test", 1 }
 		};
 		test.Type = JsonType.Object;
-		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\": 1}"));
+		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\":1}"));
 	}
 
 	[Test]
@@ -88,7 +88,7 @@ public class JsonWriterTest {
 			}
 		};
 		test.Type = JsonType.Object;
-		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\": {\"test2\": 2}}"));
+		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\":{\"test2\":2}}"));
 	}
 
 	[Test]
