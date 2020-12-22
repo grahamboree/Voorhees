@@ -51,6 +51,22 @@ namespace Voorhees {
 
 		static JsonValue ReadString(string json, ref int readIndex) {
 			readIndex++; // Skip the '"'
+			
+			// trivial string parsing short-circuit
+			for (int readAheadIndex = readIndex; readAheadIndex < json.Length; ++readAheadIndex) {
+				if (json[readAheadIndex] == '\\') {
+					// This string isn't trivial, so use the normal expensive parsing.
+					break;
+				}
+
+				if (json[readAheadIndex] == '"') {
+					int start = readIndex;
+					int length = readAheadIndex - start;
+					readIndex = readAheadIndex + 1; // skip to after the "
+					return json.Substring(start, length);
+				}
+			}
+
 			var stringData = new StringBuilder();
 			bool backslash = false;
 			for (bool done = false; !done; ++readIndex) {
