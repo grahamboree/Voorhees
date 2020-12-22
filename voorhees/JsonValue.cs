@@ -12,7 +12,7 @@ namespace Voorhees {
 		String,
 		Boolean,
 		Int,
-		Float,
+		Float
 	}
 
 	public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
@@ -29,36 +29,32 @@ namespace Voorhees {
 		#endregion
 
 		#region Type Properties
-		public bool IsObject { get { return type == JsonType.Object; } }
-		public bool IsArray { get { return type == JsonType.Array; } }
-		public bool IsString { get { return type == JsonType.String; } }
-		public bool IsBoolean { get { return type == JsonType.Boolean; } }
-		public bool IsInt { get { return type == JsonType.Int; } }
-		public bool IsFloat { get { return type == JsonType.Float; } }
-		public bool IsNull { get { return Type == JsonType.Null; } }
+		public bool IsObject => type == JsonType.Object;
+		public bool IsArray => type == JsonType.Array;
+		public bool IsString => type == JsonType.String;
+		public bool IsBoolean => type == JsonType.Boolean;
+		public bool IsInt => type == JsonType.Int;
+		public bool IsFloat => type == JsonType.Float;
+		public bool IsNull => Type == JsonType.Null;
 
 		public JsonType Type {
-			get {
-				return type;
-			}
+			get => type;
 			set {
-				if (type != value) {
-					type = value;
+				if (type == value) {
+					return;
+				}
+				type = value;
 
-					objectValue = null;
-					arrayValue = null;
-					floatValue = 0;
-					intValue = 0;
-					boolValue = false;
-					stringValue = "";
-					switch (type) {
-						case JsonType.Object:
-							objectValue = new Dictionary<string, JsonValue>();
-							break;
-						case JsonType.Array:
-							arrayValue = new List<JsonValue>();
-							break;
-					}
+				objectValue = null;
+				arrayValue = null;
+				floatValue = 0;
+				intValue = 0;
+				boolValue = false;
+				stringValue = "";
+				if (type == JsonType.Object) {
+					objectValue = new Dictionary<string, JsonValue>();
+				} else if (type == JsonType.Array) {
+					arrayValue = new List<JsonValue>();
 				}
 			}
 		}
@@ -100,179 +96,144 @@ namespace Voorhees {
 		#endregion
 
 		#region Explicit Conversions from JsonData to other types
-		public static explicit operator bool (JsonValue data) {
+		public static explicit operator bool(JsonValue data) {
 			if (!data.IsBoolean) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
 			}
-
 			return data.boolValue;
 		}
 
-		public static explicit operator float (JsonValue data) {
+		public static explicit operator float(JsonValue data) {
 			if (!data.IsFloat) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a float");
 			}
-
 			return data.floatValue;
 		}
 
-		public static explicit operator int (JsonValue data) {
+		public static explicit operator int(JsonValue data) {
 			if (!data.IsInt) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold an int");
 			}
-
 			return data.intValue;
 		}
 
-		public static explicit operator string (JsonValue data) {
+		public static explicit operator string(JsonValue data) {
 			if (!data.IsString) {
 				throw new InvalidCastException("Instance of JsonData doesn't hold a string");
 			}
-
 			return data.stringValue;
 		}
 		#endregion
 
 		#region IEnumerable
-		public IEnumerator<JsonValue> GetEnumerator() { return EnsureList().GetEnumerator(); }
-		IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
-		IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator() { return objectValue.GetEnumerator(); }
+		public IEnumerator<JsonValue> GetEnumerator() => EnsureArray().GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+		IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator() => EnsureObject().GetEnumerator();
 		#endregion
 
 		#region ICollection<JsonValue>
-		public void Add(JsonValue item) {
-			EnsureList().Add(item);
-		}
+		public void Add(JsonValue item) => EnsureArray().Add(item);
+		public bool Contains(JsonValue item) => EnsureArray().Contains(item);
+		public void CopyTo(JsonValue[] array, int arrayIndex) => EnsureArray().CopyTo(array, arrayIndex);
+		public bool Remove(JsonValue item) => EnsureArray().Remove(item);
+		public bool IsReadOnly => EnsureArray().IsReadOnly;
 
 		public void Clear() {
-			try {
-				EnsureList().Clear();
-			} catch (Exception) {
-				EnsureObject().Clear();
-			}
-		}
-
-		public bool Contains(JsonValue item) {
-			return EnsureList().Contains(item);
-		}
-
-		public void CopyTo(JsonValue[] array, int arrayIndex) {
-			EnsureList().CopyTo(array, arrayIndex);
-		}
-
-		public bool Remove(JsonValue item) {
-			return EnsureList().Remove(item);
+			if (type == JsonType.Object) { objectValue.Clear(); }
+			if (type == JsonType.Array) { arrayValue.Clear(); }
+			throw new InvalidOperationException("Instance of JsonValue is not an array or object");
 		}
 
 		public int Count {
 			get {
-				try {
-					return EnsureObject().Count;
-				} catch (Exception) {
-					return EnsureList().Count;
-				}
+				if (type == JsonType.Object) { return objectValue.Count; }
+				if (type == JsonType.Array) { return arrayValue.Count; }
+				throw new InvalidOperationException("Instance of JsonValue is not an array or object");
 			}
 		}
-
-		public bool IsReadOnly { get { return EnsureList().IsReadOnly; } }
 		#endregion
 
 		#region IList<JsonValue>
-		public int IndexOf(JsonValue item) {
-			return EnsureList().IndexOf(item);
-		}
-
-		public void Insert(int index, JsonValue item) {
-			EnsureList().Insert(index, item);
-		}
-
-		public void RemoveAt(int index) {
-			EnsureList().RemoveAt(index);
-		}
-
+		public int IndexOf(JsonValue item) => EnsureArray().IndexOf(item);
+		public void Insert(int index, JsonValue item) => EnsureArray().Insert(index, item);
+		public void RemoveAt(int index) => EnsureArray().RemoveAt(index);
 		public JsonValue this[int index] {
-			get { return EnsureList()[index]; }
-			set {
-				if (type != JsonType.Array) {
-					type = JsonType.Array;
-					arrayValue = new List<JsonValue>();
-				}
-				arrayValue[index] = value;
-			}
+			get => EnsureArray()[index];
+			set => EnsureArray()[index] = value;
 		}
 		#endregion
 
 		#region IEquatable<JsonValue>
 		public bool Equals(JsonValue other) {
+			if (other == null) {
+				return type == JsonType.Null;
+			}
+			
 			if (type != other.type) {
 				return false;
 			}
+			
 			switch (type) {
-				case JsonType.Null:
-					return true;
+				case JsonType.Null: return true;
+				case JsonType.String: return stringValue == other.stringValue;
+				case JsonType.Boolean: return boolValue == other.boolValue;
+				case JsonType.Int: return intValue == other.intValue;
+				case JsonType.Float: return floatValue == other.floatValue;
 				case JsonType.Object:
-					{
-						if (objectValue.Count != other.objectValue.Count) {
-							return false;
-						}
-						foreach (var kvp in objectValue) {
-							JsonValue bValue;
-							if (!other.objectValue.TryGetValue(kvp.Key, out bValue)) {
-								return false; // key missing in b
-							}
-							if (!kvp.Value.Equals(bValue)) {
-								return false; // value is different
-							}
-						}
-						return true;
+					if (objectValue.Count != other.objectValue.Count) {
+						return false;
 					}
-				case JsonType.Array: {
-						if (arrayValue.Count != other.arrayValue.Count) {
-							return false;
+
+					foreach (var kvp in objectValue) {
+						if (!other.objectValue.TryGetValue(kvp.Key, out var bValue)) {
+							return false; // key missing in b
 						}
 
-						for (int i = 0; i < arrayValue.Count; ++i) {
-							if (!arrayValue[i].Equals(other.arrayValue[i])) {
-								return false;
-							}
+						if (!kvp.Value.Equals(bValue)) {
+							return false; // value is different
 						}
-						return true;
 					}
-				case JsonType.String:
-					return stringValue == other.stringValue;
-				case JsonType.Boolean:
-					return boolValue == other.boolValue;
-				case JsonType.Int:
-					return intValue == other.intValue;
-				case JsonType.Float:
-					return floatValue == other.floatValue;
+
+					return true;
+				case JsonType.Array:
+					if (arrayValue.Count != other.arrayValue.Count) {
+						return false;
+					}
+
+					for (int i = 0; i < arrayValue.Count; ++i) {
+						if (!arrayValue[i].Equals(other.arrayValue[i])) {
+							return false;
+						}
+					}
+
+					return true;
 			}
 			return false;
 		}
 		#endregion
 
 		#region ICollection<KeyValuePair<string, JsonValue>>
-		public bool Remove(KeyValuePair<string, JsonValue> value) { return EnsureObject().Remove(value); }
-		public void CopyTo(KeyValuePair<string, JsonValue>[] array, int arrayIndex) { EnsureObject().CopyTo(array, arrayIndex); }
-		public bool Contains(KeyValuePair<string, JsonValue> value) { return EnsureObject().Contains(value); }
-		public void Add(KeyValuePair<string, JsonValue> value) { EnsureObject().Add(value); }
+		public bool Remove(KeyValuePair<string, JsonValue> value) => EnsureObject().Remove(value);
+		public void CopyTo(KeyValuePair<string, JsonValue>[] array, int arrayIndex) => EnsureObject().CopyTo(array, arrayIndex);
+		public bool Contains(KeyValuePair<string, JsonValue> value) => EnsureObject().Contains(value);
+		public void Add(KeyValuePair<string, JsonValue> value) => EnsureObject().Add(value);
 		#endregion
 
 		#region IDictionary<string, JsonValue>
 		public JsonValue this[string key] {
-			get { return EnsureObject()[key]; }
-			set { EnsureObject()[key] = value; }
+			get => EnsureObject()[key];
+			set => EnsureObject()[key] = value;
 		}
-		public ICollection<string> Keys { get { return EnsureObject().Keys; } }
-		public ICollection<JsonValue> Values { get { return EnsureObject().Values; } }
-		public void Add(string key, JsonValue value) { EnsureObject().Add(key, value); }
-		public bool TryGetValue(string key, out JsonValue value) { return EnsureObject().TryGetValue(key, out value); }
-		public bool Remove(string key) { return EnsureObject().Remove(key); }
-		public bool ContainsKey(string key) { return EnsureObject().ContainsKey(key); }
+		public ICollection<string> Keys => EnsureObject().Keys;
+		public ICollection<JsonValue> Values => EnsureObject().Values;
+		public void Add(string key, JsonValue value) => EnsureObject().Add(key, value);
+		public bool TryGetValue(string key, out JsonValue value) => EnsureObject().TryGetValue(key, out value);
+		public bool Remove(string key) => EnsureObject().Remove(key);
+		public bool ContainsKey(string key) => EnsureObject().ContainsKey(key);
 		#endregion
 
 		#region Private methods.
-		private IDictionary<string, JsonValue> EnsureObject() {
+		IDictionary<string, JsonValue> EnsureObject() {
 			if (type == JsonType.Null) {
 				type = JsonType.Object;
 				objectValue = new Dictionary<string, JsonValue>();
@@ -282,22 +243,20 @@ namespace Voorhees {
 				return objectValue;
 			}
 
-			throw new InvalidOperationException("Instance of JsonValue is not a dictionary");
+			throw new InvalidOperationException("Instance of JsonValue is not an object");
 		}
 
-		private IList<JsonValue> EnsureList() {
+		IList<JsonValue> EnsureArray() {
+			if (type == JsonType.Null) {
+				type = JsonType.Array;
+				arrayValue = new List<JsonValue>();
+			}
+			
 			if (type == JsonType.Array) {
 				return arrayValue;
 			}
 
-			if (type != JsonType.Null) {
-				throw new InvalidOperationException("Instance of JsonValue is not a list");
-			}
-
-			type = JsonType.Array;
-			arrayValue = new List<JsonValue>();
-
-			return arrayValue;
+			throw new InvalidOperationException("Instance of JsonValue is not an array");
 		}
 		#endregion
 	}

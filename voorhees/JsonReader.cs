@@ -7,59 +7,72 @@ namespace Voorhees {
 		}
 	}
 
-	public class JsonReader {
+	public static class JsonReader {
 		public static JsonValue Read(string json) {
-			JsonValue result = null;
+			JsonValue result;
 			try {
 				// Read the json.
-				int i = 0;
-				result = ReadValue(json, ref i);
+				int readIndex = 0;
+				result = ReadValue(json, ref readIndex);
 
 				// Make sure there's no additional json in the buffer.
-				SkipWhitespace(json, ref i);
-				if (i <= json.Length - 1) {
-					throw new InvalidJsonException("Expected end of file at column " + i + "!");
+				SkipWhitespace(json, ref readIndex);
+				if (readIndex <= json.Length - 1) {
+					throw new InvalidJsonException($"Expected end of file at column {readIndex}!");
 				}
-
 			} catch (IndexOutOfRangeException) {
 				throw new InvalidJsonException("Unexpected end of file!");
 			}
 			return result;
 		}
 
-		static JsonValue ReadNumber(string json, ref int i) {
-			int startIndex = i;
-			i++;
-			while (i < json.Length &&
-				   ((json[i] >= '0' && json[i] <= '9') ||
-					 json[i] == '.' || json[i] == 'e' ||
-					 json[i] == 'E' || json[i] == '-' ||
-					 json[i] == '+')) {
-				i++;
+		static JsonValue ReadNumber(string json, ref int readIndex) {
+			int startIndex = readIndex;
+			readIndex++;
+			while (readIndex < json.Length &&
+				   ((json[readIndex] >= '0' && json[readIndex] <= '9') ||
+					 json[readIndex] == '.' || json[readIndex] == 'e' ||
+					 json[readIndex] == 'E' || json[readIndex] == '-' ||
+					 json[readIndex] == '+')) {
+				readIndex++;
 			}
-			string numberString = json.Substring(startIndex, i - startIndex);
-
-			int intVal;
-			if (int.TryParse(numberString, out intVal)) {
+			string numberString = json.Substring(startIndex, readIndex - startIndex);
+			
+			if (int.TryParse(numberString, out int intVal)) {
 				return intVal;
 			}
 
-			float floatVal;
-			if (float.TryParse(numberString, out floatVal)) {
+			if (float.TryParse(numberString, out float floatVal)) {
 				return floatVal;
 			}
 
-			throw new InvalidJsonException("'" + numberString + "' is not a number");
+			throw new InvalidJsonException($"'{numberString}' is not a number");
 		}
 
-		static JsonValue ReadString(string json, ref int i) {
-			i++; // Skip the '"'
-			StringBuilder stringData = new StringBuilder();
+		static JsonValue ReadString(string json, ref int readIndex) {
+			readIndex++; // Skip the '"'
+			
+			// trivial string parsing short-circuit
+			for (int readAheadIndex = readIndex; readAheadIndex < json.Length; ++readAheadIndex) {
+				if (json[readAheadIndex] == '\\') {
+					// This string isn't trivial, so use the normal expensive parsing.
+					break;
+				}
+
+				if (json[readAheadIndex] == '"') {
+					int start = readIndex;
+					int length = readAheadIndex - start;
+					readIndex = readAheadIndex + 1; // skip to after the "
+					return json.Substring(start, length);
+				}
+			}
+
+			var stringData = new StringBuilder();
 			bool backslash = false;
-			for (bool done = false; !done; ++i) {
+			for (bool done = false; !done; ++readIndex) {
 				if (backslash) {
 					backslash = false;
-					switch (json[i]) {
+					switch (json[readIndex]) {
 						case '\\': stringData.Append('\\'); break;
 						case '"': stringData.Append('"'); break;
 						case '/': stringData.Append('/'); break;
@@ -68,18 +81,17 @@ namespace Voorhees {
 						case 'n': stringData.Append('\n'); break;
 						case 'r': stringData.Append('\r'); break;
 						case 't': stringData.Append('\t'); break;
-						case 'u':
-							// Read 4 ints
-							Int16 codePoint = Convert.ToInt16(json.Substring(i + 1, 4), 16);
-							i += 4;
+						case 'u': {
+							// Read 4 hex digits
+							var codePoint = Convert.ToInt16(json.Substring(readIndex + 1, 4), 16);
+							readIndex += 4;
 							stringData.Append(char.ConvertFromUtf32(codePoint));
-							break;
+						} break;
 						default:
-							throw new InvalidJsonException(
-								"Unknown escape character sequence: \\" + json[i] + " at column " + i + "!");
+							throw new InvalidJsonException($"Unknown escape character sequence: \\{json[readIndex]} at column {readIndex}!");
 					}
 				} else {
-					switch (json[i]) {
+					switch (json[readIndex]) {
 						case '\\':
 							backslash = true;
 							break;
@@ -87,112 +99,132 @@ namespace Voorhees {
 							done = true;
 							break;
 						default:
-							if (json[i] <= 0x1F || json[i] == 0x7F || (json[i] >= 0x80 && json[i] <= 0x9F)) {
-								throw new InvalidJsonException("Disallowed control character in string at column " + i + "!");
+							if (json[readIndex] <= 0x1F || json[readIndex] == 0x7F || (json[readIndex] >= 0x80 && json[readIndex] <= 0x9F)) {
+								throw new InvalidJsonException($"Disallowed control character in string at column {readIndex}!");
 							}
-							stringData.Append(json[i]);
+							stringData.Append(json[readIndex]);
 							break;
 					}
 				}
 
 			}
-			return new JsonValue(stringData.ToString());
+			return stringData.ToString();
 		}
 
-		static JsonValue ReadArray(string json, ref int i) {
-			i++; // Skip the '['
-			SkipWhitespace(json, ref i);
+		static JsonValue ReadArray(string json, ref int readIndex) {
+			readIndex++; // Skip the '['
+			SkipWhitespace(json, ref readIndex);
 
-			JsonValue arrayval = new JsonValue();
-			arrayval.Type = JsonType.Array;
+			var arrayValue = new JsonValue {Type = JsonType.Array};
 
 			bool expectingValue = false;
-			while (json[i] != ']') {
+			while (json[readIndex] != ']') {
 				expectingValue = false;
-				arrayval.Add(ReadValue(json, ref i));
-				SkipWhitespace(json, ref i);
-				if (json[i] == ',') {
+				arrayValue.Add(ReadValue(json, ref readIndex));
+				SkipWhitespace(json, ref readIndex);
+				if (json[readIndex] == ',') {
 					expectingValue = true;
-					i++;
-					SkipWhitespace(json, ref i);
-				} else if (json[i] != ']') {
-					throw new InvalidJsonException("Expected end array token at column " + i + "!");
+					readIndex++;
+					SkipWhitespace(json, ref readIndex);
+				} else if (json[readIndex] != ']') {
+					throw new InvalidJsonException($"Expected end array token at column {readIndex}!");
 				}
 			}
 
 			if (expectingValue) {
-				throw new InvalidJsonException("Unexpected end array token at column " + i + "!");
+				throw new InvalidJsonException($"Unexpected end array token at column {readIndex}!");
 			}
 
-			i++; // Skip the ']'
-			return arrayval;
+			readIndex++; // Skip the ']'
+			return arrayValue;
 		}
 
-		static JsonValue ReadValue(string json, ref int i) {
-			SkipWhitespace(json, ref i);
-			if (json[i] == '[') { // array
-				return ReadArray(json, ref i);
-			} else if (json[i] == '{') { // object
-				return ReadObject(json, ref i);
-			} else if (json[i] == '"') { // string
-				return ReadString(json, ref i);
-			} else if (json[i] == '-' || (json[i] <= '9' && json[i] >= '0')) { // number
-				return ReadNumber(json, ref i);
-			} else if (json.Length - i >= 4 && json.Substring(i, 4) == "true") { // boolean
-				i += 4;
+		static JsonValue ReadValue(string json, ref int readIndex) {
+			SkipWhitespace(json, ref readIndex);
+			
+			// array
+			if (json[readIndex] == '[') {
+				return ReadArray(json, ref readIndex);
+			}
+
+			// object
+			if (json[readIndex] == '{') {
+				return ReadObject(json, ref readIndex);
+			}
+
+			// string
+			if (json[readIndex] == '"') {
+				return ReadString(json, ref readIndex);
+			}
+
+			// number
+			if (json[readIndex] == '-' || (json[readIndex] <= '9' && json[readIndex] >= '0')) {
+				return ReadNumber(json, ref readIndex);
+			}
+
+            int charsLeft = json.Length - readIndex;
+
+			// true
+			if (charsLeft >= 4 && json.Substring(readIndex, 4) == "true") {
+				readIndex += 4;
 				return true;
-			} else if (json.Length - i >= 5 && json.Substring(i, 5) == "false") { // boolean
-				i += 5;
+			}
+
+			// false
+			if (charsLeft >= 5 && json.Substring(readIndex, 5) == "false") {
+				readIndex += 5;
 				return false;
-			} else if (json.Length - i >= 4 && json.Substring(i, 4) == "null") { // null
-				i += 4;
+			}
+
+			// null
+			if (charsLeft >= 4 && json.Substring(readIndex, 4) == "null") {
+				readIndex += 4;
 				return new JsonValue();
 			}
-			throw new InvalidJsonException("Unexpected character '" + json[i] + "' at column " + i + "!");
+			
+			throw new InvalidJsonException($"Unexpected character '{json[readIndex]}' at column {readIndex}!");
 		}
 
-		static JsonValue ReadObject(string json, ref int i) {
-			var obj = new JsonValue();
-			obj.Type = JsonType.Object;
-			i++; // Skip the '{'
-
-			SkipWhitespace(json, ref i);
-			if (json[i] != '}') {
-				//ReadElements(obj, json, ref i);
+		static JsonValue ReadObject(string json, ref int readIndex) {
+			var result = new JsonValue { Type = JsonType.Object };
+			
+			readIndex++; // Skip the '{'
+			SkipWhitespace(json, ref readIndex);
+			if (json[readIndex] != '}') {
 				while (true) {
-					SkipWhitespace(json, ref i);
-
-					var key = ReadString(json, ref i);
-					SkipWhitespace(json, ref i);
-					if (json[i] != ':') {
-						throw new InvalidJsonException("Expected ':' at column " + i + "!");
+					SkipWhitespace(json, ref readIndex);
+					var key = ReadString(json, ref readIndex);
+					SkipWhitespace(json, ref readIndex);
+					if (json[readIndex] != ':') {
+						throw new InvalidJsonException($"Expected ':' at column {readIndex }!");
 					}
-					++i; // Skip the ':'
-					SkipWhitespace(json, ref i);
-					var value = ReadValue(json, ref i);
-					obj.Add((string)key, value);
+					++readIndex; // Skip the ':'
+					SkipWhitespace(json, ref readIndex);
+					var value = ReadValue(json, ref readIndex);
+					result.Add((string)key, value);
 
-					SkipWhitespace(json, ref i);
+					SkipWhitespace(json, ref readIndex);
 
-					if (json[i] == ',') {
-						i++; // Skip the ','
+					if (json[readIndex] == ',') {
+						readIndex++; // Skip the ','
 					} else {
 						break;
 					}
 				}
 			}
-			if (json[i] != '}') {
-				throw new InvalidJsonException("Expected closing object token at column " + i + "!");
+			
+			if (json[readIndex] != '}') {
+				throw new InvalidJsonException($"Expected closing object token at column {readIndex}!");
 			}
 
-			i++; // Skip the '}'
+			readIndex++; // Skip the '}'
 
-			return obj;
+			return result;
 		}
 
-		static void SkipWhitespace(string json, ref int i) {
-			while (i < json.Length && Char.IsWhiteSpace(json[i])) {
-				i++;
+		static void SkipWhitespace(string json, ref int readIndex) {
+			while (readIndex < json.Length && char.IsWhiteSpace(json[readIndex])) {
+				readIndex++;
 			}
 		}
 	}
