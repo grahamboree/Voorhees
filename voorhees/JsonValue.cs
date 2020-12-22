@@ -139,8 +139,8 @@ namespace Voorhees {
 		public bool IsReadOnly => EnsureArray().IsReadOnly;
 
 		public void Clear() {
-			if (type == JsonType.Object) { objectValue.Clear(); }
-			if (type == JsonType.Array) { arrayValue.Clear(); }
+			if (type == JsonType.Object) { objectValue.Clear(); return; }
+			if (type == JsonType.Array) { arrayValue.Clear(); return; }
 			throw new InvalidOperationException("Instance of JsonValue is not an array or object");
 		}
 

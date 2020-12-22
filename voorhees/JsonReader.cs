@@ -53,6 +53,7 @@ namespace Voorhees {
 			readIndex++; // Skip the '"'
 			
 			// trivial string parsing short-circuit
+			/*
 			for (int readAheadIndex = readIndex; readAheadIndex < json.Length; ++readAheadIndex) {
 				if (json[readAheadIndex] == '\\') {
 					// This string isn't trivial, so use the normal expensive parsing.
@@ -66,6 +67,7 @@ namespace Voorhees {
 					return json.Substring(start, length);
 				}
 			}
+			*/
 
 			var stringData = new StringBuilder();
 			bool backslash = false;
