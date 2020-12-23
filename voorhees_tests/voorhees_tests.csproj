@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JsonMapperTest.cs" />
     <Compile Include="JsonReaderTest.cs" />
     <Compile Include="JsonValueTest.cs" />
     <Compile Include="JsonWriterTest.cs" />
