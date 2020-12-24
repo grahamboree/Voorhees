@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Voorhees;
@@ -248,5 +249,24 @@ public class JsonMapperTest_UnRegisterAllCustomSerializers {
         JsonMapper.UnRegisterAllSerializers();
         Assert.That(JsonMapper.Serialize(instance1), Is.EqualTo("{\"PubIntVal\":42}"));
         Assert.That(JsonMapper.Serialize(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
+    }
+}
+
+[TestFixture]
+public class JsonMapperTest_DateTime {
+    [Test]
+    public void BasicDateTime() {
+        Assert.That(JsonMapper.Serialize(new DateTime(1970, 1, 2, 3, 4, 5, 6)),
+            Is.EqualTo("\"1970-01-02T03:04:05\""));
+    }
+}
+
+[TestFixture]
+public class JsonMapperTest_DateTimeOffset {
+    [Test]
+    public void BasicDateTime() {
+        var span = new TimeSpan(0, -5, 0, 0, 0);
+        var offset = new DateTimeOffset(1970, 1, 2, 3, 4, 5, 6, span);
+        Assert.That(JsonMapper.Serialize(offset), Is.EqualTo("\"1970-01-02T03:04:05.0060000-05:00\""));
     }
 }

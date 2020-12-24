@@ -80,19 +80,14 @@ namespace Voorhees {
             var obj_type = obj.GetType();   
             
             // See if there's a custom exporter for the object
-            if (customSerializers.TryGetValue(obj_type, out var exporter)) {
-                return exporter(obj);
+            if (customSerializers.TryGetValue(obj_type, out var customExporter)) {
+                return customExporter(obj);
             }
             
-#if false
-            // If not, maybe there's a base exporter
-            if (base_exporters_table.ContainsKey (obj_type)) {
-                ExporterFunc exporter = base_exporters_table[obj_type];
-                exporter (obj, writer);
-
-                return;
+            // If not, maybe there's a built-in serializer
+            if (builtInSerializers.TryGetValue(obj_type, out var builtInExporter)) {
+                return builtInExporter(obj);
             }
-#endif
             
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(obj_type);
@@ -155,20 +150,27 @@ namespace Voorhees {
         struct PropertyMetadata {
             public MemberInfo Info;
             public bool IsField;
-            public Type Type;
         }
-        static readonly Dictionary<Type, List<PropertyMetadata>> type_properties = new Dictionary<Type, List<PropertyMetadata>>();
+        static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
         
         delegate string ExporterFunc(object obj);
         static readonly IDictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
+        static readonly IDictionary<Type, ExporterFunc> builtInSerializers = new Dictionary<Type, ExporterFunc>();
 
         /////////////////////////////////////////////////
+        
+        static JsonMapper() {
+            builtInSerializers[typeof(DateTime)] = obj => 
+                "\"" + ((DateTime) obj).ToString("s", DateTimeFormatInfo.InvariantInfo) + "\"";
+            builtInSerializers[typeof(DateTimeOffset)] = obj =>
+                "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
+        }
         
         /// Gather property and field info about the type
         /// Cache it so we don't have to get this info every
         /// time we come across an instance of this type
         static List<PropertyMetadata> GetTypePropertyMetadata(Type type) {
-            if (!type_properties.ContainsKey(type)) {
+            if (!typeProperties.ContainsKey(type)) {
                 var props = new List<PropertyMetadata>();
 
                 foreach (var propertyInfo in type.GetProperties()) {
@@ -188,12 +190,12 @@ namespace Voorhees {
                 }
 
                 try {
-                    type_properties.Add(type, props);
+                    typeProperties.Add(type, props);
                 } catch (ArgumentException) {
                 }
             }
 
-            return type_properties[type];
+            return typeProperties[type];
         }
     }
 }
