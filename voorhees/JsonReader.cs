@@ -163,8 +163,8 @@ namespace Voorhees {
          if (json[readIndex] == '-' || (json[readIndex] <= '9' && json[readIndex] >= '0')) {
             return ReadNumber(json, ref readIndex);
          }
-
-            int charsLeft = json.Length - readIndex;
+         
+         int charsLeft = json.Length - readIndex;
 
          // true
          if (charsLeft >= 4 && json.Substring(readIndex, 4) == "true") {
