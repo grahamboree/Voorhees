@@ -90,10 +90,21 @@ namespace Voorhees {
 				case JsonType.Int: result.Append((int)value); break;
 				case JsonType.Boolean: result.Append((bool)value ? "true" : "false"); break;
 				case JsonType.Null: result.Append("null"); break;
-				case JsonType.String:
+				case JsonType.String: {
+					// Replace special characters.  Do \ first because others expand into 
+					// sequences that contain \
 					result.Append('\"');
-					result.Append((string)value);
-					result.Append('\"'); break;
+					result.Append(((string) value)
+						.Replace("\\", "\\\\")
+						.Replace("\"", "\\\"")
+						.Replace("/", "\\/")
+						.Replace("\b", "\\b")
+						.Replace("\f", "\\f")
+						.Replace("\n", "\\n")
+						.Replace("\r", "\\r")
+						.Replace("\t", "\\t"));
+					result.Append('\"');
+				} break;
 				default: throw new ArgumentOutOfRangeException();
 			}
 		}

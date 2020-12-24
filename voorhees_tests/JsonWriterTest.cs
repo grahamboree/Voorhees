@@ -36,6 +36,18 @@ public class JsonWriterTest {
 	}
 
 	[Test]
+	public void WriteStringWithEscapeCharacters() {
+		Assert.That(JsonWriter.ToJson("te\"st"), Is.EqualTo("\"te\\\"st\""));
+		Assert.That(JsonWriter.ToJson("te\\st"), Is.EqualTo("\"te\\\\st\""));
+		Assert.That(JsonWriter.ToJson("te/st"), Is.EqualTo("\"te\\/st\""));
+		Assert.That(JsonWriter.ToJson("te\bst"), Is.EqualTo("\"te\\bst\""));
+		Assert.That(JsonWriter.ToJson("te\fst"), Is.EqualTo("\"te\\fst\""));
+		Assert.That(JsonWriter.ToJson("te\nst"), Is.EqualTo("\"te\\nst\""));
+		Assert.That(JsonWriter.ToJson("te\rst"), Is.EqualTo("\"te\\rst\""));
+		Assert.That(JsonWriter.ToJson("te\tst"), Is.EqualTo("\"te\\tst\""));
+	}
+
+	[Test]
 	public void WriteEmptyArray() {
 		var test = new JsonValue {Type = JsonType.Array};
 		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[]"));
