@@ -5,8 +5,8 @@ using Voorhees;
 public class JsonWriterTest {
 	[Test]
 	public void WriteNull() {
-		JsonValue test = new JsonValue();
-		Assert.That(JsonWriter.ToJson(test), Is.EqualTo("null"));
+		Assert.That(JsonWriter.ToJson(new JsonValue()), Is.EqualTo("null"));
+		Assert.That(JsonWriter.ToJson(null), Is.EqualTo("null"));
 	}
 
 	[Test]

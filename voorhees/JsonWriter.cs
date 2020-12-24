@@ -11,6 +11,10 @@ namespace Voorhees {
 		}
 
 		static void WriteValue(StringBuilder result, JsonValue value, bool prettyPrint = false, int indentLevel = 0) {
+			if (value == null) {
+				result.Append("null");
+				return;
+			}
 			switch (value.Type) {
 				case JsonType.Array:
 					if (prettyPrint) {
