@@ -1,24 +1,28 @@
-shallow_clone: true
+version: 1.0.{build}
+image: Visual Studio 2017
 
-os:
-  - Visual Studio 2015
+clone_depth: 1
+
+configuration: Debug
 
 environment:
-  matrix:
-  - TOOLSET: vs2010
-  - TOOLSET: vs2013
-  - TOOLSET: vs2015
+  COVERALLS_REPO_TOKEN:
+    secure: 3MAI/8QrS/zM06gnxOnhitHedf7o+aQuMkZXdUNAhSNJN3GpNE33ql+dUYfMFz7o
 
-configuration:
-  - Debug
-  - Release
-
-install:
+before_build:
   - nuget restore voorhees.sln
 
 build:
   project: voorhees.sln
 
-after_test:
-  - packages\NUnit.Console.3.0.1\tools\nunit3-console.exe voorhees_tests\bin\{configuration}\voorhees_tests.dll
+test_script:
+- ps: >-
+    $nunitconsole = (Resolve-Path "packages/NUnit.ConsoleRunner.*/tools/nunit3-console.exe").ToString()
 
+    $opencover = (Resolve-Path "packages/OpenCover.*/tools/OpenCover.Console.exe").ToString()
+
+    $coveralls = (Resolve-Path "packages/coveralls.net.*/tools/csmacnz.coveralls.exe").ToString()
+
+    & $opencover -register -target:$nunitconsole -targetargs:voorhees_tests/bin/$env:CONFIGURATION/voorhees_tests.dll -filter:"+[voorhees]*" -output:opencoverCoverage.xml
+
+    & $coveralls --opencover -i opencoverCoverage.xml --repoToken $env:COVERALLS_REPO_TOKEN --useRelativePaths --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_BUILD_NUMBER --serviceName appveyor
