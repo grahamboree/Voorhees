@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Voorhees;
 
 [TestFixture]
-public class JsonMapperTest_Numbers {
+public class JsonMapper_Write_Numbers {
     [Test]
     public void BasicByteMapping() {
         Assert.That(JsonMapper.Serialize((byte) 42), Is.EqualTo("42"));
@@ -62,7 +62,7 @@ public class JsonMapperTest_Numbers {
 }
 
 [TestFixture]
-public class JsonMapperTest_Strings {
+public class JsonMapper_Write_Strings {
     [Test]
     public void BasicCharMapping() {
         Assert.That(JsonMapper.Serialize('a'), Is.EqualTo("\"a\""));
@@ -75,7 +75,7 @@ public class JsonMapperTest_Strings {
 }
 
 [TestFixture]
-public class JsonMapperTest_BoolNull {
+public class JsonMapper_Write_BoolNull {
     [Test]
     public void Bool() {
         Assert.That(JsonMapper.Serialize(true), Is.EqualTo("true"));
@@ -89,7 +89,7 @@ public class JsonMapperTest_BoolNull {
 }
 
 [TestFixture]
-public class JsonMapperTest_Array {
+public class JsonMapper_Write_Array {
     [Test]
     public void EmptyArray() {
         Assert.That(JsonMapper.Serialize(new int[] {}), Is.EqualTo("[]"));
@@ -118,7 +118,7 @@ public class JsonMapperTest_Array {
 }
 
 [TestFixture]
-public class JsonMapperTest_Dictionary {
+public class JsonMapper_Write_Dictionary {
     [Test]
     public void EmptyDictionary() {
         var dict = new Dictionary<string, int>();
@@ -144,7 +144,7 @@ public class JsonMapperTest_Dictionary {
 }
 
 [TestFixture]
-public class JsonMapperTest_OnlySerializePublicFields {
+public class JsonMapper_Write_OnlySerializePublicFields {
     class TestType {
         public int PubIntVal;
 #pragma warning disable 414
@@ -161,7 +161,7 @@ public class JsonMapperTest_OnlySerializePublicFields {
 }
 
 [TestFixture]
-public class JsonMapperTest_RegisterCustomSerializer {
+public class JsonMapper_Write_RegisterCustomSerializer {
     class TestType {
         public int PubIntVal;
     }
@@ -185,7 +185,7 @@ public class JsonMapperTest_RegisterCustomSerializer {
 }
 
 [TestFixture]
-public class JsonMapperTest_UnRegisterCustomSerializer {
+public class JsonMapper_Write_UnRegisterCustomSerializer {
     class TestType {
         public int PubIntVal;
     }
@@ -208,7 +208,7 @@ public class JsonMapperTest_UnRegisterCustomSerializer {
 }
 
 [TestFixture]
-public class JsonMapperTest_UnRegisterAllCustomSerializers {
+public class JsonMapper_Write_UnRegisterAllCustomSerializers {
     class TestType {
         public int PubIntVal;
     }
@@ -253,7 +253,7 @@ public class JsonMapperTest_UnRegisterAllCustomSerializers {
 }
 
 [TestFixture]
-public class JsonMapperTest_DateTime {
+public class JsonMapper_Write_DateTime {
     [Test]
     public void BasicDateTime() {
         var dateTime = new DateTime(1970, 1, 2, 3, 4, 5, 6);
@@ -262,7 +262,7 @@ public class JsonMapperTest_DateTime {
 }
 
 [TestFixture]
-public class JsonMapperTest_DateTimeOffset {
+public class JsonMapper_Write_DateTimeOffset {
     [Test]
     public void BasicDateTime() {
         var span = new TimeSpan(0, -5, 0, 0, 0);
