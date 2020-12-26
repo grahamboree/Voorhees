@@ -2,12 +2,22 @@
 using System.Text;
 
 namespace Voorhees {
+   /// Thrown when trying to read invalid JSON data.
+   /// The <c>message</c> field will contain more info about the specific
+   /// json format error
    public class InvalidJsonException : Exception {
       public InvalidJsonException(string message) : base(message) {
       }
    }
 
+   /// Static class that handles reading and parsing JSON
    public static class JsonReader {
+      /// <summary>
+      /// Reads a JSON string and generates a matching JsonValue structure
+      /// </summary>
+      /// <param name="json">The json string</param>
+      /// <returns>A JsonValue object that matches the json data</returns>
+      /// <exception cref="InvalidJsonException">If the input JSON has invalid JSON syntax or characters.</exception>
       public static JsonValue Read(string json) {
          JsonValue result;
          try {
