@@ -23,7 +23,7 @@ namespace Voorhees {
          try {
             // Read the json.
             int readIndex = 0;
-            result = ReadValue(json, ref readIndex);
+            var result = ReadJsonValue(json, ref readIndex);
 
             // Make sure there's no additional json in the buffer.
             SkipWhitespace(json, ref readIndex);
@@ -36,6 +36,54 @@ namespace Voorhees {
          return result;
       }
 
+      /////////////////////////////////////////////////
+      
+      static JsonValue ReadJsonValue(string json, ref int readIndex) {
+         SkipWhitespace(json, ref readIndex);
+
+         // array
+         if (json[readIndex] == '[') {
+            return ReadArray(json, ref readIndex);
+         }
+
+         // object
+         if (json[readIndex] == '{') {
+            return ReadObject(json, ref readIndex);
+         }
+
+         // string
+         if (json[readIndex] == '"') {
+            return ReadString(json, ref readIndex);
+         }
+
+         // number
+         if (json[readIndex] == '-' || (json[readIndex] <= '9' && json[readIndex] >= '0')) {
+            return ReadNumber(json, ref readIndex);
+         }
+         
+         int charsLeft = json.Length - readIndex;
+
+         // true
+         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "true") {
+            readIndex += 4;
+            return true;
+         }
+
+         // false
+         if (charsLeft >= 5 && json.Substring(readIndex, 5) == "false") {
+            readIndex += 5;
+            return false;
+         }
+
+         // null
+         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "null") {
+            readIndex += 4;
+            return new JsonValue();
+         }
+
+         throw new InvalidJsonException($"Unexpected character '{json[readIndex]}' at column {readIndex}!");
+      }
+   
       static JsonValue ReadNumber(string json, ref int readIndex) {
          int startIndex = readIndex;
          readIndex++;
@@ -135,7 +183,7 @@ namespace Voorhees {
          bool expectingValue = false;
          while (json[readIndex] != ']') {
             expectingValue = false;
-            arrayValue.Add(ReadValue(json, ref readIndex));
+            arrayValue.Add(ReadJsonValue(json, ref readIndex));
             SkipWhitespace(json, ref readIndex);
             if (json[readIndex] == ',') {
                expectingValue = true;
@@ -154,52 +202,6 @@ namespace Voorhees {
          return arrayValue;
       }
 
-      static JsonValue ReadValue(string json, ref int readIndex) {
-         SkipWhitespace(json, ref readIndex);
-
-         // array
-         if (json[readIndex] == '[') {
-            return ReadArray(json, ref readIndex);
-         }
-
-         // object
-         if (json[readIndex] == '{') {
-            return ReadObject(json, ref readIndex);
-         }
-
-         // string
-         if (json[readIndex] == '"') {
-            return ReadString(json, ref readIndex);
-         }
-
-         // number
-         if (json[readIndex] == '-' || (json[readIndex] <= '9' && json[readIndex] >= '0')) {
-            return ReadNumber(json, ref readIndex);
-         }
-         
-         int charsLeft = json.Length - readIndex;
-
-         // true
-         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "true") {
-            readIndex += 4;
-            return true;
-         }
-
-         // false
-         if (charsLeft >= 5 && json.Substring(readIndex, 5) == "false") {
-            readIndex += 5;
-            return false;
-         }
-
-         // null
-         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "null") {
-            readIndex += 4;
-            return new JsonValue();
-         }
-
-         throw new InvalidJsonException($"Unexpected character '{json[readIndex]}' at column {readIndex}!");
-      }
-
       static JsonValue ReadObject(string json, ref int readIndex) {
          var result = new JsonValue { Type = JsonType.Object };
 
@@ -215,7 +217,7 @@ namespace Voorhees {
                }
                ++readIndex; // Skip the ':'
                SkipWhitespace(json, ref readIndex);
-               var value = ReadValue(json, ref readIndex);
+               var value = ReadJsonValue(json, ref readIndex);
                result.Add((string)key, value);
 
                SkipWhitespace(json, ref readIndex);
