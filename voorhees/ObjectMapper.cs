@@ -199,7 +199,7 @@ namespace Voorhees {
 
         static JsonMapper() {
             builtInSerializers[typeof(DateTime)] = obj =>
-                "\"" + ((DateTime) obj).ToString("s", DateTimeFormatInfo.InvariantInfo) + "\"";
+                "\"" + ((DateTime) obj).ToString("o") + "\"";
             builtInSerializers[typeof(DateTimeOffset)] = obj =>
                 "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
             

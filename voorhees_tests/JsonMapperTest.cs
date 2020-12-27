@@ -257,7 +257,7 @@ public class JsonMapper_Write_DateTime {
     [Test]
     public void BasicDateTime() {
         var dateTime = new DateTime(1970, 1, 2, 3, 4, 5, 6);
-        Assert.That(JsonMapper.Serialize(dateTime), Is.EqualTo("\"1970-01-02T03:04:05\""));
+        Assert.That(JsonMapper.Serialize(dateTime), Is.EqualTo("\"1970-01-02T03:04:05.0060000\""));
     }
 }
 
