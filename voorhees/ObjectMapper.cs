@@ -218,9 +218,8 @@ namespace Voorhees {
             RegisterBaseImporter<float, decimal>(Convert.ToDecimal);
             
             RegisterBaseImporter<string, char>(Convert.ToChar);
-            
             RegisterBaseImporter<string, DateTime>(input => Convert.ToDateTime(input, DateTimeFormatInfo.InvariantInfo));
-            RegisterBaseImporter<string, DateTimeOffset>(input => DateTimeOffset.Parse(input, DateTimeFormatInfo.InvariantInfo));
+            RegisterBaseImporter<string, DateTimeOffset>(DateTimeOffset.Parse);
         }
 
         /// Gather property and field info about the type
