@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Voorhees {
     public static class JsonMapper {
-        public delegate string ExporterFunc<in T>(T obj);
+        public delegate string ExporterFunc<in T>(T objectToSerialize);
 
         /////////////////////////////////////////////////
 
@@ -154,8 +154,8 @@ namespace Voorhees {
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
 
         delegate string ExporterFunc(object obj);
-        static readonly IDictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
-        static readonly IDictionary<Type, ExporterFunc> builtInSerializers = new Dictionary<Type, ExporterFunc>();
+        static readonly Dictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
+        static readonly Dictionary<Type, ExporterFunc> builtInSerializers = new Dictionary<Type, ExporterFunc>();
 
         /////////////////////////////////////////////////
 
