@@ -19,7 +19,10 @@ namespace Voorhees {
       /// <returns>A JsonValue object that matches the json data</returns>
       /// <exception cref="InvalidJsonException">If the input JSON has invalid JSON syntax or characters.</exception>
       public static JsonValue Read(string json) {
-         JsonValue result;
+         if (json == null) {
+            throw new ArgumentException("Json string is null", nameof(json));
+         }
+
          try {
             // Read the json.
             int readIndex = 0;
@@ -30,10 +33,11 @@ namespace Voorhees {
             if (readIndex <= json.Length - 1) {
                throw new InvalidJsonException($"Expected end of file at column {readIndex}!");
             }
+            
+            return result;
          } catch (IndexOutOfRangeException) {
             throw new InvalidJsonException("Unexpected end of file!");
          }
-         return result;
       }
 
       /////////////////////////////////////////////////
