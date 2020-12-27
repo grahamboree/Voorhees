@@ -12,7 +12,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        public static string Serialize(object obj) {
+        public static string ToJson(object obj) {
             switch (obj) {
                 case null: return "null";
                 case JsonValue jsonValue: return JsonWriter.ToJson(jsonValue);
@@ -42,7 +42,7 @@ namespace Voorhees {
                     var stringVals = new string[arrayVal.Length];
                     int valueIndex = 0;
                     foreach (var elem in arrayVal) {
-                        stringVals[valueIndex] = Serialize(elem);
+                        stringVals[valueIndex] = ToJson(elem);
                         valueIndex++;
                     }
                     return "[" + string.Join(",", stringVals) + "]";
@@ -51,7 +51,7 @@ namespace Voorhees {
                     var stringVals = new string[listVal.Count];
                     int valueIndex = 0;
                     foreach (var elem in listVal) {
-                        stringVals[valueIndex] = Serialize(elem);
+                        stringVals[valueIndex] = ToJson(elem);
                         valueIndex++;
                     }
                     return "[" + string.Join(",", stringVals) + "]";
@@ -71,7 +71,7 @@ namespace Voorhees {
                         string propertyName = entry.Key is string key ? key
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         dictBuilder.Append("\"" + propertyName + "\":");
-                        dictBuilder.Append(Serialize(entry.Value));
+                        dictBuilder.Append(ToJson(entry.Value));
                     }
                     dictBuilder.Append("}");
                     return dictBuilder.ToString();
@@ -81,12 +81,12 @@ namespace Voorhees {
             var obj_type = obj.GetType();
 
             // See if there's a custom exporter for the object
-            if (customSerializers.TryGetValue(obj_type, out var customExporter)) {
+            if (customExporters.TryGetValue(obj_type, out var customExporter)) {
                 return customExporter(obj);
             }
 
             // If not, maybe there's a built-in serializer
-            if (builtInSerializers.TryGetValue(obj_type, out var builtInExporter)) {
+            if (builtInExporters.TryGetValue(obj_type, out var builtInExporter)) {
                 return builtInExporter(obj);
             }
 
@@ -120,13 +120,13 @@ namespace Voorhees {
             foreach (var propertyMetadata in props) {
                 if (propertyMetadata.IsField) {
                     objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                    objectBuilder.Append(Serialize(((FieldInfo) propertyMetadata.Info).GetValue(obj)));
+                    objectBuilder.Append(ToJson(((FieldInfo) propertyMetadata.Info).GetValue(obj)));
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
 
                     if (propertyInfo.CanRead) {
                         objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        objectBuilder.Append(Serialize(propertyInfo.GetValue (obj, null)));
+                        objectBuilder.Append(ToJson(propertyInfo.GetValue (obj, null)));
                     }
                 }
             }
@@ -134,19 +134,19 @@ namespace Voorhees {
             return objectBuilder.ToString();
         }
 
-        public static void RegisterSerializer<T>(ExporterFunc<T> exporter) {
-            customSerializers[typeof(T)] = obj => exporter((T) obj);
+        public static void RegisterJsonExporter<T>(ExporterFunc<T> exporter) {
+            customExporters[typeof(T)] = obj => exporter((T) obj);
         }
 
-        public static void UnRegisterSerializer<T>() {
-            customSerializers.Remove(typeof(T));
+        public static void UnRegisterJsonExporter<T>() {
+            customExporters.Remove(typeof(T));
         }
 
-        public static void UnRegisterAllSerializers() {
-            customSerializers.Clear();
+        public static void UnRegisterAllJsonExporters() {
+            customExporters.Clear();
         }
 
-        public static T UnSerialize<T>(string jsonString) {
+        public static T FromJson<T>(string jsonString) {
             var destinationType = typeof(T);
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;
@@ -173,8 +173,8 @@ namespace Voorhees {
             throw new NotImplementedException();
         }
 
-        public static void RegisterImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
-            RegisterImporter(custom_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
+        public static void RegisterJsonImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
+            RegisterJsonImporter(customImporters, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
 
         /////////////////////////////////////////////////
@@ -188,19 +188,19 @@ namespace Voorhees {
         static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
         delegate string ExporterFunc(object obj);
-        static readonly Dictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
-        static readonly Dictionary<Type, ExporterFunc> builtInSerializers = new Dictionary<Type, ExporterFunc>();
+        static readonly Dictionary<Type, ExporterFunc> builtInExporters = new Dictionary<Type, ExporterFunc>();
+        static readonly Dictionary<Type, ExporterFunc> customExporters = new Dictionary<Type, ExporterFunc>();
 
         delegate object ImporterFunc(object input);
-        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> base_importers_table = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
-        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> custom_importers_table = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
+        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> builtInImporters = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
+        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> customImporters = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
 
         /////////////////////////////////////////////////
 
         static JsonMapper() {
-            builtInSerializers[typeof(DateTime)] = obj =>
+            builtInExporters[typeof(DateTime)] = obj =>
                 "\"" + ((DateTime) obj).ToString("o") + "\"";
-            builtInSerializers[typeof(DateTimeOffset)] = obj =>
+            builtInExporters[typeof(DateTimeOffset)] = obj =>
                 "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
             
             RegisterBaseImporter<int, byte>(Convert.ToByte);
@@ -274,7 +274,7 @@ namespace Voorhees {
             return op;
         }
 
-        static void RegisterImporter(Dictionary<Type, Dictionary<Type, ImporterFunc>> table, Type json_type, Type value_type, ImporterFunc importer) {
+        static void RegisterJsonImporter(Dictionary<Type, Dictionary<Type, ImporterFunc>> table, Type json_type, Type value_type, ImporterFunc importer) {
             if (!table.ContainsKey(json_type)) {
                 table.Add(json_type, new Dictionary<Type, ImporterFunc>());
             }
@@ -283,7 +283,7 @@ namespace Voorhees {
         }
         
         static void RegisterBaseImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
-            RegisterImporter(base_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
+            RegisterJsonImporter(builtInImporters, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
         
         /// <summary>
@@ -303,13 +303,13 @@ namespace Voorhees {
             }
 
             // If there's a custom importer that fits, use it
-            if (custom_importers_table.ContainsKey(jsonType) && custom_importers_table[jsonType].ContainsKey(valueType)) {
-                return (T) custom_importers_table[jsonType][valueType](json.Value);
+            if (customImporters.ContainsKey(jsonType) && customImporters[jsonType].ContainsKey(valueType)) {
+                return (T) customImporters[jsonType][valueType](json.Value);
             }
 
             // Maybe there's a base importer that works
-            if (base_importers_table.ContainsKey(jsonType) && base_importers_table[jsonType].ContainsKey(valueType)) {
-                return (T) base_importers_table[jsonType][valueType](json.Value);
+            if (builtInImporters.ContainsKey(jsonType) && builtInImporters[jsonType].ContainsKey(valueType)) {
+                return (T) builtInImporters[jsonType][valueType](json.Value);
             }
                     
             // Integral value can be converted to enum values
