@@ -417,4 +417,57 @@ public class JsonMapper_Read_Float {
     }
 }
 
+[TestFixture]
+public class JsonMapper_Read_String {
+    [Test]
+    public void ReadFloat() {
+        Assert.That(JsonMapper.UnSerialize<string>("\"test\""), Is.EqualTo("test"));
+    }
+
+    class ClassWithImplicitConversionOperator {
+        public string stringVal;
+
+        public static implicit operator ClassWithImplicitConversionOperator(string data) {
+            return new ClassWithImplicitConversionOperator {stringVal = data};
+        }
+    }
+
+    [Test]
+    public void ImplicitOperator() {
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("\"test\""), Is.Not.Null);
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("\"test\""), Is.TypeOf<ClassWithImplicitConversionOperator>());
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("\"test\"").stringVal, Is.EqualTo("test"));
+    }
+
+    [Test]
+    public void ReadChar() {
+        Assert.That(JsonMapper.UnSerialize<char>("\"c\""), Is.TypeOf<char>());
+        Assert.That(JsonMapper.UnSerialize<char>("\"c\""), Is.EqualTo('c'));
+    }
+
+    [Test]
+    public void ReadCharTooLong() {
+        // TODO include line number in the exception.
+        Assert.Throws<FormatException>(() => JsonMapper.UnSerialize<char>("\"test\""));
+    }
+
+    [Test]
+    public void ReadDateTime() {
+        var json = "\"1970-01-02T03:04:05.0060000\"";
+        var dateTime = new DateTime(1970, 1, 2, 3, 4, 5, 6);
+        Assert.That(JsonMapper.UnSerialize<DateTime>(json), Is.EqualTo(dateTime));
+    }
+
+    [Test]
+    public void ReadInvalidDateTime() {
+        Assert.Throws<FormatException>(() => JsonMapper.UnSerialize<DateTime>("\"test\""));
+    }
+    
+    [Test]
+    public void ReadDateTimeOffset() {
+        var span = new TimeSpan(0, -5, 0, 0, 0);
+        var offset = new DateTimeOffset(1970, 1, 2, 3, 4, 5, 6, span);
+        var json = "\"1970-01-02T03:04:05.0060000-05:00\"";
+        Assert.That(JsonMapper.UnSerialize<DateTimeOffset>(json), Is.EqualTo(offset));
+    }
 }
