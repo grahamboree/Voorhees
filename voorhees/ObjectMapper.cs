@@ -8,6 +8,7 @@ using System.Text;
 namespace Voorhees {
     public static class JsonMapper {
         public delegate string ExporterFunc<in T>(T objectToSerialize);
+        public delegate T ImporterFunc<in TJson, out T>(TJson jsonData);
 
         /////////////////////////////////////////////////
 
@@ -145,6 +146,10 @@ namespace Voorhees {
             customSerializers.Clear();
         }
 
+        public static void RegisterImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
+            RegisterImporter(custom_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
+        }
+
         /////////////////////////////////////////////////
 
         struct PropertyMetadata {
@@ -157,6 +162,10 @@ namespace Voorhees {
         static readonly Dictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
         static readonly Dictionary<Type, ExporterFunc> builtInSerializers = new Dictionary<Type, ExporterFunc>();
 
+        delegate object ImporterFunc(object input);
+        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> base_importers_table = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
+        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> custom_importers_table = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
+
         /////////////////////////////////////////////////
 
         static JsonMapper() {
@@ -164,6 +173,25 @@ namespace Voorhees {
                 "\"" + ((DateTime) obj).ToString("s", DateTimeFormatInfo.InvariantInfo) + "\"";
             builtInSerializers[typeof(DateTimeOffset)] = obj =>
                 "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
+            
+            RegisterBaseImporter<int, byte>(Convert.ToByte);
+            RegisterBaseImporter<int, sbyte>(Convert.ToSByte);
+            RegisterBaseImporter<int, short>(Convert.ToInt16);
+            RegisterBaseImporter<int, ushort>(Convert.ToUInt16);
+            RegisterBaseImporter<int, uint>(Convert.ToUInt32);
+            RegisterBaseImporter<int, long>(Convert.ToInt64);
+            RegisterBaseImporter<int, ulong>(Convert.ToUInt64);
+            RegisterBaseImporter<int, float>(Convert.ToSingle);
+            RegisterBaseImporter<int, double>(Convert.ToDouble);
+            RegisterBaseImporter<int, decimal>(Convert.ToDecimal);
+            
+            RegisterBaseImporter<float, double>(Convert.ToDouble);
+            RegisterBaseImporter<float, decimal>(Convert.ToDecimal);
+            
+            RegisterBaseImporter<string, char>(Convert.ToChar);
+            
+            RegisterBaseImporter<string, DateTime>(input => Convert.ToDateTime(input, DateTimeFormatInfo.InvariantInfo));
+            RegisterBaseImporter<string, DateTimeOffset>(input => DateTimeOffset.Parse(input, DateTimeFormatInfo.InvariantInfo));
         }
 
         /// Gather property and field info about the type
@@ -197,5 +225,18 @@ namespace Voorhees {
 
             return typeProperties[type];
         }
+
+        static void RegisterImporter(Dictionary<Type, Dictionary<Type, ImporterFunc>> table, Type json_type, Type value_type, ImporterFunc importer) {
+            if (!table.ContainsKey(json_type)) {
+                table.Add(json_type, new Dictionary<Type, ImporterFunc>());
+            }
+
+            table[json_type][value_type] = importer;
+        }
+        
+        static void RegisterBaseImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
+            RegisterImporter(base_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
+        }
+        
     }
 }
