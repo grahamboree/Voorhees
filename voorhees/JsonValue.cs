@@ -28,6 +28,22 @@ namespace Voorhees {
       int intValue;
       #endregion
 
+      internal object Value {
+         get {
+            switch (type) {
+               case JsonType.Null: return null;
+               case JsonType.Object: return objectValue;
+               case JsonType.Array: return arrayValue;
+               case JsonType.String: return stringValue;
+               case JsonType.Boolean: return boolValue;
+               case JsonType.Int: return intValue;
+               case JsonType.Float: return floatValue;
+               default:
+                  throw new ArgumentOutOfRangeException();
+            }
+         }
+      }
+
       #region Type Properties
       public bool IsObject => type == JsonType.Object;
       public bool IsArray => type == JsonType.Array;

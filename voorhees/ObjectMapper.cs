@@ -146,6 +146,33 @@ namespace Voorhees {
             customSerializers.Clear();
         }
 
+        public static T UnSerialize<T>(string jsonString) {
+            var destinationType = typeof(T);
+            var underlyingType = Nullable.GetUnderlyingType(destinationType);
+            var valueType = underlyingType ?? destinationType;
+            
+            var jsonValue = JsonReader.Read(jsonString);
+
+            switch (jsonValue.Type) {
+                case JsonType.Null:
+                    if (destinationType.IsClass || underlyingType != null) {
+                        return (T)(object)null;
+                    }
+                    throw new Exception($"Can't assign null to an instance of type {destinationType}");
+                case JsonType.Int: return MapValueToType<T, int>(jsonValue, valueType);
+                case JsonType.Float: return MapValueToType<T, float>(jsonValue, valueType);
+                case JsonType.Boolean: return MapValueToType<T, bool>(jsonValue, valueType);
+                case JsonType.String: return MapValueToType<T, string>(jsonValue, valueType);
+                case JsonType.Array:
+                    break;
+                case JsonType.Object:
+                    break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+
+            throw new NotImplementedException();
+        }
+
         public static void RegisterImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
             RegisterImporter(custom_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
@@ -157,6 +184,8 @@ namespace Voorhees {
             public bool IsField;
         }
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
+
+        static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
         delegate string ExporterFunc(object obj);
         static readonly Dictionary<Type, ExporterFunc> customSerializers = new Dictionary<Type, ExporterFunc>();
@@ -226,6 +255,26 @@ namespace Voorhees {
             return typeProperties[type];
         }
 
+        static MethodInfo GetImplicitConversionOperator(Type t1, Type t2) {
+            if (!implicitConversionOperatorCache.ContainsKey(t1)) {
+                implicitConversionOperatorCache.Add(t1, new Dictionary<Type, MethodInfo>());
+            }
+
+            if (implicitConversionOperatorCache[t1].ContainsKey(t2)) {
+                return implicitConversionOperatorCache[t1][t2];
+            }
+
+            var op = t1.GetMethod("op_Implicit", new[] {t2});
+
+            try {
+                implicitConversionOperatorCache[t1].Add(t2, op);
+            } catch (ArgumentException) {
+                return implicitConversionOperatorCache[t1][t2];
+            }
+
+            return op;
+        }
+
         static void RegisterImporter(Dictionary<Type, Dictionary<Type, ImporterFunc>> table, Type json_type, Type value_type, ImporterFunc importer) {
             if (!table.ContainsKey(json_type)) {
                 table.Add(json_type, new Dictionary<Type, ImporterFunc>());
@@ -238,5 +287,45 @@ namespace Voorhees {
             RegisterImporter(base_importers_table, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
         
+        /// <summary>
+        /// Converts a basic json value to an object of the specified type.
+        /// </summary>
+        /// <param name="json">The json value</param>
+        /// <param name="valueType">The underlying storage value type of <typeparamref name="T"/></param>
+        /// <typeparam name="T">Type we're converting to</typeparam>
+        /// <typeparam name="U">Type of the json data value</typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        static T MapValueToType<T, U>(JsonValue json, Type valueType) {
+            var jsonType = typeof(U);
+                    
+            if (valueType.IsAssignableFrom(jsonType)) {
+                return (T)json.Value;
+            }
+
+            // If there's a custom importer that fits, use it
+            if (custom_importers_table.ContainsKey(jsonType) && custom_importers_table[jsonType].ContainsKey(valueType)) {
+                return (T) custom_importers_table[jsonType][valueType](json.Value);
+            }
+
+            // Maybe there's a base importer that works
+            if (base_importers_table.ContainsKey(jsonType) && base_importers_table[jsonType].ContainsKey(valueType)) {
+                return (T) base_importers_table[jsonType][valueType](json.Value);
+            }
+                    
+            // Integral value can be converted to enum values
+            if (jsonType == typeof(int) && valueType.IsEnum) {
+                return (T)Enum.ToObject(valueType, json.Value);
+            }
+            
+            // Try using an implicit conversion operator
+            var implicitConversionOperator = GetImplicitConversionOperator(valueType, jsonType);
+            if (implicitConversionOperator != null) {
+                return (T)implicitConversionOperator.Invoke(null, new[] {json.Value});
+            }
+
+            // No luck
+            throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {typeof(T)}");
+        }
     }
 }
