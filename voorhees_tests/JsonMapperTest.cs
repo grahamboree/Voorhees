@@ -270,3 +270,138 @@ public class JsonMapper_Write_DateTimeOffset {
         Assert.That(JsonMapper.Serialize(offset), Is.EqualTo("\"1970-01-02T03:04:05.0060000-05:00\""));
     }
 }
+
+[TestFixture]
+public class JsonMapper_Read_Null {
+    class TestReferenceType {
+    }
+
+    struct TestValueType {
+    }
+
+    [Test]
+    public void ReadNull_ReferenceType() {
+        Assert.That(JsonMapper.UnSerialize<TestReferenceType>("null"), Is.Null);
+    }
+
+    [Test]
+    public void ReadNull_ValueType() {
+        // Value types cannot be null.
+        Assert.Throws<Exception>(() => JsonMapper.UnSerialize<TestValueType>("null"));
+        Assert.Throws<Exception>(() => JsonMapper.UnSerialize<int>("null"));
+    }
+}
+
+[TestFixture]
+public class JsonMapper_Read_Int {
+    [Test]
+    public void Basic() {
+        Assert.That(JsonMapper.UnSerialize<int>("3"), Is.EqualTo(3));
+    }
+
+    enum SampleEnum {
+        Three = 3
+    }
+
+    [Test]
+    public void EnumBackedByInt() {
+        Assert.That(JsonMapper.UnSerialize<SampleEnum>("3"), Is.EqualTo(SampleEnum.Three));
+    }
+
+    class ClassWithImplicitConversionOperator {
+        public int intVal;
+
+        public static implicit operator ClassWithImplicitConversionOperator(int data) {
+            return new ClassWithImplicitConversionOperator {intVal = data};
+        }
+    }
+
+    [Test]
+    public void ImplicitOperator() {
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3"), Is.Not.Null);
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3").intVal, Is.EqualTo(3));
+    }
+
+    [Test]
+    public void ReadByte() {
+        Assert.That(JsonMapper.UnSerialize<byte>("3"), Is.TypeOf<byte>());
+        Assert.That(JsonMapper.UnSerialize<byte>("3"), Is.EqualTo((byte)3));
+    }
+
+    [Test]
+    public void ReadSByte() {
+        Assert.That(JsonMapper.UnSerialize<sbyte>("3"), Is.TypeOf<sbyte>());
+        Assert.That(JsonMapper.UnSerialize<sbyte>("3"), Is.EqualTo((sbyte)3));
+    }
+
+    [Test]
+    public void ReadShort() {
+        Assert.That(JsonMapper.UnSerialize<short>("3"), Is.TypeOf<short>());
+        Assert.That(JsonMapper.UnSerialize<short>("3"), Is.EqualTo((short)3));
+    }
+
+    [Test]
+    public void ReadUShort() {
+        Assert.That(JsonMapper.UnSerialize<ushort>("3"), Is.TypeOf<ushort>());
+        Assert.That(JsonMapper.UnSerialize<ushort>("3"), Is.EqualTo((ushort)3));
+    }
+
+    [Test]
+    public void ReadUInt() {
+        Assert.That(JsonMapper.UnSerialize<uint>("3"), Is.TypeOf<uint>());
+        Assert.That(JsonMapper.UnSerialize<uint>("3"), Is.EqualTo((uint)3));
+    }
+
+    [Test]
+    public void ReadLong() {
+        Assert.That(JsonMapper.UnSerialize<long>("3"), Is.TypeOf<long>());
+        Assert.That(JsonMapper.UnSerialize<long>("3"), Is.EqualTo((long)3));
+    }
+
+    [Test]
+    public void ReadULong() {
+        Assert.That(JsonMapper.UnSerialize<ulong>("3"), Is.TypeOf<ulong>());
+        Assert.That(JsonMapper.UnSerialize<ulong>("3"), Is.EqualTo((ulong)3));
+    }
+
+    [Test]
+    public void ReadFloat() {
+        Assert.That(JsonMapper.UnSerialize<float>("3"), Is.TypeOf<float>());
+        Assert.That(JsonMapper.UnSerialize<float>("3"), Is.EqualTo((float)3));
+    }
+
+    [Test]
+    public void ReadDouble() {
+        Assert.That(JsonMapper.UnSerialize<double>("3"), Is.TypeOf<double>());
+        Assert.That(JsonMapper.UnSerialize<double>("3"), Is.EqualTo((double)3));
+    }
+
+    [Test]
+    public void ReadDecimal() {
+        Assert.That(JsonMapper.UnSerialize<decimal>("3"), Is.TypeOf<decimal>());
+        Assert.That(JsonMapper.UnSerialize<decimal>("3"), Is.EqualTo((decimal)3));
+    }
+}
+
+
+[TestFixture]
+public class JsonMapper_Read_Float {
+    [Test]
+    public void Basic() {
+        Assert.That(JsonMapper.UnSerialize<float>("1.5"), Is.EqualTo(1.5f));
+    }
+
+    class ClassWithImplicitConversionOperator {
+        public float floatVal;
+
+        public static implicit operator ClassWithImplicitConversionOperator(float data) {
+            return new ClassWithImplicitConversionOperator {floatVal = data};
+        }
+    }
+
+    [Test]
+    public void ImplicitOperator() {
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3.5"), Is.Not.Null);
+        Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3.5").floatVal, Is.EqualTo(3.5f));
+    }
+}
