@@ -383,12 +383,11 @@ public class JsonMapper_Read_Int {
     }
 }
 
-
 [TestFixture]
 public class JsonMapper_Read_Float {
     [Test]
-    public void Basic() {
-        Assert.That(JsonMapper.UnSerialize<float>("1.5"), Is.EqualTo(1.5f));
+    public void ReadFloat() {
+        Assert.That(JsonMapper.UnSerialize<float>("3.5"), Is.EqualTo(3.5f));
     }
 
     class ClassWithImplicitConversionOperator {
@@ -404,4 +403,18 @@ public class JsonMapper_Read_Float {
         Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3.5"), Is.Not.Null);
         Assert.That(JsonMapper.UnSerialize<ClassWithImplicitConversionOperator>("3.5").floatVal, Is.EqualTo(3.5f));
     }
+
+    [Test]
+    public void ReadDouble() {
+        Assert.That(JsonMapper.UnSerialize<double>("3.5"), Is.TypeOf<double>());
+        Assert.That(JsonMapper.UnSerialize<double>("3.5"), Is.EqualTo(3.5));
+    }
+
+    [Test]
+    public void ReadDecimal() {
+        Assert.That(JsonMapper.UnSerialize<decimal>("3.5"), Is.TypeOf<decimal>());
+        Assert.That(JsonMapper.UnSerialize<decimal>("3.5"), Is.EqualTo(3.5m));
+    }
+}
+
 }
