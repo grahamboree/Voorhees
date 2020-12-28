@@ -137,17 +137,22 @@ public class JsonReaderTest {
 
 	[Test]
 	public void NestedArray() {
-		var test = JsonReader.Read("[[1, 2, 3]]");
+		var test = JsonReader.Read("[[1, 2], [3, 4]]");
 		Assert.That(test.Type, Is.EqualTo(JsonType.Array));
-		Assert.That(test.Count, Is.EqualTo(1));
-		test = test[0];
+		Assert.That(test.Count, Is.EqualTo(2));
 
-		Assert.That(test.Type, Is.EqualTo(JsonType.Array));
-		Assert.That(test.Count, Is.EqualTo(3));
-		for (int i = 0; i < 3; ++i) {
-			Assert.That(test[i].Type, Is.EqualTo(JsonType.Int));
-			Assert.That((int)test[i], Is.EqualTo(i + 1));
-		}
+		Assert.That(test[0].Type, Is.EqualTo(JsonType.Array));
+		Assert.That(test[0].Count, Is.EqualTo(2));
+		
+		Assert.That(test[0][0].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test[0][0], Is.EqualTo(1));
+		Assert.That(test[0][1].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test[0][1], Is.EqualTo(2));
+		
+		Assert.That(test[1][0].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test[1][0], Is.EqualTo(3));
+		Assert.That(test[1][1].Type, Is.EqualTo(JsonType.Int));
+		Assert.That((int)test[1][1], Is.EqualTo(4));
 	}
 
 	[Test]
