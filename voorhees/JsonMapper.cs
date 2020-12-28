@@ -147,30 +147,7 @@ namespace Voorhees {
         }
 
         public static T FromJson<T>(string jsonString) {
-            var destinationType = typeof(T);
-            var underlyingType = Nullable.GetUnderlyingType(destinationType);
-            var valueType = underlyingType ?? destinationType;
-            
-            var jsonValue = JsonReader.Read(jsonString);
-
-            switch (jsonValue.Type) {
-                case JsonType.Null:
-                    if (destinationType.IsClass || underlyingType != null) {
-                        return (T)(object)null;
-                    }
-                    throw new Exception($"Can't assign null to an instance of type {destinationType}");
-                case JsonType.Int: return MapValueToType<T, int>(jsonValue, valueType);
-                case JsonType.Float: return MapValueToType<T, float>(jsonValue, valueType);
-                case JsonType.Boolean: return MapValueToType<T, bool>(jsonValue, valueType);
-                case JsonType.String: return MapValueToType<T, string>(jsonValue, valueType);
-                case JsonType.Array:
-                    break;
-                case JsonType.Object:
-                    break;
-                default: throw new ArgumentOutOfRangeException();
-            }
-
-            throw new NotImplementedException();
+            return (T) FromJson(JsonReader.Read(jsonString), typeof(T));
         }
 
         public static void RegisterJsonImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
@@ -184,6 +161,19 @@ namespace Voorhees {
             public bool IsField;
         }
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
+
+        struct ArrayMetadata {
+            public bool IsArray { get; set; }
+            public bool IsList { get; set; }
+
+            public Type ElementType {
+                get => element_type ?? typeof(JsonValue);
+                set => element_type = value;
+            }
+            Type element_type;
+        }
+        static readonly Dictionary<Type, ArrayMetadata> cachedArrayMetadata = new Dictionary<Type, ArrayMetadata>();
+
 
         static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
@@ -254,6 +244,31 @@ namespace Voorhees {
             return typeProperties[type];
         }
 
+        static ArrayMetadata GetCachedArrayMetadata(Type type) {
+            if (cachedArrayMetadata.ContainsKey(type)) {
+                return cachedArrayMetadata[type];
+            }
+
+            var data = new ArrayMetadata {
+                IsArray = type.IsArray,
+                IsList = type.GetInterface ("System.Collections.IList") != null
+            };
+
+            foreach (var propertyInfo in type.GetProperties()) {
+                if (propertyInfo.Name == "Item") {
+                    var parameters = propertyInfo.GetIndexParameters();
+
+                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(int)) {
+                        data.ElementType = propertyInfo.PropertyType;
+                    }
+                }
+            }
+            
+            cachedArrayMetadata.Add(type, data);
+            
+            return cachedArrayMetadata[type];
+        }
+
         static MethodInfo GetImplicitConversionOperator(Type t1, Type t2) {
             if (!implicitConversionOperatorCache.ContainsKey(t1)) {
                 implicitConversionOperatorCache.Add(t1, new Dictionary<Type, MethodInfo>());
@@ -286,6 +301,55 @@ namespace Voorhees {
             RegisterJsonImporter(builtInImporters, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
         
+        static object FromJson(JsonValue jsonValue, Type destinationType) {
+            var underlyingType = Nullable.GetUnderlyingType(destinationType);
+            var valueType = underlyingType ?? destinationType;
+
+            switch (jsonValue.Type) {
+                case JsonType.Null:
+                    if (destinationType.IsClass || underlyingType != null) {
+                        return null;
+                    }
+                    throw new Exception($"Can't assign null to an instance of type {destinationType}");
+                case JsonType.Int: return MapValueToType(jsonValue, typeof(int), valueType, destinationType);
+                case JsonType.Float: return MapValueToType(jsonValue, typeof(float), valueType, destinationType);
+                case JsonType.Boolean: return MapValueToType(jsonValue, typeof(bool), valueType, destinationType);
+                case JsonType.String: return MapValueToType(jsonValue, typeof(string), valueType, destinationType);
+                case JsonType.Array: {
+                    var arrayMetadata = GetCachedArrayMetadata(destinationType);
+
+                    if (!arrayMetadata.IsArray && !arrayMetadata.IsList) {
+                        throw new Exception($"Type {destinationType} can't act as an array");
+                    }
+
+                    var list = arrayMetadata.IsArray ? new ArrayList() : (IList)Activator.CreateInstance(destinationType);
+                    var elementType = arrayMetadata.IsArray ? destinationType.GetElementType() : arrayMetadata.ElementType;
+
+                    list.Clear();
+                    foreach (var element in jsonValue) {
+                        list.Add(FromJson(element, elementType));
+                    }
+
+                    if (arrayMetadata.IsArray) {
+                        int n = list.Count;
+                        var result = Array.CreateInstance(elementType, n);
+
+                        for (int i = 0; i < n; i++) {
+                            result.SetValue(list[i], i);
+                        }
+                        return result;
+                    }
+
+                    return list;
+                }
+                case JsonType.Object:
+                    break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+
+            throw new NotImplementedException();
+        }
+        
         /// <summary>
         /// Converts a basic json value to an object of the specified type.
         /// </summary>
@@ -295,36 +359,34 @@ namespace Voorhees {
         /// <typeparam name="U">Type of the json data value</typeparam>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        static T MapValueToType<T, U>(JsonValue json, Type valueType) {
-            var jsonType = typeof(U);
-                    
+        static object MapValueToType(JsonValue json, Type jsonType, Type valueType, Type destinationType) {
             if (valueType.IsAssignableFrom(jsonType)) {
-                return (T)json.Value;
+                return json.Value;
             }
 
             // If there's a custom importer that fits, use it
             if (customImporters.ContainsKey(jsonType) && customImporters[jsonType].ContainsKey(valueType)) {
-                return (T) customImporters[jsonType][valueType](json.Value);
+                return customImporters[jsonType][valueType](json.Value);
             }
 
             // Maybe there's a base importer that works
             if (builtInImporters.ContainsKey(jsonType) && builtInImporters[jsonType].ContainsKey(valueType)) {
-                return (T) builtInImporters[jsonType][valueType](json.Value);
+                return builtInImporters[jsonType][valueType](json.Value);
             }
                     
             // Integral value can be converted to enum values
             if (jsonType == typeof(int) && valueType.IsEnum) {
-                return (T)Enum.ToObject(valueType, json.Value);
+                return Enum.ToObject(valueType, json.Value);
             }
             
             // Try using an implicit conversion operator
             var implicitConversionOperator = GetImplicitConversionOperator(valueType, jsonType);
             if (implicitConversionOperator != null) {
-                return (T)implicitConversionOperator.Invoke(null, new[] {json.Value});
+                return implicitConversionOperator.Invoke(null, new[] {json.Value});
             }
 
             // No luck
-            throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {typeof(T)}");
+            throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {destinationType}");
         }
     }
 }
