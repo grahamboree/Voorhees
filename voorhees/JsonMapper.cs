@@ -174,7 +174,6 @@ namespace Voorhees {
         }
         static readonly Dictionary<Type, ArrayMetadata> cachedArrayMetadata = new Dictionary<Type, ArrayMetadata>();
 
-
         static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
         delegate string ExporterFunc(object obj);
@@ -349,14 +348,14 @@ namespace Voorhees {
 
             throw new NotImplementedException();
         }
-        
+
         /// <summary>
         /// Converts a basic json value to an object of the specified type.
         /// </summary>
         /// <param name="json">The json value</param>
-        /// <param name="valueType">The underlying storage value type of <typeparamref name="T"/></param>
-        /// <typeparam name="T">Type we're converting to</typeparam>
-        /// <typeparam name="U">Type of the json data value</typeparam>
+        /// <param name="jsonType">The type of the json value (int, float, string, etc.)</param>
+        /// <param name="valueType"></param>
+        /// <param name="destinationType"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         static object MapValueToType(JsonValue json, Type jsonType, Type valueType, Type destinationType) {
