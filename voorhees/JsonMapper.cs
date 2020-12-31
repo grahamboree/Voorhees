@@ -344,6 +344,9 @@ namespace Voorhees {
 
                     if (arrayMetadata.IsArray) {
                         int n = list.Count;
+                        if (elementType == null) {
+                            throw new InvalidOperationException("Attempting to map an array but the array element type is null");
+                        }
                         var result = Array.CreateInstance(elementType, n);
 
                         for (int i = 0; i < n; i++) {
