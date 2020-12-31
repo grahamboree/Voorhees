@@ -156,9 +156,22 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
+        struct ObjectMetadata {
+            public bool IsDictionary;
+            public Dictionary<string, PropertyMetadata> Properties;
+
+            public Type ElementType {
+                get => (element_type == null) ? typeof(JsonValue) : element_type;
+                set => element_type = value;
+            }
+            Type element_type;
+        }
+        static readonly Dictionary<Type, ObjectMetadata> cachedObjectMetadata = new Dictionary<Type, ObjectMetadata>();
+        
         struct PropertyMetadata {
             public MemberInfo Info;
             public bool IsField;
+            public Type Type;
         }
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
 
@@ -341,12 +354,39 @@ namespace Voorhees {
 
                     return list;
                 }
-                case JsonType.Object:
-                    break;
+                case JsonType.Object: {
+                    var objectMetadata = GetObjectMetadata(valueType);
+
+                    var instance = Activator.CreateInstance(valueType);
+
+                    foreach (string property in jsonValue.Keys) {
+                        var val = jsonValue[property];
+
+                        if (objectMetadata.Properties.ContainsKey(property)) {
+                            var propertyMetadata = objectMetadata.Properties[property];
+
+                            if (propertyMetadata.IsField) {
+                                ((FieldInfo) propertyMetadata.Info).SetValue(instance, FromJson(val, propertyMetadata.Type));
+                            } else {
+                                var propertyInfo = (PropertyInfo)propertyMetadata.Info;
+                                if (propertyInfo.CanWrite) {
+                                    propertyInfo.SetValue(instance, FromJson(val, propertyMetadata.Type), null);
+                                } else {
+                                    throw new Exception("Read property value from json but the property " +
+                                                        $"{propertyInfo.Name} in type {valueType} is read-only.");
+                                }
+                            }
+                        } else if (objectMetadata.IsDictionary) {
+                            ((IDictionary) instance).Add(property, FromJson(val, objectMetadata.ElementType));
+                        } else {
+                            throw new Exception($"The type {destinationType} doesn't have the property '{property}'");
+                        }
+                    }
+
+                    return instance;
+                }
                 default: throw new ArgumentOutOfRangeException();
             }
-
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -386,6 +426,50 @@ namespace Voorhees {
 
             // No luck
             throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {destinationType}");
+        }
+
+        static ObjectMetadata GetObjectMetadata(Type type) {
+            if (!cachedObjectMetadata.ContainsKey(type)) {
+                bool isDictionary = type.GetInterface("System.Collections.IDictionary") != null;
+
+                var objectMetadata = new ObjectMetadata();
+                objectMetadata.IsDictionary = isDictionary;
+                objectMetadata.Properties = new Dictionary<string, PropertyMetadata>();
+                objectMetadata.ElementType = null;
+
+                foreach (var propertyInfo in type.GetProperties()) {
+                    if (propertyInfo.Name == "Item") {
+                        var parameters = propertyInfo.GetIndexParameters();
+
+                        if (parameters.Length != 1) {
+                            continue;
+                        }
+
+                        if (parameters[0].ParameterType == typeof(string)) {
+                            objectMetadata.ElementType = propertyInfo.PropertyType;
+                        }
+
+                        continue;
+                    }
+
+                    objectMetadata.Properties.Add(propertyInfo.Name, new PropertyMetadata {
+                        Info = propertyInfo,
+                        Type = propertyInfo.PropertyType
+                    });
+                }
+
+                foreach (var fieldInfo in type.GetFields()) {
+                    objectMetadata.Properties.Add(fieldInfo.Name, new PropertyMetadata {
+                        Info = fieldInfo,
+                        IsField = true,
+                        Type = fieldInfo.FieldType
+                    });
+                }
+
+                cachedObjectMetadata.Add(type, objectMetadata);
+            }
+
+            return cachedObjectMetadata[type];
         }
     }
 }
