@@ -524,3 +524,52 @@ public class JsonMapper_Read_Array {
         Assert.That(JsonMapper.FromJson<IntOrString[]>("[1, 2, \"three\"]"), Is.EqualTo(expected));
     }
 }
+
+[TestFixture]
+public class JsonMapper_Read_Object {
+    class ObjectWithFields {
+        public int publicField = -1;
+        public int publicField2 = -1;
+    }
+    
+    [Test]
+    public void PublicFields() {
+        var json = "{\"publicField\": 3, \"publicField2\": 5}";
+        Assert.That(JsonMapper.FromJson<ObjectWithFields>(json), Is.Not.Null);
+        Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField, Is.EqualTo(3));
+        Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField2, Is.EqualTo(5));
+    }
+    
+    class ObjectWithProperties {
+        public int publicProperty { get; set; } = -1;
+        public int publicProperty2 { get; set; } = -1;
+    }
+    
+    [Test]
+    public void PublicProperties() {
+        var json = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
+        Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json), Is.Not.Null);
+        Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty, Is.EqualTo(3));
+        Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty2, Is.EqualTo(5));
+    }
+    
+    [Test]
+    public void PublicDictionary() {
+        var json = "{\"a\": 3, \"b\": 5}";
+        Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Is.Not.Null);
+        Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json).Count, Is.EqualTo(2));
+        Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["a"], Is.EqualTo(3));
+        Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["b"], Is.EqualTo(5));
+    }
+    
+    class ObjectWithReadOnlyProperties {
+        public int publicProperty { get; } = -1;
+        public int publicProperty2 { get; } = -1;
+    }
+    
+    [Test]
+    public void PublicReadOnlyProperties() {
+        var json = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
+        Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(json));
+    }
+}
