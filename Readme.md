@@ -35,12 +35,12 @@ Reading Json Data
 -----------------
 
 Given a JSON string...
-```
+```C#
 string json = "{ \"someIntValue\": 3}";
 ```
 
 You can read it into a `JsonValue` structure using the static `JsonReader.Read` method.  This is useful for reading and manipulating arbitrary data.
-```
+```C#
 using Voorhees;
 
 JsonValue jsonValue = JsonReader.Read(json);
@@ -49,7 +49,7 @@ Console.WriteLine((int)jsonValue["someIntValue"]); // 3
 ```
 
 Alternatively, you can map it to a matching C# structure using `JsonMapper`.  This is most useful for easily reading in structured config or save data into specific C# types.
-```
+```C#
 using Voorhees;
 
 struct ExampleStructure {
@@ -61,7 +61,7 @@ Console.WriteLine(mappedValue.someIntValue); // 3
 ```
 
 `JsonMapper` can also be used to map values to built-in types like `Dictionary<T, U>`, `List<T>`, or array values:
-```
+```C#
 string dictJson = "{\"one\": 1, \"two\": 2}";
 
 Dictionary<string, int> numberNamesToInts = JsonMapper.FromJson<Dictionary<string, int>>(dictJson);
@@ -82,7 +82,6 @@ Console.WriteLine(mappedArray.Length); // 3
 Console.WriteLine(mappedArray[0]); // 1
 Console.WriteLine(mappedArray[1]); // 2
 Console.WriteLine(mappedArray[2]); // 3
-
 ```
 
 ---
@@ -91,7 +90,7 @@ Writing Json Data
 -----------------
 
 You can convert a JsonValue object into the matching JSON string using `JsonWriter`:
-```
+```C#
 using Voorhees;
 
 JsonValue objectValue = new JsonValue {
@@ -108,7 +107,7 @@ Console.WriteLine(jsonObject); // [1,2,3]
 ```
 
 Alternatively, you can map a C# value to a matching JSON string using `JsonMapper`.
-```
+```C#
 using Voorhees;
 
 struct Player {
@@ -141,7 +140,7 @@ Working with JsonValue
 **Creating JsonValue instances**
 `JsonValue` has a number of implicit conversion constructors, and is compatible with the C# syntactic sugar for declaring list and dictionary literals:
 
-```
+```C#
 JsonValue boolValue = false;
 JsonValue intValue = 3;
 JsonValue floatValue = 3.5f;
@@ -162,11 +161,10 @@ JsonValue complexValue = {
 	},
 	{"somePrimes": {2, 3, 5, 7, 11}}
 };
-
 ```
 
 `JsonValue` instances also define a number of implicit conversion operators to convert to an instance of the underlying basic type.
-```
+```C#
 // assuming the above JsonValue definitions...
 
 Console.WriteLine((bool)boolValue); // false
