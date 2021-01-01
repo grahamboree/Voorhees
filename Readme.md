@@ -126,7 +126,7 @@ string bilboJson = JsonMapper.ToJson(Bilbo);
 Console.WriteLine(bilboJson); // {"name":"Bilbo Baggins","gold":99,"ageYears":111.32}
 
 
-int[] fibonacci = new[] {1, 1, 2, 3, 5, 8};
+int[] fibonacci = {1, 1, 2, 3, 5, 8};
 string fibonacciJson = JsonMapper.ToJson(fibonacci);
 Console.WriteLine(fibonacciJson); // [1,1,2,3,5,8]
 ```
@@ -145,21 +145,21 @@ JsonValue boolValue = false;
 JsonValue intValue = 3;
 JsonValue floatValue = 3.5f;
 JsonValue stringValue = "lorem ipsum";
-JsonValue listValue = {1, 2, 3};
-JsonValue objectValue = { {"one": 1}, {"two": 2} };
+JsonValue listValue = new JsonValue {1, 2, 3};
+JsonValue objectValue = new JsonValue {{"one", 1}, {"two", 2}};
 
 // These can be combined to create complex structure literals:
-JsonValue complexValue = {
-	{"intValue": 42},
-	{"boolValue": true},
-	{"twoTranslations": {
-			{"es": "dos"},
-			{"cn": "si"},
-			{"jp": "ni"},
-			{"fr": "deux"}
+JsonValue complexValue = new JsonValue {
+	{"intValue", 42},
+	{"boolValue", true},
+	{"twoTranslations", new JsonValue {
+			{"es", "dos"},
+			{"cn", "si"},
+			{"jp", "ni"},
+			{"fr", "deux"}
 		}
 	},
-	{"somePrimes": {2, 3, 5, 7, 11}}
+	{"somePrimes", new JsonValue {2, 3, 5, 7, 11}}
 };
 ```
 
@@ -172,4 +172,3 @@ Console.WriteLine((int)intValue); // 3
 Console.WriteLine((float)floatValue); // 3.5
 Console.WriteLine((string)stringValue); // lorem ipsum
 ```
-
