@@ -9,18 +9,16 @@ Current Status
 
 [Kanban board](https://github.com/grahamboree/Voorhees/projects/1)
 
-**Features**
+**Current Features**
 * Read and write json data into a structured object graph with minimal allocations.
 * Map complex objects to and from json values
+* Multidimensional array mapping support
+* Field and Property annotations to ignore specific values when serializing
 
 **In-Development**
-* Multidimensional array mapping support
-
-**Planned**
 * Add mapping option to read and de-serialize in one pass so it's not allocating a bunch of intermediate JsonValue's 
 * Serialize and de-serialize correct underlying value for polymorphic type references
 * dll release
-* Field and Property annotations to ignore when serializing
 * Serialized object versioning and version data migration system
 * Optionally generate pretty-printed JSON instead of condensed JSON
 
