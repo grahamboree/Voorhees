@@ -178,7 +178,7 @@ namespace Voorhees {
             public Dictionary<string, PropertyMetadata> Properties;
 
             public Type ElementType {
-                get => (element_type == null) ? typeof(JsonValue) : element_type;
+                get => element_type ?? typeof(JsonValue);
                 set => element_type = value;
             }
             Type element_type;
@@ -193,8 +193,9 @@ namespace Voorhees {
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
 
         struct ArrayMetadata {
-            public bool IsArray { get; set; }
-            public bool IsList { get; set; }
+            public bool IsArray;
+            public int ArrayRank;
+            public bool IsList;
 
             public Type ElementType {
                 get => element_type ?? typeof(JsonValue);
@@ -280,6 +281,7 @@ namespace Voorhees {
 
             var data = new ArrayMetadata {
                 IsArray = type.IsArray,
+                ArrayRank = type.IsArray ? type.GetArrayRank() : 1,
                 IsList = type.GetInterface ("System.Collections.IList") != null
             };
 
@@ -346,33 +348,61 @@ namespace Voorhees {
                 case JsonType.String: return MapValueToType(jsonValue, typeof(string), valueType, destinationType);
                 case JsonType.Array: {
                     var arrayMetadata = GetCachedArrayMetadata(destinationType);
-
-                    if (!arrayMetadata.IsArray && !arrayMetadata.IsList) {
-                        throw new Exception($"Type {destinationType} can't act as an array");
-                    }
-
-                    var list = arrayMetadata.IsArray ? new ArrayList() : (IList)Activator.CreateInstance(destinationType);
-                    var elementType = arrayMetadata.IsArray ? destinationType.GetElementType() : arrayMetadata.ElementType;
-
-                    list.Clear();
-                    foreach (var element in jsonValue) {
-                        list.Add(FromJson(element, elementType));
-                    }
-
+                    
                     if (arrayMetadata.IsArray) {
-                        int n = list.Count;
+                        int rank = arrayMetadata.ArrayRank;
+                        var elementType = destinationType.GetElementType();
+
                         if (elementType == null) {
                             throw new InvalidOperationException("Attempting to map an array but the array element type is null");
                         }
-                        var result = Array.CreateInstance(elementType, n);
+                        
+                        if (rank == 1) { // Simple array
+                            var result = Array.CreateInstance(elementType, jsonValue.Count);
+                            for (int i = 0; i < jsonValue.Count; i++) {
+                                result.SetValue(FromJson(jsonValue[i], elementType), i);
+                            }
+                            return result;
+                        } else {
+                            if (jsonValue.Count == 0) {
+                                return Array.CreateInstance(elementType, new int[rank]);
+                            }
 
-                        for (int i = 0; i < n; i++) {
-                            result.SetValue(list[i], i);
+                            // Figure out the size of each dimension the array.
+                            var lengths = new int[rank];
+                            var currentArray = jsonValue;
+                            for (int dimension = 0; dimension < rank; ++dimension) {
+                                lengths[dimension] = currentArray.Count;
+                                currentArray = currentArray[0];
+                            }
+                            
+                            var result = Array.CreateInstance(elementType, lengths);
+                            var currentIndex = new int[lengths.Length];
+                            void ReadArray(JsonValue current, int currentDimension) {
+                                for (int i = 0; i < current.Count; ++i) {
+                                    currentIndex[currentDimension] = i;
+                                    if (currentDimension == rank - 1) {
+                                        result.SetValue(FromJson(current[i], elementType), currentIndex);
+                                    } else {
+                                        ReadArray(current[i], currentDimension + 1);
+                                    }
+                                }
+                            }
+                            ReadArray(jsonValue, 0);
+                            return result;
                         }
-                        return result;
                     }
 
-                    return list;
+                    if (arrayMetadata.IsList) {
+                        var list = (IList) Activator.CreateInstance(destinationType);
+                        list.Clear();
+                        foreach (var element in jsonValue) {
+                            list.Add(FromJson(element, arrayMetadata.ElementType));
+                        }
+                        return list;
+                    }
+                    
+                    throw new Exception($"Type {destinationType} can't act as an array");
                 }
                 case JsonType.Object: {
                     var objectMetadata = GetObjectMetadata(valueType);
