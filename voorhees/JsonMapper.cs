@@ -268,10 +268,7 @@ namespace Voorhees {
                     }
                 }
 
-                try {
-                    typeProperties.Add(type, props);
-                } catch (ArgumentException) {
-                }
+                typeProperties.Add(type, props);
             }
 
             return typeProperties[type];
@@ -415,9 +412,7 @@ namespace Voorhees {
                     foreach (string property in jsonValue.Keys) {
                         var val = jsonValue[property];
 
-                        if (objectMetadata.Properties.ContainsKey(property)) {
-                            var propertyMetadata = objectMetadata.Properties[property];
-
+                        if (objectMetadata.Properties.TryGetValue(property, out var propertyMetadata)) {
                             if (propertyMetadata.Ignored) {
                                 continue;
                             }
@@ -488,10 +483,11 @@ namespace Voorhees {
             if (!cachedObjectMetadata.ContainsKey(type)) {
                 bool isDictionary = type.GetInterface("System.Collections.IDictionary") != null;
 
-                var objectMetadata = new ObjectMetadata();
-                objectMetadata.IsDictionary = isDictionary;
-                objectMetadata.Properties = new Dictionary<string, PropertyMetadata>();
-                objectMetadata.ElementType = null;
+                var objectMetadata = new ObjectMetadata {
+                    IsDictionary = isDictionary,
+                    Properties = new Dictionary<string, PropertyMetadata>(),
+                    ElementType = null
+                };
 
                 foreach (var propertyInfo in type.GetProperties()) {
                     if (propertyInfo.Name == "Item") {
