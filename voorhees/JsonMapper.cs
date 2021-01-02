@@ -39,20 +39,37 @@ namespace Voorhees {
 
                 // JSON Array
                 case Array arrayVal: {
-                    var stringVals = new string[arrayVal.Length];
-                    int valueIndex = 0;
-                    foreach (var elem in arrayVal) {
-                        stringVals[valueIndex] = ToJson(elem);
-                        valueIndex++;
+                    // Faster code for the common case.
+                    if (arrayVal.Rank == 1) {
+                        var stringVals = new string[arrayVal.Length];
+                        for (int i = 0; i < arrayVal.Length; ++i) {
+                            stringVals[i] = ToJson(arrayVal.GetValue(i));
+                        }
+                        return "[" + string.Join(",", stringVals) + "]";
                     }
-                    return "[" + string.Join(",", stringVals) + "]";
+                    
+                    // Handles arbitrary dimension arrays.
+                    int[] index = new int[arrayVal.Rank];
+                    string jsonifyArray(Array arr, int currentDimension) {
+                        var stringVals = new string[arr.GetLength(currentDimension)];
+                        for (int i = 0; i < arr.GetLength(currentDimension); ++i) {
+                            index[currentDimension] = i;
+                            if (currentDimension == arr.Rank - 1) {
+                                stringVals[i] = ToJson(arr.GetValue(index));
+                            } else {
+                                stringVals[i] = jsonifyArray(arr, currentDimension + 1);
+                            }
+                        }
+
+                        return "[" + string.Join(",", stringVals) + "]";
+                    }
+
+                    return jsonifyArray(arrayVal, 0);
                 }
                 case IList listVal: {
                     var stringVals = new string[listVal.Count];
-                    int valueIndex = 0;
-                    foreach (var elem in listVal) {
-                        stringVals[valueIndex] = ToJson(elem);
-                        valueIndex++;
+                    for (var i = 0; i < listVal.Count; i++) {
+                        stringVals[i] = ToJson(listVal[i]);
                     }
                     return "[" + string.Join(",", stringVals) + "]";
                 }

@@ -118,6 +118,65 @@ public class JsonMapper_Write_Array {
 }
 
 [TestFixture]
+public class JsonMapper_Write_MultiDimensionalArray {
+    [Test]
+    public void EmptyJaggedArray() {
+        Assert.That(JsonMapper.ToJson(new int[][] {}), Is.EqualTo("[]"));
+    }
+    
+    [Test]
+    public void EmptyMultiArray() {
+        Assert.That(JsonMapper.ToJson(new int[,] {}), Is.EqualTo("[]"));
+    }
+    
+    [Test]
+    public void JaggedArray() {
+        Assert.That(JsonMapper.ToJson(new[] {new[] {1}, new[] {2}}), Is.EqualTo("[[1],[2]]"));
+    }
+
+    [Test]
+    public void MultiArray() {
+        Assert.That(JsonMapper.ToJson(new[,] {{1},{2}}), Is.EqualTo("[[1],[2]]"));
+    }
+    
+    [Test]
+    public void LargeMultiArray() {
+        var multi = new[,,,] {
+            {
+                {
+                    {1, 2},
+                    {3, 4}
+                },
+                {
+                    {5, 6},
+                    {7, 8}
+                }
+            },
+            {
+                {
+                    {9, 10},
+                    {11, 12}
+                },
+                {
+                    {13, 14},
+                    {15, 16}
+                }
+            }
+        };
+
+        string json = 
+            "[["+
+                "[[1,2],[3,4]],"+
+                "[[5,6],[7,8]]" +
+            "],[" +
+                "[[9,10],[11,12]],"+
+                "[[13,14],[15,16]]" +
+            "]]";
+        Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+    }
+}
+
+[TestFixture]
 public class JsonMapper_Write_Dictionary {
     [Test]
     public void EmptyDictionary() {
