@@ -189,6 +189,7 @@ namespace Voorhees {
             public MemberInfo Info;
             public bool IsField;
             public Type Type;
+            public bool Ignored;
         }
         static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
 
@@ -250,7 +251,7 @@ namespace Voorhees {
                 var props = new List<PropertyMetadata>();
 
                 foreach (var propertyInfo in type.GetProperties()) {
-                    if (propertyInfo.Name != "Item") {
+                    if (propertyInfo.Name != "Item" && !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute))) {
                         props.Add(new PropertyMetadata {
                             Info = propertyInfo,
                             IsField = false
@@ -259,10 +260,12 @@ namespace Voorhees {
                 }
 
                 foreach (var fieldInfo in type.GetFields()) {
-                    props.Add (new PropertyMetadata {
-                        Info = fieldInfo,
-                        IsField = true
-                    });
+                    if (!Attribute.IsDefined(fieldInfo, typeof(JsonIgnoreAttribute))) {
+                        props.Add(new PropertyMetadata {
+                            Info = fieldInfo,
+                            IsField = true
+                        });
+                    }
                 }
 
                 try {
@@ -415,6 +418,9 @@ namespace Voorhees {
                         if (objectMetadata.Properties.ContainsKey(property)) {
                             var propertyMetadata = objectMetadata.Properties[property];
 
+                            if (propertyMetadata.Ignored) {
+                                continue;
+                            }
                             if (propertyMetadata.IsField) {
                                 ((FieldInfo) propertyMetadata.Info).SetValue(instance, FromJson(val, propertyMetadata.Type));
                             } else {
@@ -504,7 +510,8 @@ namespace Voorhees {
 
                     objectMetadata.Properties.Add(propertyInfo.Name, new PropertyMetadata {
                         Info = propertyInfo,
-                        Type = propertyInfo.PropertyType
+                        Type = propertyInfo.PropertyType,
+                        Ignored = Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute))
                     });
                 }
 
@@ -512,7 +519,8 @@ namespace Voorhees {
                     objectMetadata.Properties.Add(fieldInfo.Name, new PropertyMetadata {
                         Info = fieldInfo,
                         IsField = true,
-                        Type = fieldInfo.FieldType
+                        Type = fieldInfo.FieldType,
+                        Ignored = Attribute.IsDefined(fieldInfo, typeof(JsonIgnoreAttribute))
                     });
                 }
 
