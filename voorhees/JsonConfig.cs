@@ -10,7 +10,11 @@ namespace Voorhees {
         
         public delegate string ExporterFunc<in T>(T objectToSerialize);
         public delegate T ImporterFunc<in TJson, out T>(TJson jsonData);
+        
+        /////////////////////////////////////////////////
 
+        public bool PrettyPrint;
+        
         /////////////////////////////////////////////////
 
         public void RegisterExporter<T>(ExporterFunc<T> exporter) {

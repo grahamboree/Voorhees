@@ -97,13 +97,17 @@ namespace Voorhees.Tests {
 		[Test]
 		public void PrettyPrintSimpleArray() {
 			var test = new JsonValue {1, 2, 3, 4};
-			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
+			JsonConfig.CurrentConfig.PrettyPrint = true;
+			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
+			JsonConfig.CurrentConfig.PrettyPrint = false;
 		}
 
 		[Test]
 		public void PrettyPrintNestedArray() {
 			var test = new JsonValue {1, new JsonValue {2, 3}, 4};
-			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("[\n\t1,\n\t[\n\t\t2,\n\t\t3\n\t],\n\t4\n]"));
+			JsonConfig.CurrentConfig.PrettyPrint = true;
+			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t[\n\t\t2,\n\t\t3\n\t],\n\t4\n]"));
+			JsonConfig.CurrentConfig.PrettyPrint = false;
 		}
 
 		[Test]
@@ -112,7 +116,9 @@ namespace Voorhees.Tests {
 				{"test", 1},
 				{"test2", 2}
 			};
-			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("{\n\t\"test\": 1,\n\t\"test2\": 2\n}"));
+			JsonConfig.CurrentConfig.PrettyPrint = true;
+			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\n\t\"test\": 1,\n\t\"test2\": 2\n}"));
+			JsonConfig.CurrentConfig.PrettyPrint = false;
 		}
 
 		[Test]
@@ -126,7 +132,9 @@ namespace Voorhees.Tests {
 				}
 			};
 			var prettyJson = "{\n\t\"test\": 1,\n\t\"test2\": {\n\t\t\"test3\": 3,\n\t\t\"test4\": 4\n\t}\n}";
-			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo(prettyJson));
+			JsonConfig.CurrentConfig.PrettyPrint = true;
+			Assert.That(JsonWriter.ToJson(test), Is.EqualTo(prettyJson));
+			JsonConfig.CurrentConfig.PrettyPrint = false;
 		}
 	}
 }

@@ -4,28 +4,28 @@ using System.Collections.Generic;
 
 namespace Voorhees {
    public static class JsonWriter {
-      public static string ToJson(JsonValue json, bool prettyPrint = false) {
+      public static string ToJson(JsonValue json) {
          var result = new StringBuilder();
-         WriteValue(result, json, prettyPrint);
+         WriteValue(result, json);
          return result.ToString();
       }
 
       /////////////////////////////////////////////////
       
-      static void WriteValue(StringBuilder result, JsonValue value, bool prettyPrint = false, int indentLevel = 0) {
+      static void WriteValue(StringBuilder result, JsonValue value, int indentLevel = 0) {
          if (value == null) {
             result.Append("null");
             return;
          }
          switch (value.Type) {
             case JsonType.Array:
-               if (prettyPrint) {
+               if (JsonConfig.CurrentConfig.PrettyPrint) {
                   result.Append("[\n");
                   for (int i = 0; i < value.Count; ++i) {
                      for (int j = 0; j < indentLevel + 1; ++j) {
                         result.Append('\t');
                      }
-                     WriteValue(result, value[i], true, indentLevel + 1);
+                     WriteValue(result, value[i], indentLevel + 1);
                      if (i < value.Count - 1) {
                         result.Append(",\n");
                      }
@@ -47,7 +47,7 @@ namespace Voorhees {
                }
                break;
             case JsonType.Object:
-               if (prettyPrint) {
+               if (JsonConfig.CurrentConfig.PrettyPrint) {
                   result.Append("{\n");
 
                   bool first = true;
@@ -63,7 +63,7 @@ namespace Voorhees {
                      result.Append('\"');
                      result.Append(objectPair.Key);
                      result.Append("\": ");
-                     WriteValue(result, objectPair.Value, true, indentLevel + 1);
+                     WriteValue(result, objectPair.Value, indentLevel + 1);
                   }
                   result.Append("\n");
                   for (int j = 0; j < indentLevel; ++j) {
