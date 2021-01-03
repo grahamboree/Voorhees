@@ -40,6 +40,12 @@ namespace Voorhees {
                         for (int i = 0; i < arrayVal.Length; ++i) {
                             stringVals[i] = ToJson(arrayVal.GetValue(i));
                         }
+                        if (JsonConfig.CurrentConfig.PrettyPrint) {
+                            return "[" +
+                                   (stringVals.Length > 0 ? "\n\t" : "") +
+                                   string.Join(",\n\t", stringVals) +
+                                   "\n]";
+                        }
                         return "[" + string.Join(",", stringVals) + "]";
                     }
                     
@@ -65,6 +71,13 @@ namespace Voorhees {
                     var stringVals = new string[listVal.Count];
                     for (var i = 0; i < listVal.Count; i++) {
                         stringVals[i] = ToJson(listVal[i]);
+                    }
+
+                    if (JsonConfig.CurrentConfig.PrettyPrint) {
+                        return "[" +
+                               (stringVals.Length > 0 ? "\n\t" : "") +
+                               string.Join(",\n\t", stringVals) +
+                               "\n]";
                     }
                     return "[" + string.Join(",", stringVals) + "]";
                 }
