@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JsonConfig.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />
     <Compile Include="JsonReader.cs" />
     <Compile Include="JsonValue.cs" />

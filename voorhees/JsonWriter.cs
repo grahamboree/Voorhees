@@ -10,6 +10,8 @@ namespace Voorhees {
          return result.ToString();
       }
 
+      /////////////////////////////////////////////////
+      
       static void WriteValue(StringBuilder result, JsonValue value, bool prettyPrint = false, int indentLevel = 0) {
          if (value == null) {
             result.Append("null");

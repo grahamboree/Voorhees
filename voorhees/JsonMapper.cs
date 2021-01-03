@@ -7,11 +7,6 @@ using System.Text;
 
 namespace Voorhees {
     public static class JsonMapper {
-        public delegate string ExporterFunc<in T>(T objectToSerialize);
-        public delegate T ImporterFunc<in TJson, out T>(TJson jsonData);
-
-        /////////////////////////////////////////////////
-
         public static string ToJson(object obj) {
             switch (obj) {
                 case null: return "null";
@@ -98,12 +93,12 @@ namespace Voorhees {
             var obj_type = obj.GetType();
 
             // See if there's a custom exporter for the object
-            if (customExporters.TryGetValue(obj_type, out var customExporter)) {
+            if (JsonConfig.CurrentConfig.customExporters.TryGetValue(obj_type, out var customExporter)) {
                 return customExporter(obj);
             }
 
             // If not, maybe there's a built-in serializer
-            if (builtInExporters.TryGetValue(obj_type, out var builtInExporter)) {
+            if (JsonConfig.builtInExporters.TryGetValue(obj_type, out var builtInExporter)) {
                 return builtInExporter(obj);
             }
 
@@ -151,24 +146,8 @@ namespace Voorhees {
             return objectBuilder.ToString();
         }
 
-        public static void RegisterJsonExporter<T>(ExporterFunc<T> exporter) {
-            customExporters[typeof(T)] = obj => exporter((T) obj);
-        }
-
-        public static void UnRegisterJsonExporter<T>() {
-            customExporters.Remove(typeof(T));
-        }
-
-        public static void UnRegisterAllJsonExporters() {
-            customExporters.Clear();
-        }
-
         public static T FromJson<T>(string jsonString) {
             return (T) FromJson(JsonReader.Read(jsonString), typeof(T));
-        }
-
-        public static void RegisterJsonImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
-            RegisterJsonImporter(customImporters, typeof(TJson), typeof(TValue), input => importer((TJson) input));
         }
 
         /////////////////////////////////////////////////
@@ -208,40 +187,8 @@ namespace Voorhees {
 
         static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
-        delegate string ExporterFunc(object obj);
-        static readonly Dictionary<Type, ExporterFunc> builtInExporters = new Dictionary<Type, ExporterFunc>();
-        static readonly Dictionary<Type, ExporterFunc> customExporters = new Dictionary<Type, ExporterFunc>();
-
-        delegate object ImporterFunc(object input);
-        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> builtInImporters = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
-        static readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> customImporters = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
-
         /////////////////////////////////////////////////
 
-        static JsonMapper() {
-            builtInExporters[typeof(DateTime)] = obj =>
-                "\"" + ((DateTime) obj).ToString("o") + "\"";
-            builtInExporters[typeof(DateTimeOffset)] = obj =>
-                "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
-            
-            RegisterBaseImporter<int, byte>(Convert.ToByte);
-            RegisterBaseImporter<int, sbyte>(Convert.ToSByte);
-            RegisterBaseImporter<int, short>(Convert.ToInt16);
-            RegisterBaseImporter<int, ushort>(Convert.ToUInt16);
-            RegisterBaseImporter<int, uint>(Convert.ToUInt32);
-            RegisterBaseImporter<int, long>(Convert.ToInt64);
-            RegisterBaseImporter<int, ulong>(Convert.ToUInt64);
-            RegisterBaseImporter<int, float>(Convert.ToSingle);
-            RegisterBaseImporter<int, double>(Convert.ToDouble);
-            RegisterBaseImporter<int, decimal>(Convert.ToDecimal);
-            
-            RegisterBaseImporter<float, double>(Convert.ToDouble);
-            RegisterBaseImporter<float, decimal>(Convert.ToDecimal);
-            
-            RegisterBaseImporter<string, char>(Convert.ToChar);
-            RegisterBaseImporter<string, DateTime>(input => Convert.ToDateTime(input, DateTimeFormatInfo.InvariantInfo));
-            RegisterBaseImporter<string, DateTimeOffset>(DateTimeOffset.Parse);
-        }
 
         /// Gather property and field info about the type
         /// Cache it so we don't have to get this info every
@@ -319,29 +266,42 @@ namespace Voorhees {
 
             return op;
         }
-
-        static void RegisterJsonImporter(Dictionary<Type, Dictionary<Type, ImporterFunc>> table, Type json_type, Type value_type, ImporterFunc importer) {
-            if (!table.ContainsKey(json_type)) {
-                table.Add(json_type, new Dictionary<Type, ImporterFunc>());
-            }
-
-            table[json_type][value_type] = importer;
-        }
-        
-        static void RegisterBaseImporter<TJson, TValue>(ImporterFunc<TJson, TValue> importer) {
-            RegisterJsonImporter(builtInImporters, typeof(TJson), typeof(TValue), input => importer((TJson) input));
-        }
         
         static object FromJson(JsonValue jsonValue, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;
 
+            if (jsonValue.Type == JsonType.Null) {
+                if (destinationType.IsClass || underlyingType != null) {
+                    return null;
+                }
+                throw new Exception($"Can't assign null to an instance of type {destinationType}");
+            }
+
+            var jsonType = typeof(object);
             switch (jsonValue.Type) {
                 case JsonType.Null:
-                    if (destinationType.IsClass || underlyingType != null) {
-                        return null;
-                    }
-                    throw new Exception($"Can't assign null to an instance of type {destinationType}");
+                case JsonType.Object: jsonType = typeof(object); break;
+                case JsonType.Array: jsonType = typeof(Array); break;
+                case JsonType.String: jsonType = typeof(string); break;
+                case JsonType.Boolean: jsonType = typeof(bool); break;
+                case JsonType.Int: jsonType = typeof(int); break;
+                case JsonType.Float: jsonType = typeof(float); break;
+            }
+
+            // If there's a custom importer that fits, use it
+            var config = JsonConfig.CurrentConfig;
+            if (config.customImporters.ContainsKey(jsonType) && config.customImporters[jsonType].ContainsKey(valueType)) {
+                return config.customImporters[jsonType][valueType](jsonValue.Value);
+            }
+
+            // Maybe there's a base importer that works
+            if (JsonConfig.builtInImporters.ContainsKey(jsonType) && JsonConfig.builtInImporters[jsonType].ContainsKey(valueType)) {
+                return JsonConfig.builtInImporters[jsonType][valueType](jsonValue.Value);
+            }
+
+            switch (jsonValue.Type) {
+                case JsonType.Null:
                 case JsonType.Int: return MapValueToType(jsonValue, typeof(int), valueType, destinationType);
                 case JsonType.Float: return MapValueToType(jsonValue, typeof(float), valueType, destinationType);
                 case JsonType.Boolean: return MapValueToType(jsonValue, typeof(bool), valueType, destinationType);
@@ -454,16 +414,6 @@ namespace Voorhees {
                 return json.Value;
             }
 
-            // If there's a custom importer that fits, use it
-            if (customImporters.ContainsKey(jsonType) && customImporters[jsonType].ContainsKey(valueType)) {
-                return customImporters[jsonType][valueType](json.Value);
-            }
-
-            // Maybe there's a base importer that works
-            if (builtInImporters.ContainsKey(jsonType) && builtInImporters[jsonType].ContainsKey(valueType)) {
-                return builtInImporters[jsonType][valueType](json.Value);
-            }
-                    
             // Integral value can be converted to enum values
             if (jsonType == typeof(int) && valueType.IsEnum) {
                 return Enum.ToObject(valueType, json.Value);
