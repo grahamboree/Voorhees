@@ -8,7 +8,9 @@ using System.Text;
 namespace Voorhees {
     public static class JsonMapper {
         public static string ToJson(object obj) {
-            return ToJsonImpl(obj, 0);
+            var sb = new StringBuilder();
+            ToJsonImpl(obj, 0, sb);
+            return sb.ToString();
         }
 
         public static T FromJson<T>(string jsonString) {
@@ -131,7 +133,7 @@ namespace Voorhees {
             return op;
         }
 
-        static string ToJsonImpl(object obj, int indentLevel) {
+        static void ToJsonImpl(object obj, int indentLevel, StringBuilder sb) {
             string tabs = "";
             if (JsonConfig.CurrentConfig.PrettyPrint) {
                 for (int i = 0; i < indentLevel; ++i) {
@@ -140,58 +142,54 @@ namespace Voorhees {
             }
 
             switch (obj) {
-                case null: return "null";
-                case JsonValue jsonValue: return JsonWriter.ToJson(jsonValue);
+                case null: sb.Append("null"); return;
+                case JsonValue jsonValue: sb.Append(JsonWriter.ToJson(jsonValue)); return;
 
                 // JSON String
-                case string stringVal: return "\"" + stringVal + "\"";
-                case char charVal: return "\"" + charVal + "\"";
+                case string stringVal: sb.Append(tabs); sb.Append("\"" + stringVal + "\""); return;
+                case char charVal: sb.Append(tabs); sb.Append("\"" + charVal + "\""); return;
 
                 // JSON Number
-                case float floatVal: return tabs + floatVal.ToString(CultureInfo.InvariantCulture);
-                case double doubleVal: return tabs + doubleVal.ToString(CultureInfo.InvariantCulture);
-                case decimal decimalVal: return tabs + decimalVal.ToString(CultureInfo.InvariantCulture);
-                case byte byteVal: return tabs + byteVal;
-                case sbyte sbyteVal: return tabs + sbyteVal;
-                case int intVal: return tabs + intVal;
-                case uint uintVal: return tabs + uintVal;
-                case long longVal: return tabs + longVal;
-                case ulong ulongVal: return tabs + ulongVal;
-                case short shortVal: return tabs + shortVal;
-                case ushort ushortVal: return tabs + ushortVal;
+                case float floatVal: sb.Append(tabs); sb.Append(floatVal.ToString(CultureInfo.InvariantCulture)); return;
+                case double doubleVal: sb.Append(tabs); sb.Append(doubleVal.ToString(CultureInfo.InvariantCulture)); return;
+                case decimal decimalVal: sb.Append(tabs); sb.Append(decimalVal.ToString(CultureInfo.InvariantCulture)); return;
+                case byte byteVal: sb.Append(tabs); sb.Append(byteVal); return;
+                case sbyte sbyteVal: sb.Append(tabs); sb.Append(sbyteVal); return;
+                case int intVal: sb.Append(tabs); sb.Append(intVal); return;
+                case uint uintVal: sb.Append(tabs); sb.Append(uintVal); return;
+                case long longVal: sb.Append(tabs); sb.Append(longVal); return;
+                case ulong ulongVal: sb.Append(tabs); sb.Append(ulongVal); return;
+                case short shortVal: sb.Append(tabs); sb.Append(shortVal); return;
+                case ushort ushortVal: sb.Append(tabs); sb.Append(ushortVal); return;
 
                 // JSON Boolean
-                case bool boolVal: return tabs + (boolVal ? "true" : "false");
+                case bool boolVal: sb.Append(tabs); sb.Append(boolVal ? "true" : "false"); return;
 
                 // JSON Array
                 case Array arrayVal: {
-                    var sb = new StringBuilder();
-                    
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        string result;
-                        
                         if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            result = tabs + "[\n";
+                            sb.Append(tabs + "[\n");
                             for (var i = 0; i < arrayVal.Length; i++) {
-                                result += ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1);
+                                ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1, sb);
                                 if (i < arrayVal.Length - 1) {
-                                    result += ",";
+                                    sb.Append(",");
                                 }
-                                result += "\n";
+                                sb.Append("\n");
                             }
-                            result += tabs + "]";
+                            sb.Append(tabs + "]");
                         } else {
-                            result = "[";
+                            sb.Append("[");
                             for (int i = 0; i < arrayVal.Length; ++i) {
-                                result += ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1);
+                                ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1, sb);
                                 if (i < arrayVal.Length - 1) {
-                                    result += ",";
+                                    sb.Append(",");
                                 }
                             }
-                            result += "]";
+                            sb.Append("]");
                         }
-                        return result;
+                        return;
                     }
                     
                     // Handles arbitrary dimension arrays.
@@ -216,7 +214,7 @@ namespace Voorhees {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                sb.Append(ToJsonImpl(arr.GetValue(index), indent + 1));
+                                ToJsonImpl(arr.GetValue(index), indent + 1, sb);
                             } else {
                                 jsonifyArray(arr, currentDimension + 1, indent + 1);
                             }
@@ -236,54 +234,50 @@ namespace Voorhees {
 
                         sb.Append("]");
                     }
-
                     jsonifyArray(arrayVal, 0, indentLevel);
-                    return sb.ToString();
+                    return;
                 }
                 case IList listVal: {
-                    string result;
-                        
                     if (JsonConfig.CurrentConfig.PrettyPrint) {
-                        result = tabs + "[\n";
+                        sb.Append(tabs + "[\n");
                         for (var i = 0; i < listVal.Count; i++) {
-                            result += ToJsonImpl(listVal[i], indentLevel + 1);
+                            ToJsonImpl(listVal[i], indentLevel + 1, sb);
                             if (i < listVal.Count - 1) {
-                                result += ",";
+                                sb.Append(",");
                             }
-                            result += "\n";
+                            sb.Append("\n");
                         }
-                        result += tabs + "]";
+                        sb.Append(tabs + "]");
                     } else {
-                        result = "[";
+                        sb.Append("[");
                         for (int i = 0; i < listVal.Count; ++i) {
-                            result += ToJsonImpl(listVal[i], indentLevel + 1);
+                            ToJsonImpl(listVal[i], indentLevel + 1, sb);
                             if (i < listVal.Count - 1) {
-                                result += ",";
+                                sb.Append(",");
                             }
                         }
-                        result += "]";
+                        sb.Append("]");
                     }
-                    return result;
+                    return;
                 }
 
                 // JSON Object
                 case IDictionary dictionary: {
-                    var dictBuilder = new StringBuilder();
-                    dictBuilder.Append("{");
+                    sb.Append("{");
                     bool first = true;
                     foreach (DictionaryEntry entry in dictionary) {
                         if (!first) {
-                            dictBuilder.Append(",");
+                            sb.Append(",");
                         }
                         first = false;
 
                         string propertyName = entry.Key is string key ? key
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                        dictBuilder.Append("\"" + propertyName + "\":");
-                        dictBuilder.Append(ToJsonImpl(entry.Value, indentLevel + 1));
+                        sb.Append("\"" + propertyName + "\":");
+                        ToJsonImpl(entry.Value, indentLevel + 1, sb);
                     }
-                    dictBuilder.Append("}");
-                    return dictBuilder.ToString();
+                    sb.Append("}");
+                    return;
                 }
             }
 
@@ -291,56 +285,48 @@ namespace Voorhees {
 
             // See if there's a custom exporter for the object
             if (JsonConfig.CurrentConfig.customExporters.TryGetValue(obj_type, out var customExporter)) {
-                return customExporter(obj);
+                sb.Append(tabs);
+                sb.Append(customExporter(obj));
+                return;
             }
 
             // If not, maybe there's a built-in serializer
             if (JsonConfig.builtInExporters.TryGetValue(obj_type, out var builtInExporter)) {
-                return builtInExporter(obj);
+                sb.Append(tabs);
+                sb.Append(builtInExporter(obj));
+                return;
             }
 
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(obj_type);
 
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(byte)) { return ((byte) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { return ((sbyte) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { return ((short) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { return ((ushort) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { return ((int) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { return ((uint) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { return ((long) obj).ToString(); }
-                // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { return ((ulong) obj).ToString(); }
+                if (enumType == typeof(byte)) { sb.Append(tabs); sb.Append(((byte) obj).ToString()); return; }
+                if (enumType == typeof(sbyte)) { sb.Append(tabs); sb.Append(((sbyte) obj).ToString()); return; }
+                if (enumType == typeof(short)) { sb.Append(tabs); sb.Append(((short) obj).ToString()); return; }
+                if (enumType == typeof(ushort)) { sb.Append(tabs); sb.Append(((ushort) obj).ToString()); return; }
+                if (enumType == typeof(int)) { sb.Append(tabs); sb.Append(((int) obj).ToString()); return; }
+                if (enumType == typeof(uint)) { sb.Append(tabs); sb.Append(((uint) obj).ToString()); return; }
+                if (enumType == typeof(long)) { sb.Append(tabs); sb.Append(((long) obj).ToString()); return; }
+                if (enumType == typeof(ulong)) { sb.Append(tabs); sb.Append(((ulong) obj).ToString()); return; }
 
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
             }
 
-            var props = GetTypePropertyMetadata(obj_type);
-
-            var objectBuilder = new StringBuilder();
-            objectBuilder.Append("{");
-            foreach (var propertyMetadata in props) {
+            sb.Append("{");
+            foreach (var propertyMetadata in GetTypePropertyMetadata(obj_type)) {
                 if (propertyMetadata.IsField) {
-                    objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                    objectBuilder.Append(ToJsonImpl(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1));
+                    sb.Append("\"" + propertyMetadata.Info.Name + "\":");
+                    ToJsonImpl(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
 
                     if (propertyInfo.CanRead) {
-                        objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        objectBuilder.Append(ToJsonImpl(propertyInfo.GetValue (obj, null), indentLevel + 1));
+                        sb.Append("\"" + propertyMetadata.Info.Name + "\":");
+                        ToJsonImpl(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
                     }
                 }
             }
-            objectBuilder.Append("}");
-            return objectBuilder.ToString();
+            sb.Append("}");
         }
         
         static object FromJson(JsonValue jsonValue, Type destinationType) {
