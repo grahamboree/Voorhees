@@ -186,13 +186,21 @@ namespace Voorhees {
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(obj_type);
 
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(byte)) { sb.Append(tabs); sb.Append(((byte) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(sbyte)) { sb.Append(tabs); sb.Append(((sbyte) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(short)) { sb.Append(tabs); sb.Append(((short) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(ushort)) { sb.Append(tabs); sb.Append(((ushort) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(int)) { sb.Append(tabs); sb.Append(((int) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(uint)) { sb.Append(tabs); sb.Append(((uint) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(long)) { sb.Append(tabs); sb.Append(((long) obj).ToString()); return; }
+                // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(ulong)) { sb.Append(tabs); sb.Append(((ulong) obj).ToString()); return; }
 
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
