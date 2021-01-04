@@ -8,7 +8,7 @@ using System.Text;
 namespace Voorhees {
     public static class JsonMapper {
         public static string ToJson(object obj) {
-            return ToJsonImpl(obj);
+            return ToJsonImpl(obj, 0);
         }
 
         public static T FromJson<T>(string jsonString) {
@@ -131,7 +131,14 @@ namespace Voorhees {
             return op;
         }
 
-        static string ToJsonImpl(object obj) {
+        static string ToJsonImpl(object obj, int indentLevel) {
+            string tabs = "";
+            if (JsonConfig.CurrentConfig.PrettyPrint) {
+                for (int i = 0; i < indentLevel; ++i) {
+                    tabs += "\t";
+                }
+            }
+
             switch (obj) {
                 case null: return "null";
                 case JsonValue jsonValue: return JsonWriter.ToJson(jsonValue);
@@ -141,69 +148,122 @@ namespace Voorhees {
                 case char charVal: return "\"" + charVal + "\"";
 
                 // JSON Number
-                case float floatVal: return floatVal.ToString(CultureInfo.InvariantCulture);
-                case double doubleVal: return doubleVal.ToString(CultureInfo.InvariantCulture);
-                case decimal decimalVal: return decimalVal.ToString(CultureInfo.InvariantCulture);
-                case byte byteVal: return byteVal.ToString();
-                case sbyte sbyteVal: return sbyteVal.ToString();
-                case int intVal: return intVal.ToString();
-                case uint uintVal: return uintVal.ToString();
-                case long longVal: return longVal.ToString();
-                case ulong ulongVal: return ulongVal.ToString();
-                case short shortVal: return shortVal.ToString();
-                case ushort ushortVal: return ushortVal.ToString();
+                case float floatVal: return tabs + floatVal.ToString(CultureInfo.InvariantCulture);
+                case double doubleVal: return tabs + doubleVal.ToString(CultureInfo.InvariantCulture);
+                case decimal decimalVal: return tabs + decimalVal.ToString(CultureInfo.InvariantCulture);
+                case byte byteVal: return tabs + byteVal;
+                case sbyte sbyteVal: return tabs + sbyteVal;
+                case int intVal: return tabs + intVal;
+                case uint uintVal: return tabs + uintVal;
+                case long longVal: return tabs + longVal;
+                case ulong ulongVal: return tabs + ulongVal;
+                case short shortVal: return tabs + shortVal;
+                case ushort ushortVal: return tabs + ushortVal;
 
                 // JSON Boolean
-                case bool boolVal: return boolVal ? "true" : "false";
+                case bool boolVal: return tabs + (boolVal ? "true" : "false");
 
                 // JSON Array
                 case Array arrayVal: {
+                    var sb = new StringBuilder();
+                    
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        var stringVals = new string[arrayVal.Length];
-                        for (int i = 0; i < arrayVal.Length; ++i) {
-                            stringVals[i] = ToJson(arrayVal.GetValue(i));
-                        }
+                        string result;
+                        
                         if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            return "[" +
-                                   (stringVals.Length > 0 ? "\n\t" : "") +
-                                   string.Join(",\n\t", stringVals) +
-                                   "\n]";
+                            result = tabs + "[\n";
+                            for (var i = 0; i < arrayVal.Length; i++) {
+                                result += ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1);
+                                if (i < arrayVal.Length - 1) {
+                                    result += ",";
+                                }
+                                result += "\n";
+                            }
+                            result += tabs + "]";
+                        } else {
+                            result = "[";
+                            for (int i = 0; i < arrayVal.Length; ++i) {
+                                result += ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1);
+                                if (i < arrayVal.Length - 1) {
+                                    result += ",";
+                                }
+                            }
+                            result += "]";
                         }
-                        return "[" + string.Join(",", stringVals) + "]";
+                        return result;
                     }
                     
                     // Handles arbitrary dimension arrays.
                     int[] index = new int[arrayVal.Rank];
-                    string jsonifyArray(Array arr, int currentDimension) {
-                        var stringVals = new string[arr.GetLength(currentDimension)];
-                        for (int i = 0; i < arr.GetLength(currentDimension); ++i) {
+                    void jsonifyArray(Array arr, int currentDimension, int indent) {
+                        string arrayTabs = "";
+                        if (JsonConfig.CurrentConfig.PrettyPrint) {
+                            for (int i = 0; i < indent; ++i) {
+                                arrayTabs += "\t";
+                            }
+
+                            sb.Append(arrayTabs);
+                        }
+
+                        sb.Append("[");
+                        if (JsonConfig.CurrentConfig.PrettyPrint) {
+                            sb.Append("\n");
+                        }
+
+                        int length = arr.GetLength(currentDimension);
+                        for (int i = 0; i < length; ++i) {
                             index[currentDimension] = i;
+
                             if (currentDimension == arr.Rank - 1) {
-                                stringVals[i] = ToJson(arr.GetValue(index));
+                                sb.Append(ToJsonImpl(arr.GetValue(index), indent + 1));
                             } else {
-                                stringVals[i] = jsonifyArray(arr, currentDimension + 1);
+                                jsonifyArray(arr, currentDimension + 1, indent + 1);
+                            }
+                            
+                            if (i < length - 1) {
+                                sb.Append(",");
+                            }
+                            
+                            if (JsonConfig.CurrentConfig.PrettyPrint) {
+                                sb.Append("\n");
                             }
                         }
 
-                        return "[" + string.Join(",", stringVals) + "]";
+                        if (JsonConfig.CurrentConfig.PrettyPrint) {
+                            sb.Append(arrayTabs);
+                        }
+
+                        sb.Append("]");
                     }
 
-                    return jsonifyArray(arrayVal, 0);
+                    jsonifyArray(arrayVal, 0, indentLevel);
+                    return sb.ToString();
                 }
                 case IList listVal: {
-                    var stringVals = new string[listVal.Count];
-                    for (var i = 0; i < listVal.Count; i++) {
-                        stringVals[i] = ToJson(listVal[i]);
-                    }
-
+                    string result;
+                        
                     if (JsonConfig.CurrentConfig.PrettyPrint) {
-                        return "[" +
-                               (stringVals.Length > 0 ? "\n\t" : "") +
-                               string.Join(",\n\t", stringVals) +
-                               "\n]";
+                        result = tabs + "[\n";
+                        for (var i = 0; i < listVal.Count; i++) {
+                            result += ToJsonImpl(listVal[i], indentLevel + 1);
+                            if (i < listVal.Count - 1) {
+                                result += ",";
+                            }
+                            result += "\n";
+                        }
+                        result += tabs + "]";
+                    } else {
+                        result = "[";
+                        for (int i = 0; i < listVal.Count; ++i) {
+                            result += ToJsonImpl(listVal[i], indentLevel + 1);
+                            if (i < listVal.Count - 1) {
+                                result += ",";
+                            }
+                        }
+                        result += "]";
                     }
-                    return "[" + string.Join(",", stringVals) + "]";
+                    return result;
                 }
 
                 // JSON Object
@@ -220,7 +280,7 @@ namespace Voorhees {
                         string propertyName = entry.Key is string key ? key
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         dictBuilder.Append("\"" + propertyName + "\":");
-                        dictBuilder.Append(ToJson(entry.Value));
+                        dictBuilder.Append(ToJsonImpl(entry.Value, indentLevel + 1));
                     }
                     dictBuilder.Append("}");
                     return dictBuilder.ToString();
@@ -269,13 +329,13 @@ namespace Voorhees {
             foreach (var propertyMetadata in props) {
                 if (propertyMetadata.IsField) {
                     objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                    objectBuilder.Append(ToJson(((FieldInfo) propertyMetadata.Info).GetValue(obj)));
+                    objectBuilder.Append(ToJsonImpl(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1));
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
 
                     if (propertyInfo.CanRead) {
                         objectBuilder.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        objectBuilder.Append(ToJson(propertyInfo.GetValue (obj, null)));
+                        objectBuilder.Append(ToJsonImpl(propertyInfo.GetValue (obj, null), indentLevel + 1));
                     }
                 }
             }
