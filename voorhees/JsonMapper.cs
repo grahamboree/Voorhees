@@ -1,15 +1,15 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using Voorhees.Internal;
 
 namespace Voorhees {
     public static class JsonMapper {
         public static string ToJson(object obj) {
             var sb = new StringBuilder();
-            ToJsonImpl(obj, 0, sb);
+            WriteJson(obj, 0, sb);
             return sb.ToString();
         }
 
@@ -19,121 +19,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        struct ObjectMetadata {
-            public bool IsDictionary;
-            public Dictionary<string, PropertyMetadata> Properties;
-
-            public Type ElementType {
-                get => element_type ?? typeof(JsonValue);
-                set => element_type = value;
-            }
-            Type element_type;
-        }
-        static readonly Dictionary<Type, ObjectMetadata> cachedObjectMetadata = new Dictionary<Type, ObjectMetadata>();
-        
-        struct PropertyMetadata {
-            public MemberInfo Info;
-            public bool IsField;
-            public Type Type;
-            public bool Ignored;
-        }
-        static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
-
-        struct ArrayMetadata {
-            public bool IsArray;
-            public int ArrayRank;
-            public bool IsList;
-
-            public Type ElementType {
-                get => element_type ?? typeof(JsonValue);
-                set => element_type = value;
-            }
-            Type element_type;
-        }
-        static readonly Dictionary<Type, ArrayMetadata> cachedArrayMetadata = new Dictionary<Type, ArrayMetadata>();
-
-        static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
-
-        /////////////////////////////////////////////////
-
-        /// Gather property and field info about the type
-        /// Cache it so we don't have to get this info every
-        /// time we come across an instance of this type
-        static List<PropertyMetadata> GetTypePropertyMetadata(Type type) {
-            if (!typeProperties.ContainsKey(type)) {
-                var props = new List<PropertyMetadata>();
-
-                foreach (var propertyInfo in type.GetProperties()) {
-                    if (propertyInfo.Name != "Item" && !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute))) {
-                        props.Add(new PropertyMetadata {
-                            Info = propertyInfo,
-                            IsField = false
-                        });
-                    }
-                }
-
-                foreach (var fieldInfo in type.GetFields()) {
-                    if (!Attribute.IsDefined(fieldInfo, typeof(JsonIgnoreAttribute))) {
-                        props.Add(new PropertyMetadata {
-                            Info = fieldInfo,
-                            IsField = true
-                        });
-                    }
-                }
-
-                typeProperties.Add(type, props);
-            }
-
-            return typeProperties[type];
-        }
-
-        static ArrayMetadata GetCachedArrayMetadata(Type type) {
-            if (cachedArrayMetadata.ContainsKey(type)) {
-                return cachedArrayMetadata[type];
-            }
-
-            var data = new ArrayMetadata {
-                IsArray = type.IsArray,
-                ArrayRank = type.IsArray ? type.GetArrayRank() : 1,
-                IsList = type.GetInterface ("System.Collections.IList") != null
-            };
-
-            foreach (var propertyInfo in type.GetProperties()) {
-                if (propertyInfo.Name == "Item") {
-                    var parameters = propertyInfo.GetIndexParameters();
-
-                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(int)) {
-                        data.ElementType = propertyInfo.PropertyType;
-                    }
-                }
-            }
-            
-            cachedArrayMetadata.Add(type, data);
-            
-            return cachedArrayMetadata[type];
-        }
-
-        static MethodInfo GetImplicitConversionOperator(Type t1, Type t2) {
-            if (!implicitConversionOperatorCache.ContainsKey(t1)) {
-                implicitConversionOperatorCache.Add(t1, new Dictionary<Type, MethodInfo>());
-            }
-
-            if (implicitConversionOperatorCache[t1].ContainsKey(t2)) {
-                return implicitConversionOperatorCache[t1][t2];
-            }
-
-            var op = t1.GetMethod("op_Implicit", new[] {t2});
-
-            try {
-                implicitConversionOperatorCache[t1].Add(t2, op);
-            } catch (ArgumentException) {
-                return implicitConversionOperatorCache[t1][t2];
-            }
-
-            return op;
-        }
-
-        static void ToJsonImpl(object obj, int indentLevel, StringBuilder sb) {
+        static void WriteJson(object obj, int indentLevel, StringBuilder sb) {
             string tabs = "";
             if (JsonConfig.CurrentConfig.PrettyPrint) {
                 for (int i = 0; i < indentLevel; ++i) {
@@ -172,7 +58,7 @@ namespace Voorhees {
                         if (JsonConfig.CurrentConfig.PrettyPrint) {
                             sb.Append(tabs + "[\n");
                             for (var i = 0; i < arrayVal.Length; i++) {
-                                ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1, sb);
+                                WriteJson(arrayVal.GetValue(i), indentLevel + 1, sb);
                                 if (i < arrayVal.Length - 1) {
                                     sb.Append(",");
                                 }
@@ -182,7 +68,7 @@ namespace Voorhees {
                         } else {
                             sb.Append("[");
                             for (int i = 0; i < arrayVal.Length; ++i) {
-                                ToJsonImpl(arrayVal.GetValue(i), indentLevel + 1, sb);
+                                WriteJson(arrayVal.GetValue(i), indentLevel + 1, sb);
                                 if (i < arrayVal.Length - 1) {
                                     sb.Append(",");
                                 }
@@ -214,7 +100,7 @@ namespace Voorhees {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                ToJsonImpl(arr.GetValue(index), indent + 1, sb);
+                                WriteJson(arr.GetValue(index), indent + 1, sb);
                             } else {
                                 jsonifyArray(arr, currentDimension + 1, indent + 1);
                             }
@@ -241,7 +127,7 @@ namespace Voorhees {
                     if (JsonConfig.CurrentConfig.PrettyPrint) {
                         sb.Append(tabs + "[\n");
                         for (var i = 0; i < listVal.Count; i++) {
-                            ToJsonImpl(listVal[i], indentLevel + 1, sb);
+                            WriteJson(listVal[i], indentLevel + 1, sb);
                             if (i < listVal.Count - 1) {
                                 sb.Append(",");
                             }
@@ -251,7 +137,7 @@ namespace Voorhees {
                     } else {
                         sb.Append("[");
                         for (int i = 0; i < listVal.Count; ++i) {
-                            ToJsonImpl(listVal[i], indentLevel + 1, sb);
+                            WriteJson(listVal[i], indentLevel + 1, sb);
                             if (i < listVal.Count - 1) {
                                 sb.Append(",");
                             }
@@ -274,7 +160,7 @@ namespace Voorhees {
                         string propertyName = entry.Key is string key ? key
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         sb.Append("\"" + propertyName + "\":");
-                        ToJsonImpl(entry.Value, indentLevel + 1, sb);
+                        WriteJson(entry.Value, indentLevel + 1, sb);
                     }
                     sb.Append("}");
                     return;
@@ -313,16 +199,16 @@ namespace Voorhees {
             }
 
             sb.Append("{");
-            foreach (var propertyMetadata in GetTypePropertyMetadata(obj_type)) {
+            foreach (var propertyMetadata in TypeInfo.GetTypePropertyMetadata(obj_type)) {
                 if (propertyMetadata.IsField) {
                     sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                    ToJsonImpl(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
+                    WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
 
                     if (propertyInfo.CanRead) {
                         sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        ToJsonImpl(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
+                        WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
                     }
                 }
             }
@@ -369,7 +255,7 @@ namespace Voorhees {
                 case JsonType.Boolean: return MapValueToType(jsonValue, typeof(bool), valueType, destinationType);
                 case JsonType.String: return MapValueToType(jsonValue, typeof(string), valueType, destinationType);
                 case JsonType.Array: {
-                    var arrayMetadata = GetCachedArrayMetadata(destinationType);
+                    var arrayMetadata = TypeInfo.GetCachedArrayMetadata(destinationType);
                     
                     if (arrayMetadata.IsArray) {
                         int rank = arrayMetadata.ArrayRank;
@@ -427,7 +313,7 @@ namespace Voorhees {
                     throw new Exception($"Type {destinationType} can't act as an array");
                 }
                 case JsonType.Object: {
-                    var objectMetadata = GetObjectMetadata(valueType);
+                    var objectMetadata = TypeInfo.GetObjectMetadata(valueType);
 
                     var instance = Activator.CreateInstance(valueType);
 
@@ -482,7 +368,7 @@ namespace Voorhees {
             }
             
             // Try using an implicit conversion operator
-            var implicitConversionOperator = GetImplicitConversionOperator(valueType, jsonType);
+            var implicitConversionOperator = TypeInfo.GetImplicitConversionOperator(valueType, jsonType);
             if (implicitConversionOperator != null) {
                 return implicitConversionOperator.Invoke(null, new[] {json.Value});
             }
@@ -491,51 +377,5 @@ namespace Voorhees {
             throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {destinationType}");
         }
 
-        static ObjectMetadata GetObjectMetadata(Type type) {
-            if (!cachedObjectMetadata.ContainsKey(type)) {
-                bool isDictionary = type.GetInterface("System.Collections.IDictionary") != null;
-
-                var objectMetadata = new ObjectMetadata {
-                    IsDictionary = isDictionary,
-                    Properties = new Dictionary<string, PropertyMetadata>(),
-                    ElementType = null
-                };
-
-                foreach (var propertyInfo in type.GetProperties()) {
-                    if (propertyInfo.Name == "Item") {
-                        var parameters = propertyInfo.GetIndexParameters();
-
-                        if (parameters.Length != 1) {
-                            continue;
-                        }
-
-                        if (parameters[0].ParameterType == typeof(string)) {
-                            objectMetadata.ElementType = propertyInfo.PropertyType;
-                        }
-
-                        continue;
-                    }
-
-                    objectMetadata.Properties.Add(propertyInfo.Name, new PropertyMetadata {
-                        Info = propertyInfo,
-                        Type = propertyInfo.PropertyType,
-                        Ignored = Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute))
-                    });
-                }
-
-                foreach (var fieldInfo in type.GetFields()) {
-                    objectMetadata.Properties.Add(fieldInfo.Name, new PropertyMetadata {
-                        Info = fieldInfo,
-                        IsField = true,
-                        Type = fieldInfo.FieldType,
-                        Ignored = Attribute.IsDefined(fieldInfo, typeof(JsonIgnoreAttribute))
-                    });
-                }
-
-                cachedObjectMetadata.Add(type, objectMetadata);
-            }
-
-            return cachedObjectMetadata[type];
-        }
     }
 }
