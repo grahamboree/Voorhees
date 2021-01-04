@@ -32,8 +32,8 @@ namespace Voorhees {
                 case JsonValue jsonValue: sb.Append(JsonWriter.ToJson(jsonValue)); return;
 
                 // JSON String
-                case string stringVal: sb.Append(tabs); sb.Append("\"" + stringVal + "\""); return;
-                case char charVal: sb.Append(tabs); sb.Append("\"" + charVal + "\""); return;
+                case string stringVal: sb.Append(tabs); JsonWriter.WriteString(sb, stringVal); return;
+                case char charVal: sb.Append(tabs); JsonWriter.WriteString(sb, "" + charVal); return;
 
                 // JSON Number
                 case float floatVal: sb.Append(tabs); sb.Append(floatVal.ToString(CultureInfo.InvariantCulture)); return;

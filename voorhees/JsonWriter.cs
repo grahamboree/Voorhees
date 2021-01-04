@@ -25,7 +25,7 @@ namespace Voorhees {
                 case JsonType.Int: result.Append((int) value); break;
                 case JsonType.Boolean: result.Append((bool) value ? "true" : "false"); break;
                 case JsonType.Null: result.Append("null"); break;
-                case JsonType.String: WriteString(result, value); break;
+                case JsonType.String: WriteString(result, (string)value); break;
                 default: throw new ArgumentOutOfRangeException();
             }
         }
@@ -35,10 +35,10 @@ namespace Voorhees {
         /// </summary>
         /// <param name="result">Where to append the result.</param>
         /// <param name="value">The JSON string value.</param>
-        static void WriteString(StringBuilder result, JsonValue value) {
+        internal static void WriteString(StringBuilder result, string value) {
             // Replace \ first because other characters expand into sequences that contain \
             result.Append('\"');
-            result.Append(((string) value)
+            result.Append(value
                 .Replace("\\", "\\\\")
                 .Replace("\"", "\\\"")
                 .Replace("/", "\\/")
