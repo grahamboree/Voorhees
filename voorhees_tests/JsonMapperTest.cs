@@ -198,6 +198,143 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
         }
     }
+    
+    [TestFixture]
+    public class JsonMapper_Write_MultiDimensionalArray_PrettyPrint {
+        [Test]
+        public void EmptyJaggedArray() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+            Assert.That(JsonMapper.ToJson(new int[][] { }), Is.EqualTo("[\n]"));
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        [Test]
+        public void EmptyMultiArray() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+            Assert.That(JsonMapper.ToJson(new int[,] { }), Is.EqualTo("[\n]"));
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        [Test]
+        public void JaggedArray() {
+            var arrayOfArrays = new[] {
+                new[] {1, 2}, 
+                new[] {3, 4}, 
+                new[] {5, 6}
+            };
+            
+            string json = 
+                "[\n" +
+                "\t[\n" +
+                "\t\t1,\n" +
+                "\t\t2\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t3,\n" +
+                "\t\t4\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t5,\n" +
+                "\t\t6\n" +
+                "\t]\n" +
+                "]";
+            
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+            Assert.That(JsonMapper.ToJson(arrayOfArrays), Is.EqualTo(json));
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        [Test]
+        public void MultiArray() {
+            string json = 
+                "[\n" +
+                "\t[\n" +
+                "\t\t1\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t2\n" +
+                "\t]\n" +
+                "]";
+            
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+            Assert.That(JsonMapper.ToJson(new[,] {{1}, {2}}), Is.EqualTo(json));
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        [Test]
+        public void LargeMultiArray() {
+            var multi = new[,,,] {
+                {
+                    {
+                        {1, 2},
+                        {3, 4}
+                    }, {
+                        {5, 6},
+                        {7, 8}
+                    }
+                }, {
+                    {
+                        {9, 10},
+                        {11, 12}
+                    }, {
+                        {13, 14},
+                        {15, 16}
+                    }
+                }
+            };
+
+            string json =
+                "[\n"+
+                "\t[\n" +
+                "\t\t[\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t1,\n" +
+                "\t\t\t\t2\n" +
+                "\t\t\t],\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t3,\n" +
+                "\t\t\t\t4\n" +
+                "\t\t\t]\n" +
+                "\t\t],\n" +
+                "\t\t[\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t5,\n" +
+                "\t\t\t\t6\n" +
+                "\t\t\t],\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t7,\n" +
+                "\t\t\t\t8\n" +
+                "\t\t\t]\n" +
+                "\t\t]\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t[\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t9,\n" +
+                "\t\t\t\t10\n" +
+                "\t\t\t],\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t11,\n" +
+                "\t\t\t\t12\n" +
+                "\t\t\t]\n" +
+                "\t\t],\n" +
+                "\t\t[\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t13,\n" +
+                "\t\t\t\t14\n" +
+                "\t\t\t],\n" +
+                "\t\t\t[\n" +
+                "\t\t\t\t15,\n" +
+                "\t\t\t\t16\n" +
+                "\t\t\t]\n" +
+                "\t\t]\n" +
+                "\t]\n" +
+                "]";
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+            Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+    }
 
     [TestFixture]
     public class JsonMapper_Write_Dictionary {
