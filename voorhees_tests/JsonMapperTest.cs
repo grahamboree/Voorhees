@@ -104,6 +104,19 @@ namespace Voorhees.Tests {
         public void IntArray() {
             Assert.That(JsonMapper.ToJson(new[] {1, 2, 3}), Is.EqualTo("[1,2,3]"));
         }
+    }
+    
+    [TestFixture]
+    public class JsonMapper_Write_List {
+        [Test]
+        public void EmptyList() {
+            Assert.That(JsonMapper.ToJson(new List<int>()), Is.EqualTo("[]"));
+        }
+
+        [Test]
+        public void Length1List() {
+            Assert.That(JsonMapper.ToJson(new List<int> {1}), Is.EqualTo("[1]"));
+        }
 
         [Test]
         public void IntList() {
@@ -140,6 +153,34 @@ namespace Voorhees.Tests {
 
         [Test]
         public void IntList() {
+            Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
+        }
+    }
+
+    [TestFixture]
+    public class JsonMapper_Write_List_PrettyPrint {
+        [SetUp]
+        public void Setup() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        [Test]
+        public void EmptyArray() {
+            Assert.That(JsonMapper.ToJson(new List<int>()), Is.EqualTo("[\n]"));
+        }
+
+        [Test]
+        public void Length1Array() {
+            Assert.That(JsonMapper.ToJson(new List<int> {1}), Is.EqualTo("[\n\t1\n]"));
+        }
+
+        [Test]
+        public void IntArray() {
             Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
         }
     }
@@ -198,6 +239,24 @@ namespace Voorhees.Tests {
                 "[[13,14],[15,16]]" +
                 "]]";
             Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+        }
+    }
+    
+    [TestFixture]
+    public class JsonMapper_Write_MultiDimensionalList {
+        [Test]
+        public void EmptyJaggedList() {
+            Assert.That(JsonMapper.ToJson(new List<List<int>>()), Is.EqualTo("[]"));
+        }
+
+        [Test]
+        public void JaggedList() {
+            var arrayOfArrays = new List<List<int>> {
+                new List<int> {1, 2}, 
+                new List<int> {3, 4}, 
+                new List<int> {5, 6}
+            };
+            Assert.That(JsonMapper.ToJson(arrayOfArrays), Is.EqualTo("[[1,2],[3,4],[5,6]]"));
         }
     }
     
@@ -335,6 +394,51 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+        }
+    }
+    
+    [TestFixture]
+    public class JsonMapper_Write_MultiDimensionalList_PrettyPrint {
+        [SetUp]
+        public void Setup() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+        
+        [Test]
+        public void EmptyJaggedList() {
+            Assert.That(JsonMapper.ToJson(new List<List<int>>()), Is.EqualTo("[\n]"));
+        }
+
+        [Test]
+        public void JaggedList() {
+            var listOfLists = new List<List<int>> {
+                new List<int> {1, 2}, 
+                new List<int> {3, 4}, 
+                new List<int> {5, 6}
+            };
+            
+            string json = 
+                "[\n" +
+                "\t[\n" +
+                "\t\t1,\n" +
+                "\t\t2\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t3,\n" +
+                "\t\t4\n" +
+                "\t],\n" +
+                "\t[\n" +
+                "\t\t5,\n" +
+                "\t\t6\n" +
+                "\t]\n" +
+                "]";
+            
+            Assert.That(JsonMapper.ToJson(listOfLists), Is.EqualTo(json));
         }
     }
 
