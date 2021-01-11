@@ -450,6 +450,71 @@ namespace Voorhees.Tests {
     }
 
     [TestFixture]
+    public class JsonMapper_Write_Object_PrettyPrint {
+        [SetUp]
+        public void Setup() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+
+        class TestType {
+            public int PubIntVal;
+#pragma warning disable 414
+            int privIntVal = -1;
+#pragma warning restore 414
+        }
+
+        [Test]
+        public void OnlySerializePublicFields() {
+            var instance = new TestType {PubIntVal = 42};
+            const string expected = "{\n\t\"PubIntVal\": 42\n}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
+        
+        class MultiFieldType {
+            public int PubIntVal;
+            public string PubStringVal;
+        }
+
+        [Test]
+        public void SerializeMultipleFields() {
+            var instance = new MultiFieldType {
+                PubIntVal = 42,
+                PubStringVal = "test"
+            };
+            const string expected = "{\n\t\"PubIntVal\": 42,\n\t\"PubStringVal\": \"test\"\n}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
+
+        class NestedClass {
+            public int PubIntegerVal;
+            public TestType TestTypeVal;
+        }
+        
+        [Test]
+        public void NestedObjectReferences() {
+            var instance = new NestedClass {
+                PubIntegerVal = 42,
+                TestTypeVal = new TestType {
+                    PubIntVal = 99
+                }
+            };
+            const string expected =
+                "{\n" + 
+                "\t\"PubIntegerVal\": 42,\n" +
+                "\t\"TestTypeVal\": {\n" +
+                "\t\t\"PubIntVal\": 99\n" +
+                "\t}\n" +
+                "}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
+    }
+
+    [TestFixture]
     public class JsonMapper_Write_DateTime {
         [Test]
         public void BasicDateTime() {

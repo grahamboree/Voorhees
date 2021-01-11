@@ -235,21 +235,56 @@ namespace Voorhees {
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
             }
 
-            sb.Append("{");
-            foreach (var propertyMetadata in TypeInfo.GetTypePropertyMetadata(obj_type)) {
-                if (propertyMetadata.IsField) {
-                    sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                    WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
-                } else {
-                    var propertyInfo = (PropertyInfo) propertyMetadata.Info;
-
-                    if (propertyInfo.CanRead) {
+            if (JsonConfig.CurrentConfig.PrettyPrint) {
+                sb.Append(tabs + "{\n");
+                
+                bool first = true;
+                var valueBuilder = new StringBuilder();
+                var metadata = TypeInfo.GetTypePropertyMetadata(obj_type);
+                foreach (var propertyMetadata in metadata) {
+                    if (!first) {
+                        sb.Append(",\n");
+                    }
+                    first = false;
+                    
+                    valueBuilder.Length = 0;
+                    if (propertyMetadata.IsField) {
+                        WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, valueBuilder);
+                    } else {
+                        var propertyInfo = (PropertyInfo) propertyMetadata.Info;
+                        if (propertyInfo.CanRead) {
+                            WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, valueBuilder);
+                        }
+                    }
+                    sb.Append(tabs + "\t\"" + propertyMetadata.Info.Name + "\": " + valueBuilder.ToString().Substring(indentLevel + 1));
+                }
+                if (metadata.Count > 0) {
+                    sb.Append("\n");
+                }
+                sb.Append(tabs + "}");
+            } else {
+                sb.Append("{");
+                bool first = true;
+                foreach (var propertyMetadata in TypeInfo.GetTypePropertyMetadata(obj_type)) {
+                    if (!first) {
+                        sb.Append(",");
+                    }
+                    first = false;
+                    
+                    if (propertyMetadata.IsField) {
                         sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
+                        WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
+                    } else {
+                        var propertyInfo = (PropertyInfo) propertyMetadata.Info;
+
+                        if (propertyInfo.CanRead) {
+                            sb.Append("\"" + propertyMetadata.Info.Name + "\":");
+                            WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
+                        }
                     }
                 }
+                sb.Append("}");
             }
-            sb.Append("}");
         }
         
         static object FromJson(JsonValue jsonValue, Type destinationType) {
