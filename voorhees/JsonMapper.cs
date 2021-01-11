@@ -27,6 +27,29 @@ namespace Voorhees {
                 }
             }
 
+            void Write1DArray(IList arrayVal) {
+                if (JsonConfig.CurrentConfig.PrettyPrint) {
+                    sb.Append(tabs + "[\n");
+                    for (var i = 0; i < arrayVal.Count; i++) {
+                        WriteJson(arrayVal[i], indentLevel + 1, sb);
+                        if (i < arrayVal.Count - 1) {
+                            sb.Append(",");
+                        }
+                        sb.Append("\n");
+                    }
+                    sb.Append(tabs + "]");
+                } else {
+                    sb.Append("[");
+                    for (int i = 0; i < arrayVal.Count; ++i) {
+                        WriteJson(arrayVal[i], indentLevel + 1, sb);
+                        if (i < arrayVal.Count - 1) {
+                            sb.Append(",");
+                        }
+                    }
+                    sb.Append("]");
+                }
+            }
+
             switch (obj) {
                 case null: sb.Append("null"); return;
                 case JsonValue jsonValue: sb.Append(JsonWriter.ToJson(jsonValue)); return;
@@ -55,26 +78,7 @@ namespace Voorhees {
                 case Array arrayVal: {
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            sb.Append(tabs + "[\n");
-                            for (var i = 0; i < arrayVal.Length; i++) {
-                                WriteJson(arrayVal.GetValue(i), indentLevel + 1, sb);
-                                if (i < arrayVal.Length - 1) {
-                                    sb.Append(",");
-                                }
-                                sb.Append("\n");
-                            }
-                            sb.Append(tabs + "]");
-                        } else {
-                            sb.Append("[");
-                            for (int i = 0; i < arrayVal.Length; ++i) {
-                                WriteJson(arrayVal.GetValue(i), indentLevel + 1, sb);
-                                if (i < arrayVal.Length - 1) {
-                                    sb.Append(",");
-                                }
-                            }
-                            sb.Append("]");
-                        }
+                        Write1DArray(arrayVal);
                         return;
                     }
                     
@@ -123,29 +127,7 @@ namespace Voorhees {
                     jsonifyArray(arrayVal, 0, indentLevel);
                     return;
                 }
-                case IList listVal: {
-                    if (JsonConfig.CurrentConfig.PrettyPrint) {
-                        sb.Append(tabs + "[\n");
-                        for (var i = 0; i < listVal.Count; i++) {
-                            WriteJson(listVal[i], indentLevel + 1, sb);
-                            if (i < listVal.Count - 1) {
-                                sb.Append(",");
-                            }
-                            sb.Append("\n");
-                        }
-                        sb.Append(tabs + "]");
-                    } else {
-                        sb.Append("[");
-                        for (int i = 0; i < listVal.Count; ++i) {
-                            WriteJson(listVal[i], indentLevel + 1, sb);
-                            if (i < listVal.Count - 1) {
-                                sb.Append(",");
-                            }
-                        }
-                        sb.Append("]");
-                    }
-                    return;
-                }
+                case IList listVal: Write1DArray(listVal); return;
 
                 // JSON Object
                 case IDictionary dictionary: {
@@ -448,6 +430,5 @@ namespace Voorhees {
             // No luck
             throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {destinationType}");
         }
-
     }
 }
