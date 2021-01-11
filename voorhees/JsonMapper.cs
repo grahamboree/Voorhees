@@ -149,21 +149,50 @@ namespace Voorhees {
 
                 // JSON Object
                 case IDictionary dictionary: {
-                    sb.Append("{");
-                    bool first = true;
-                    foreach (DictionaryEntry entry in dictionary) {
-                        if (!first) {
-                            sb.Append(",");
-                        }
-                        first = false;
+                    if (JsonConfig.CurrentConfig.PrettyPrint) {
+                        sb.Append(tabs + "{\n");
+                        bool first = true;
+                        var valueBuilder = new StringBuilder();
+                        foreach (DictionaryEntry entry in dictionary) {
+                            if (!first) {
+                                sb.Append(",\n");
+                            }
 
-                        string propertyName = entry.Key is string key ? key
-                            : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                        sb.Append("\"" + propertyName + "\":");
-                        WriteJson(entry.Value, indentLevel + 1, sb);
+                            first = false;
+                            
+                            valueBuilder.Length = 0;
+                            WriteJson(entry.Value, indentLevel + 1, valueBuilder);
+                            
+                            string propertyName = entry.Key is string key
+                                ? key
+                                : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                            sb.Append(tabs + "\t\"" + propertyName + "\": " + valueBuilder.ToString().Substring(indentLevel + 1));
+                        }
+                        if (dictionary.Count > 0) {
+                            sb.Append("\n");
+                        }
+                        sb.Append(tabs + "}");
+                        return;
+                    } else {
+                        sb.Append("{");
+                        bool first = true;
+                        foreach (DictionaryEntry entry in dictionary) {
+                            if (!first) {
+                                sb.Append(",");
+                            }
+
+                            first = false;
+
+                            string propertyName = entry.Key is string key
+                                ? key
+                                : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                            sb.Append("\"" + propertyName + "\":");
+                            WriteJson(entry.Value, indentLevel + 1, sb);
+                        }
+
+                        sb.Append("}");
+                        return;
                     }
-                    sb.Append("}");
-                    return;
                 }
             }
 

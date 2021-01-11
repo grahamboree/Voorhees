@@ -365,6 +365,42 @@ namespace Voorhees.Tests {
     }
 
     [TestFixture]
+    public class JsonMapper_Write_Dictionary_PrettyPrint {
+        [SetUp]
+        public void Setup() {
+            JsonConfig.CurrentConfig.PrettyPrint = true;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.PrettyPrint = false;
+        }
+        
+        [Test]
+        public void EmptyDictionary() {
+            var dict = new Dictionary<string, int>();
+            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo("{\n}"));
+        }
+
+        [Test]
+        public void Length1Dictionary() {
+            var dict = new Dictionary<string, int> {{"one", 1}};
+            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo("{\n\t\"one\": 1\n}"));
+        }
+
+        [Test]
+        public void Length3Dictionary() {
+            var dict = new Dictionary<string, int> {
+                {"one", 1},
+                {"two", 2},
+                {"three", 3}
+            };
+            const string expected = "{\n\t\"one\": 1,\n\t\"two\": 2,\n\t\"three\": 3\n}";
+            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo(expected));
+        }
+    }
+    
+    [TestFixture]
     public class JsonMapper_Write_Object {
         class TestType {
             public int PubIntVal;
