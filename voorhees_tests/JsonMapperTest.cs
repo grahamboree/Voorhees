@@ -365,7 +365,7 @@ namespace Voorhees.Tests {
     }
 
     [TestFixture]
-    public class JsonMapper_Write_OnlySerializePublicFields {
+    public class JsonMapper_Write_Object {
         class TestType {
             public int PubIntVal;
 #pragma warning disable 414
@@ -377,6 +377,38 @@ namespace Voorhees.Tests {
         public void OnlySerializePublicFields() {
             var instance = new TestType {PubIntVal = 42};
             const string expected = "{\"PubIntVal\":42}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
+        
+        class MultiFieldType {
+            public int PubIntVal;
+            public string PubStringVal;
+        }
+
+        [Test]
+        public void SerializeMultipleFields() {
+            var instance = new MultiFieldType {
+                PubIntVal = 42,
+                PubStringVal = "test"
+            };
+            const string expected = "{\"PubIntVal\":42,\"PubStringVal\":\"test\"}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
+
+        class NestedClass {
+            public int PubIntegerVal;
+            public TestType TestTypeVal;
+        }
+        
+        [Test]
+        public void NestedObjectReferences() {
+            var instance = new NestedClass {
+                PubIntegerVal = 42,
+                TestTypeVal = new TestType {
+                    PubIntVal = 99
+                }
+            };
+            const string expected = "{\"PubIntegerVal\":42,\"TestTypeVal\":{\"PubIntVal\":99}}";
             Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
         }
     }
