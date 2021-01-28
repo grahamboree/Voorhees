@@ -599,6 +599,13 @@ namespace Voorhees.Tests {
             const string expected = "{\"PubIntegerVal\":42,\"TestTypeVal\":{\"PubIntVal\":99}}";
             Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
         }
+
+        [Test]
+        public void AnonymousObject() {
+            var instance = new {stringVal = "someString", intVal = 3};
+            string expected = "{\"stringVal\":\"someString\",\"intVal\":3}";
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+        }
     }
 
     [TestFixture]
