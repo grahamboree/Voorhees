@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="JsonConfigTest.cs" />
     <Compile Include="JsonIgnoreTest.cs" />
-    <Compile Include="JsonMapperTest.cs" />
+    <Compile Include="JsonMapperTest_Writing.cs" />
     <Compile Include="JsonMapperTest_Reading.cs" />
     <Compile Include="JsonReaderTest.cs" />
     <Compile Include="JsonValueTest.cs" />
