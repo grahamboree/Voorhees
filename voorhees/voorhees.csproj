@@ -47,6 +47,7 @@
     <Compile Include="JsonConfig.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />
     <Compile Include="JsonReader.cs" />
+    <Compile Include="JsonStream.cs" />
     <Compile Include="JsonValue.cs" />
     <Compile Include="JsonWriter.cs" />
     <Compile Include="JsonMapper.cs" />
