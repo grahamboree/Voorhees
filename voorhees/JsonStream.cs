@@ -115,13 +115,9 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         protected void WriteString(string val) {
-            sb.Append(StringToJsonString(val));
-        }
-
-        /// Properly escapes special characters and wraps the string in quotes. 
-        internal static string StringToJsonString(string val) {
-            // Replace \ first because other characters expand into sequences that contain \
-            return "\"" + val
+            // Escape special characters
+            string escapedString = val
+                // Replace \ first because other characters expand into sequences that contain \
                 .Replace("\\", "\\\\")
                 .Replace("\"", "\\\"")
                 .Replace("/", "\\/")
@@ -129,8 +125,8 @@ namespace Voorhees {
                 .Replace("\f", "\\f")
                 .Replace("\n", "\\n")
                 .Replace("\r", "\\r")
-                .Replace("\t", "\\t")
-                + "\"";
+                .Replace("\t", "\\t");
+            sb.Append("\"" + escapedString + "\"");
         }
     }
 
