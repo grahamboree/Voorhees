@@ -5,16 +5,13 @@ using System.Reflection;
 using Voorhees.Internal;
 
 namespace Voorhees {
-    public static class JsonMapper {
+    public static partial class JsonMapper {
+        // Writing
         public static string ToJson(object obj) {
             var os = JsonConfig.CurrentConfig.PrettyPrint ? new PrettyPrintJsonOutputStream()
                 : new JsonOutputStream();
             WriteJsonToStream(obj, os);
             return os.ToString();
-        }
-
-        public static T FromJson<T>(string jsonString) {
-            return (T) FromJson(JsonReader.Read(jsonString), typeof(T));
         }
 
         /////////////////////////////////////////////////
@@ -208,6 +205,15 @@ namespace Voorhees {
             }
             os.WriteArrayEnd();
         }
+    }
+
+    public static partial class JsonMapper {
+        // Reading
+        public static T FromJson<T>(string jsonString) {
+            return (T) FromJson(JsonReader.Read(jsonString), typeof(T));
+        }
+
+        /////////////////////////////////////////////////
 
         static object FromJson(JsonValue jsonValue, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
