@@ -102,8 +102,6 @@ namespace Voorhees {
         public virtual void WriteObjectEnd() { sb.Append("}"); }
         #endregion
 
-        public void WriteNewline() { sb.Append("\n"); }
-
         /// Get the json stream contents.
         public override string ToString() { return sb.ToString(); }
 
@@ -188,7 +186,7 @@ namespace Voorhees {
         #region Json Array
         public override void WriteArrayStart() { tabs(); sb.Append("[\n"); indentLevel++; }
         public override void WriteArraySeparator() { sb.Append(",\n"); }
-        public override void WriteArrayListTerminator() { WriteNewline(); }
+        public override void WriteArrayListTerminator() { sb.Append("\n"); }
         public override void WriteArrayEnd() { indentLevel--; tabs(); sb.Append("]"); }
         #endregion
 
