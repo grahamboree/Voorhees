@@ -2,15 +2,15 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using Voorhees.Internal;
 
 namespace Voorhees {
     public static class JsonMapper {
         public static string ToJson(object obj) {
-            var sb = new StringBuilder();
-            WriteJson(obj, 0, sb);
-            return sb.ToString();
+            var os = JsonConfig.CurrentConfig.PrettyPrint ? new PrettyPrintJsonOutputStream()
+                : new JsonOutputStream();
+            WriteJsonToStream(obj, os);
+            return os.ToString();
         }
 
         public static T FromJson<T>(string jsonString) {
@@ -19,256 +19,196 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        static void WriteJson(object obj, int indentLevel, StringBuilder sb) {
-            string tabs = "";
-            if (JsonConfig.CurrentConfig.PrettyPrint) {
-                for (int i = 0; i < indentLevel; ++i) {
-                    tabs += "\t";
-                }
+        static void WriteJsonToStream(object obj, JsonOutputStream os) {
+            if (obj == null) {
+                os.WriteNull();
+                return;
+            }
+            
+            var objType = obj.GetType();
+
+            // See if there's a custom exporter for the object
+            if (JsonConfig.CurrentConfig.customExporters.TryGetValue(objType, out var customExporter)) {
+                customExporter(obj, os);
+                return;
             }
 
-            void Write1DArray(IList arrayVal) {
-                if (JsonConfig.CurrentConfig.PrettyPrint) {
-                    sb.Append(tabs + "[\n");
-                    for (var i = 0; i < arrayVal.Count; i++) {
-                        WriteJson(arrayVal[i], indentLevel + 1, sb);
-                        if (i < arrayVal.Count - 1) {
-                            sb.Append(",");
-                        }
-                        sb.Append("\n");
-                    }
-                    sb.Append(tabs + "]");
-                } else {
-                    sb.Append("[");
-                    for (int i = 0; i < arrayVal.Count; ++i) {
-                        WriteJson(arrayVal[i], indentLevel + 1, sb);
-                        if (i < arrayVal.Count - 1) {
-                            sb.Append(",");
-                        }
-                    }
-                    sb.Append("]");
-                }
+            // If not, maybe there's a built-in serializer
+            if (JsonConfig.builtInExporters.TryGetValue(objType, out var builtInExporter)) {
+                builtInExporter(obj, os);
+                return;
             }
-
-            switch (obj) {
-                case null: sb.Append("null"); return;
-                case JsonValue jsonValue: sb.Append(JsonWriter.ToJson(jsonValue)); return;
+            
+            switch (obj) { 
+                case JsonValue jsonValue: os.Write(jsonValue); return;
 
                 // JSON String
-                case string stringVal: sb.Append(tabs); sb.Append(JsonOutputStream.StringToJsonString(stringVal)); return;
-                case char charVal: sb.Append(tabs); sb.Append(JsonOutputStream.StringToJsonString("" + charVal)); return;
+                case string stringVal: os.Write(stringVal); return;
+                case char charVal: os.Write(charVal); return;
 
                 // JSON Number
-                case float floatVal: sb.Append(tabs); sb.Append(floatVal.ToString(CultureInfo.InvariantCulture)); return;
-                case double doubleVal: sb.Append(tabs); sb.Append(doubleVal.ToString(CultureInfo.InvariantCulture)); return;
-                case decimal decimalVal: sb.Append(tabs); sb.Append(decimalVal.ToString(CultureInfo.InvariantCulture)); return;
-                case byte byteVal: sb.Append(tabs); sb.Append(byteVal); return;
-                case sbyte sbyteVal: sb.Append(tabs); sb.Append(sbyteVal); return;
-                case int intVal: sb.Append(tabs); sb.Append(intVal); return;
-                case uint uintVal: sb.Append(tabs); sb.Append(uintVal); return;
-                case long longVal: sb.Append(tabs); sb.Append(longVal); return;
-                case ulong ulongVal: sb.Append(tabs); sb.Append(ulongVal); return;
-                case short shortVal: sb.Append(tabs); sb.Append(shortVal); return;
-                case ushort ushortVal: sb.Append(tabs); sb.Append(ushortVal); return;
+                case byte byteVal: os.Write(byteVal); return;
+                case sbyte sbyteVal: os.Write(sbyteVal); return;
+                case short shortVal: os.Write(shortVal); return;
+                case ushort ushortVal: os.Write(ushortVal); return;
+                case int intVal: os.Write(intVal); return;
+                case uint uintVal: os.Write(uintVal); return;
+                case long longVal: os.Write(longVal); return;
+                case ulong ulongVal: os.Write(ulongVal); return;
+                case float floatVal: os.Write(floatVal); return;
+                case double doubleVal: os.Write(doubleVal); return;
+                case decimal decimalVal: os.Write(decimalVal); return;
 
                 // JSON Boolean
-                case bool boolVal: sb.Append(tabs); sb.Append(boolVal ? "true" : "false"); return;
+                case bool boolVal: os.Write(boolVal); return;
 
                 // JSON Array
                 case Array arrayVal: {
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        Write1DArray(arrayVal);
+                        Write1DArrayJsonToStream(arrayVal, os);
                         return;
                     }
                     
                     // Handles arbitrary dimension arrays.
                     int[] index = new int[arrayVal.Rank];
-                    void jsonifyArray(Array arr, int currentDimension, int indent) {
-                        string arrayTabs = "";
-                        if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            for (int i = 0; i < indent; ++i) {
-                                arrayTabs += "\t";
-                            }
 
-                            sb.Append(arrayTabs);
-                        }
-
-                        sb.Append("[");
-                        if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            sb.Append("\n");
-                        }
+                    void jsonifyArray(Array arr, int currentDimension) {
+                        os.WriteArrayStart();
 
                         int length = arr.GetLength(currentDimension);
                         for (int i = 0; i < length; ++i) {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                WriteJson(arr.GetValue(index), indent + 1, sb);
+                                WriteJsonToStream(arr.GetValue(index), os);
                             } else {
-                                jsonifyArray(arr, currentDimension + 1, indent + 1);
+                                jsonifyArray(arr, currentDimension + 1);
                             }
                             
                             if (i < length - 1) {
-                                sb.Append(",");
-                            }
-                            
-                            if (JsonConfig.CurrentConfig.PrettyPrint) {
-                                sb.Append("\n");
+                                os.WriteArraySeparator();
+                            } else {
+                                os.WriteArrayListTerminator();
                             }
                         }
 
-                        if (JsonConfig.CurrentConfig.PrettyPrint) {
-                            sb.Append(arrayTabs);
-                        }
-
-                        sb.Append("]");
+                        os.WriteArrayEnd();
                     }
-                    jsonifyArray(arrayVal, 0, indentLevel);
+                    jsonifyArray(arrayVal, 0);
                     return;
                 }
-                case IList listVal: Write1DArray(listVal); return;
+                case IList listVal: Write1DArrayJsonToStream(listVal, os); return;
 
                 // JSON Object
                 case IDictionary dictionary: {
-                    if (JsonConfig.CurrentConfig.PrettyPrint) {
-                        sb.Append(tabs + "{\n");
-                        bool first = true;
-                        var valueBuilder = new StringBuilder();
-                        foreach (DictionaryEntry entry in dictionary) {
-                            if (!first) {
-                                sb.Append(",\n");
-                            }
+                    os.WriteObjectStart();
 
-                            first = false;
-                            
-                            valueBuilder.Length = 0;
-                            WriteJson(entry.Value, indentLevel + 1, valueBuilder);
-                            
-                            string propertyName = entry.Key is string key
-                                ? key
-                                : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                            sb.Append(tabs + "\t\"" + propertyName + "\": " + valueBuilder.ToString().Substring(indentLevel + 1));
+                    int entryIndex = 0;
+                    int length = dictionary.Count;
+                    
+                    foreach (DictionaryEntry entry in dictionary) {
+                        string propertyName = entry.Key is string key
+                            ? key
+                            : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                        os.Write(propertyName);
+                        os.WriteObjectKeyValueSeparator();
+                        WriteJsonToStream(entry.Value, os);
+                        
+                        if (entryIndex < length - 1) {
+                            os.WriteArraySeparator();
+                        } else {
+                            os.WriteArrayListTerminator();
                         }
-                        if (dictionary.Count > 0) {
-                            sb.Append("\n");
-                        }
-                        sb.Append(tabs + "}");
-                        return;
-                    } else {
-                        sb.Append("{");
-                        bool first = true;
-                        foreach (DictionaryEntry entry in dictionary) {
-                            if (!first) {
-                                sb.Append(",");
-                            }
-
-                            first = false;
-
-                            string propertyName = entry.Key is string key
-                                ? key
-                                : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                            sb.Append("\"" + propertyName + "\":");
-                            WriteJson(entry.Value, indentLevel + 1, sb);
-                        }
-
-                        sb.Append("}");
-                        return;
+                        entryIndex++;
                     }
+
+                    os.WriteObjectEnd();
+                    return;
                 }
             }
 
-            var obj_type = obj.GetType();
-
-            // See if there's a custom exporter for the object
-            if (JsonConfig.CurrentConfig.customExporters.TryGetValue(obj_type, out var customExporter)) {
-                sb.Append(tabs);
-                sb.Append(customExporter(obj));
-                return;
-            }
-
-            // If not, maybe there's a built-in serializer
-            if (JsonConfig.builtInExporters.TryGetValue(obj_type, out var builtInExporter)) {
-                sb.Append(tabs);
-                sb.Append(builtInExporter(obj));
-                return;
-            }
-
             if (obj is Enum) {
-                var enumType = Enum.GetUnderlyingType(obj_type);
-
+                var enumType = Enum.GetUnderlyingType(objType);
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(byte)) { sb.Append(tabs); sb.Append(((byte) obj).ToString()); return; }
+                if (enumType == typeof(byte)) { os.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { sb.Append(tabs); sb.Append(((sbyte) obj).ToString()); return; }
+                if (enumType == typeof(sbyte)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { sb.Append(tabs); sb.Append(((short) obj).ToString()); return; }
+                if (enumType == typeof(short)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { sb.Append(tabs); sb.Append(((ushort) obj).ToString()); return; }
+                if (enumType == typeof(ushort)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { sb.Append(tabs); sb.Append(((int) obj).ToString()); return; }
+                if (enumType == typeof(int)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { sb.Append(tabs); sb.Append(((uint) obj).ToString()); return; }
+                if (enumType == typeof(uint)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { sb.Append(tabs); sb.Append(((long) obj).ToString()); return; }
+                if (enumType == typeof(long)) { os.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { sb.Append(tabs); sb.Append(((ulong) obj).ToString()); return; }
+                if (enumType == typeof(ulong)) { os.Write((byte) obj);  return; }
 
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
             }
 
-            if (JsonConfig.CurrentConfig.PrettyPrint) {
-                sb.Append(tabs + "{\n");
-                
-                bool first = true;
-                var valueBuilder = new StringBuilder();
-                var metadata = TypeInfo.GetTypePropertyMetadata(obj_type);
-                foreach (var propertyMetadata in metadata) {
-                    if (!first) {
-                        sb.Append(",\n");
-                    }
-                    first = false;
-                    
-                    valueBuilder.Length = 0;
-                    if (propertyMetadata.IsField) {
-                        WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, valueBuilder);
-                    } else {
-                        var propertyInfo = (PropertyInfo) propertyMetadata.Info;
-                        if (propertyInfo.CanRead) {
-                            WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, valueBuilder);
-                        }
-                    }
-                    sb.Append(tabs + "\t\"" + propertyMetadata.Info.Name + "\": " + valueBuilder.ToString().Substring(indentLevel + 1));
-                }
-                if (metadata.Count > 0) {
-                    sb.Append("\n");
-                }
-                sb.Append(tabs + "}");
-            } else {
-                sb.Append("{");
-                bool first = true;
-                foreach (var propertyMetadata in TypeInfo.GetTypePropertyMetadata(obj_type)) {
-                    if (!first) {
-                        sb.Append(",");
-                    }
-                    first = false;
-                    
-                    if (propertyMetadata.IsField) {
-                        sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                        WriteJson(((FieldInfo) propertyMetadata.Info).GetValue(obj), indentLevel + 1, sb);
-                    } else {
-                        var propertyInfo = (PropertyInfo) propertyMetadata.Info;
+            os.WriteObjectStart();
+            
+            var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(objType);
+            for (var fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
+                var propertyMetadata = fieldsAndProperties[fieldIndex];
 
-                        if (propertyInfo.CanRead) {
-                            sb.Append("\"" + propertyMetadata.Info.Name + "\":");
-                            WriteJson(propertyInfo.GetValue(obj, null), indentLevel + 1, sb);
-                        }
+                if (!propertyMetadata.IsField) {
+                    var propertyInfo = propertyMetadata.Info as PropertyInfo;
+                    if (propertyInfo != null && !propertyInfo.CanRead) {
+                        fieldsAndProperties.RemoveAt(fieldIndex);
+                        fieldIndex--;                        
                     }
                 }
-                sb.Append("}");
             }
+
+            for (var fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
+                var propertyMetadata = fieldsAndProperties[fieldIndex];
+                
+                string key;
+                object value;
+
+                if (propertyMetadata.IsField) {
+                    var fieldInfo = (FieldInfo) propertyMetadata.Info;
+                    key = fieldInfo.Name;
+                    value = fieldInfo.GetValue(obj);
+                } else {
+                    var propertyInfo = (PropertyInfo) propertyMetadata.Info;
+                    key = propertyInfo.Name;
+                    value = propertyInfo.GetValue(obj, null);
+                }
+
+                os.Write(key);
+                os.WriteObjectKeyValueSeparator();
+                WriteJsonToStream(value, os);
+
+                if (fieldIndex < fieldsAndProperties.Count - 1) {
+                    os.WriteArraySeparator();
+                } else {
+                    os.WriteArrayListTerminator();
+                }
+            }
+
+            os.WriteObjectEnd();
         }
-        
+
+        static void Write1DArrayJsonToStream(IList arrayVal, JsonOutputStream os) {
+            os.WriteArrayStart();
+            for (var i = 0; i < arrayVal.Count; i++) {
+                WriteJsonToStream(arrayVal[i], os);
+
+                if (i < arrayVal.Count - 1) {
+                    os.WriteArraySeparator();
+                } else {
+                    os.WriteArrayListTerminator();
+                }
+            }
+            os.WriteArrayEnd();
+        }
+
         static object FromJson(JsonValue jsonValue, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;

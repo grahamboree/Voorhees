@@ -10,7 +10,7 @@ namespace Voorhees.Tests {
 
         [SetUp]
         public void SetUp() {
-            JsonConfig.CurrentConfig.RegisterExporter<TestType>(t => t.PubIntVal.ToString());
+            JsonConfig.CurrentConfig.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
         }
 
         [TearDown]
@@ -41,7 +41,7 @@ namespace Voorhees.Tests {
         public void UnRegisterExporter() {
             var instance = new TestType {PubIntVal = 42};
 
-            JsonConfig.CurrentConfig.RegisterExporter<TestType>(t => t.PubIntVal.ToString());
+            JsonConfig.CurrentConfig.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
             Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("42"));
 
             JsonConfig.CurrentConfig.UnRegisterExporter<TestType>();
@@ -68,7 +68,7 @@ namespace Voorhees.Tests {
         public void UnregistersSingleExporter() {
             var instance = new TestType {PubIntVal = 42};
 
-            JsonConfig.CurrentConfig.RegisterExporter<TestType>(t => t.PubIntVal.ToString());
+            JsonConfig.CurrentConfig.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
             Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("42"));
 
             JsonConfig.CurrentConfig.UnRegisterAllExporters();
@@ -80,13 +80,13 @@ namespace Voorhees.Tests {
             var instance1 = new TestType {PubIntVal = 42};
             var instance2 = new TestType2 {PubString = "hello"};
 
-            JsonConfig.CurrentConfig.RegisterExporter<TestType>(t => t.PubIntVal.ToString());
+            JsonConfig.CurrentConfig.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
             Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("42"));
             Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
 
-            JsonConfig.CurrentConfig.RegisterExporter<TestType2>(t => t.PubString.ToUpper());
+            JsonConfig.CurrentConfig.RegisterExporter<TestType2>((t, os) => os.Write(t.PubString.ToUpper()));
             Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("42"));
-            Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("HELLO"));
+            Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("\"HELLO\""));
 
             JsonConfig.CurrentConfig.UnRegisterAllExporters();
             Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("{\"PubIntVal\":42}"));

@@ -8,7 +8,7 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
         
-        public delegate string ExporterFunc<in T>(T objectToSerialize);
+        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonOutputStream os);
         public delegate T ImporterFunc<in TJson, out T>(TJson jsonData);
         
         /////////////////////////////////////////////////
@@ -18,7 +18,7 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         public void RegisterExporter<T>(ExporterFunc<T> exporter) {
-            customExporters[typeof(T)] = obj => exporter((T) obj);
+            customExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
         }
 
         public void UnRegisterExporter<T>() {
@@ -43,7 +43,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        internal delegate string ExporterFunc(object obj);
+        internal delegate void ExporterFunc(object obj, JsonOutputStream os);
         internal static readonly Dictionary<Type, ExporterFunc> builtInExporters = new Dictionary<Type, ExporterFunc>();
         internal readonly Dictionary<Type, ExporterFunc> customExporters = new Dictionary<Type, ExporterFunc>();
 
@@ -52,10 +52,8 @@ namespace Voorhees {
         internal readonly Dictionary<Type, Dictionary<Type, ImporterFunc>> customImporters = new Dictionary<Type, Dictionary<Type, ImporterFunc>>();
 
         static JsonConfig() {
-            builtInExporters[typeof(DateTime)] = obj =>
-                "\"" + ((DateTime) obj).ToString("o") + "\"";
-            builtInExporters[typeof(DateTimeOffset)] = obj =>
-                "\"" + ((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo) + "\"";
+            builtInExporters[typeof(DateTime)] = (obj, os) => os.Write(((DateTime) obj).ToString("o"));
+            builtInExporters[typeof(DateTimeOffset)] = (obj, os) => os.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
             
             RegisterBaseImporter<int, byte>(Convert.ToByte);
             RegisterBaseImporter<int, sbyte>(Convert.ToSByte);

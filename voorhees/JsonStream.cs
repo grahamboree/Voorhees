@@ -95,7 +95,10 @@ namespace Voorhees {
 
         #region Json Object
         public virtual void WriteObjectStart() { sb.Append("{"); }
-        public virtual void WriteObjectKeyValueSeparator() { sb.Append(":"); }
+        public virtual void WriteObjectKeyValueSeparator() {
+            sb.Append(":");
+            skipNextTabs = true; 
+        }
         public virtual void WriteObjectEnd() { sb.Append("}"); }
         #endregion
 
@@ -110,7 +113,6 @@ namespace Voorhees {
         protected bool skipNextTabs;
 
         /////////////////////////////////////////////////
-
 
         protected void WriteString(string val) {
             sb.Append(StringToJsonString(val));
@@ -196,7 +198,11 @@ namespace Voorhees {
 
         #region Json Object
         public override void WriteObjectStart() { tabs(); sb.Append("{\n"); indentLevel++; }
-        public override void WriteObjectKeyValueSeparator() { sb.Append(": "); }
+
+        public override void WriteObjectKeyValueSeparator() {
+            sb.Append(": ");
+            skipNextTabs = true;
+        }
         public override void WriteObjectEnd() { indentLevel--; tabs(); sb.Append("}"); }
         #endregion
 
