@@ -65,7 +65,7 @@ string dictJson = "{\"one\": 1, \"two\": 2}";
 Dictionary<string, int> numberNamesToInts = JsonMapper.FromJson<Dictionary<string, int>>(dictJson);
 Console.WriteLine(numberNamesToInts.Count); // 2
 Console.WriteLine(numberNamesToInts["one"]); // 1
-Console.WriteLine(numberNamesToInts["two"]); // 1
+Console.WriteLine(numberNamesToInts["two"]); // 2
 
 string arrayJson = "[1, 2, 3]";
 
