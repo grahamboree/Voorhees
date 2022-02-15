@@ -4,9 +4,14 @@ bin
 packages
 *.suo
 *.userprefs*
+voorhees.sln.DotSettings.user
 
-*.meta
+# editors
+.vscode
 .idea
+
+# unity
+*.meta
 
 # temp files
 *~
@@ -14,4 +19,4 @@ packages
 
 # Mac crap
 .DS_Store
-voorhees.sln.DotSettings.user
+
