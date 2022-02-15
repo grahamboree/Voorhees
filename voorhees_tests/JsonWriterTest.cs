@@ -96,7 +96,7 @@ namespace Voorhees.Tests {
 	}
 
 	[TestFixture]
-	public class JsonWriterPretyPrint {
+	public class JsonWriterPrettyPrint {
 		[SetUp]
 		public void SetUp() {
 			JsonConfig.CurrentConfig.PrettyPrint = true;
