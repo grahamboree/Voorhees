@@ -691,4 +691,22 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.ToJson(offset), Is.EqualTo("\"1970-01-02T03:04:05.0060000-05:00\""));
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Write_PolymorphicObjectReference {
+        class BaseClass {
+            public int baseClassValue;
+        }
+
+        class DerivedClass : BaseClass {
+            public bool derivedClassValue;
+        }
+
+        [Test]
+        public void PolymorphicTypeReference() {
+            var value = new DerivedClass {baseClassValue = 2, derivedClassValue = false};
+            string json = "{\"derivedClassValue\":false,\"baseClassValue\":2}";
+            Assert.That(JsonMapper.ToJson(value), Is.EqualTo(json));
+        }
+    }
 }
