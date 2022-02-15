@@ -8,7 +8,7 @@ namespace Voorhees.Tests {
 	class JsonValueTest {
 		[Test]
 		public void Constructors() {
-			JsonValue test = new JsonValue();
+			var test = new JsonValue();
 			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
 
 			test = new JsonValue(false);
@@ -22,6 +22,9 @@ namespace Voorhees.Tests {
 
 			test = new JsonValue("test");
 			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			
+			test = new JsonValue(null);
+			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
 		}
 
 		[Test]
@@ -44,18 +47,34 @@ namespace Voorhees.Tests {
 			JsonValue test = false;
 			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
 			Assert.That((bool) test, Is.False);
+			Assert.Throws<InvalidCastException>(() => {
+				test = 1.0f;
+				bool b = (bool)test;
+			});
 
 			test = 1.0f;
 			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
 			Assert.That((float) test, Is.EqualTo(1.0f));
+			Assert.Throws<InvalidCastException>(() => {
+				test = true;
+				float b = (float)test;
+			});
 
 			test = 1;
 			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
 			Assert.That((int) test, Is.EqualTo(1));
+			Assert.Throws<InvalidCastException>(() => {
+				test = true;
+				int b = (int)test;
+			});
 
 			test = "test";
 			Assert.That(test.Type, Is.EqualTo(JsonType.String));
 			Assert.That((string) test, Is.EqualTo("test"));
+			Assert.Throws<InvalidCastException>(() => {
+				test = true;
+				string b = (string)test;
+			});
 		}
 
 		[Test]
@@ -202,23 +221,30 @@ namespace Voorhees.Tests {
 			test.Add(5);
 			Assert.That(test.Count, Is.EqualTo(1));
 			Assert.That((int) test[0], Is.EqualTo(5));
+
+			test[0] = 10;
+			Assert.That(test.Count, Is.EqualTo(1));
+			Assert.That((int) test[0], Is.EqualTo(10));
 		}
 
 		[Test]
 		public void Equality() {
 			// object
-			JsonValue one = new JsonValue {{"one", 1}, {"two", 2}};
-			JsonValue two = new JsonValue {{"one", 1}, {"two", 2}};
-			JsonValue three = new JsonValue {{"one", 1}, {"two", 2}, {"three", 3}};
+			var one = new JsonValue {{"one", 1}, {"two", 2}};
+			var two = new JsonValue {{"one", 1}, {"two", 2}};
+			var three = new JsonValue {{"one", "uno"}, {"two", 2}, {"three", 3}};
 			Assert.That(one.Equals(two), Is.True);
 			Assert.That(one.Equals(three), Is.False);
+			Assert.That(three.Equals(one), Is.False);
 
 			// array
 			one = new JsonValue {1, 2, 3};
 			two = new JsonValue {1, 2, 3};
 			three = new JsonValue {3, 2, 1};
+			var four = new JsonValue {3, 2, 1, 5};
 			Assert.That(one.Equals(two), Is.True);
 			Assert.That(one.Equals(three), Is.False);
+			Assert.That(three.Equals(four), Is.False);
 
 			// string
 			one = "one";
@@ -247,11 +273,20 @@ namespace Voorhees.Tests {
 			three = 2f;
 			Assert.That(one.Equals(two), Is.True);
 			Assert.That(one.Equals(three), Is.False);
+			
+			// null
+			var nullValOne = new JsonValue(null);
+			var nullValTwo = new JsonValue(null);
+			Assert.That(nullValOne.Equals(nullValTwo), Is.True);
+			Assert.That(nullValOne.Equals(null), Is.True);
+			
+			// mismatched types
+			Assert.That(nullValOne.Equals(one), Is.False);
 		}
 
 		[Test]
 		public void KVPCollection() {
-			JsonValue test = new JsonValue() {
+			var test = new JsonValue() {
 				{"one", 1},
 				{"two", 2},
 				{"three", 3},
@@ -259,7 +294,14 @@ namespace Voorhees.Tests {
 
 			test.Remove(new KeyValuePair<string, JsonValue>("one", 1));
 			Assert.That(test.Count, Is.EqualTo(2));
-			Assert.Throws<KeyNotFoundException>(() => test["one"].ToString());
+			Assert.Throws<KeyNotFoundException>(() => {
+				var s = test["one"].ToString();
+			});
+
+			JsonValue intVal = 4;
+			Assert.Throws<InvalidOperationException>(() => {
+				var oneVal = intVal["one"];
+			});
 
 			KeyValuePair<string, JsonValue>[] dest = new KeyValuePair<string, JsonValue>[2];
 			test.CopyTo(dest, 0);
