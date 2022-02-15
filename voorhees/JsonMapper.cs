@@ -7,22 +7,20 @@ using Voorhees.Internal;
 namespace Voorhees {
     public static partial class JsonMapper {
         // Writing
-        public static string ToJson(object obj) {
+        public static string ToJson<T>(T obj) {
             var os = JsonConfig.CurrentConfig.PrettyPrint ? new PrettyPrintJsonOutputStream()
                 : new JsonOutputStream();
-            WriteJsonToStream(obj, os);
+            WriteJsonToStream(obj, os, typeof(T));
             return os.ToString();
         }
 
         /////////////////////////////////////////////////
 
-        static void WriteJsonToStream(object obj, JsonOutputStream os) {
+        static void WriteJsonToStream(object obj, JsonOutputStream os, Type objType) {
             if (obj == null) {
                 os.WriteNull();
                 return;
             }
-            
-            var objType = obj.GetType();
 
             // See if there's a custom exporter for the object
             if (JsonConfig.CurrentConfig.customExporters.TryGetValue(objType, out var customExporter)) {
@@ -78,7 +76,8 @@ namespace Voorhees {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                WriteJsonToStream(arr.GetValue(index), os);
+                                var arrayObject = arr.GetValue(index);
+                                WriteJsonToStream(arrayObject, os, arr.GetType().GetElementType());
                             } else {
                                 jsonifyArray(arr, currentDimension + 1);
                             }
@@ -110,7 +109,8 @@ namespace Voorhees {
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         os.Write(propertyName);
                         os.WriteObjectKeyValueSeparator();
-                        WriteJsonToStream(entry.Value, os);
+                        var value = entry.Value;
+                        WriteJsonToStream(value, os, value.GetType());
                         
                         if (entryIndex < length - 1) {
                             os.WriteArraySeparator();
@@ -180,7 +180,7 @@ namespace Voorhees {
 
                 os.Write(key);
                 os.WriteObjectKeyValueSeparator();
-                WriteJsonToStream(value, os);
+                WriteJsonToStream(value, os, value.GetType());
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
                     os.WriteArraySeparator();
@@ -192,12 +192,13 @@ namespace Voorhees {
             os.WriteObjectEnd();
         }
 
-        static void Write1DArrayJsonToStream(IList arrayVal, JsonOutputStream os) {
+        static void Write1DArrayJsonToStream(IList list, JsonOutputStream os) {
             os.WriteArrayStart();
-            for (var i = 0; i < arrayVal.Count; i++) {
-                WriteJsonToStream(arrayVal[i], os);
+            for (var i = 0; i < list.Count; i++) {
+                var listVal = list[i];
+                WriteJsonToStream(listVal, os, listVal.GetType());
 
-                if (i < arrayVal.Count - 1) {
+                if (i < list.Count - 1) {
                     os.WriteArraySeparator();
                 } else {
                     os.WriteArrayListTerminator();

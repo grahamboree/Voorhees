@@ -132,7 +132,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void Null() {
-            Assert.That(JsonMapper.ToJson(null), Is.EqualTo("null"));
+            Assert.That(JsonMapper.ToJson<object>(null), Is.EqualTo("null"));
         }
     }
 
