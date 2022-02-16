@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees", "voorhees\voorhees.csproj", "{DD1A64C1-669D-4C05-9DB7-408E9817255D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees", "src\voorhees\voorhees.csproj", "{DD1A64C1-669D-4C05-9DB7-408E9817255D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees_tests", "voorhees_tests\voorhees_tests.csproj", "{D2FE0F9C-020F-4FC2-9F8C-2C2B176A0BAA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees.tests", "test\voorhees.tests.csproj", "{D2FE0F9C-020F-4FC2-9F8C-2C2B176A0BAA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DD1A64C1-669D-4C05-9DB7-408E9817255D} = {DD1A64C1-669D-4C05-9DB7-408E9817255D}
 	EndProjectSection
