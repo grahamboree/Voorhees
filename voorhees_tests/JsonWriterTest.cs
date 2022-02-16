@@ -108,38 +108,174 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void PrettyPrintSimpleArray() {
-			var test = new JsonValue {1, 2, 3, 4};
+		public void WriteNullWritesNull() {
+			var os = new PrettyPrintJsonOutputStream();
+			os.WriteNull();
+			Assert.That(os.ToString(), Is.EqualTo("null"));
+		}
+
+		[Test]
+		public void WriteBoolWritesJsonTrueOrFalse() {
+			var os = new PrettyPrintJsonOutputStream();
+			os.Write(true);
+			Assert.That(os.ToString(), Is.EqualTo("true"));
+		}
+
+		[Test]
+		public void WriteIntegralTypesWritesInts() {
+			var os = new PrettyPrintJsonOutputStream();
+			os.Write((byte)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((sbyte)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((short)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((ushort)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write(1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((uint)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((long)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write((ulong)1);
+			Assert.That(os.ToString(), Is.EqualTo("1"));
+		}
+
+		[Test]
+		public void WriteFloatingPointTypesWritesNumber() {
+			var os = new PrettyPrintJsonOutputStream();
+			os.Write(1.5f);
+			Assert.That(os.ToString(), Is.EqualTo("1.5"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write(1.5);
+			Assert.That(os.ToString(), Is.EqualTo("1.5"));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write(1.5m);
+			Assert.That(os.ToString(), Is.EqualTo("1.5"));
+		}
+
+		[Test]
+		public void WriteStringTypesWritesString() {
+			var os = new PrettyPrintJsonOutputStream();
+			os.Write('c');
+			Assert.That(os.ToString(), Is.EqualTo("\"c\""));
+
+			os = new PrettyPrintJsonOutputStream();
+			os.Write("test");
+			Assert.That(os.ToString(), Is.EqualTo("\"test\""));
+		}
+
+		[Test]
+		public void WriteArrayWritesPrettyPrintedArray() {
+			var test = new JsonValue { 1, 2, 3, 4 };
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
 		}
 
 		[Test]
-		public void PrettyPrintNestedArray() {
-			var test = new JsonValue {1, new JsonValue {2, 3}, 4};
+		public void WriteNestedArrayWritesPrettyPrintedArrays() {
+			var test = new JsonValue { 1, new JsonValue { 2, 3 }, 4 };
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t[\n\t\t2,\n\t\t3\n\t],\n\t4\n]"));
 		}
 
 		[Test]
-		public void PrettyPrintSimpleObject() {
+		public void WriteObjectWritesPrettyPrintedObject() {
 			var test = new JsonValue {
-				{"test", 1},
-				{"test2", 2}
+				{ "test", 1 },
+				{ "test2", 2 }
 			};
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\n\t\"test\": 1,\n\t\"test2\": 2\n}"));
 		}
 
 		[Test]
-		public void PrettyPrintNestedObject() {
+		public void WriteNestedObjectWritesPrettyPrintedNestedObjects() {
 			var test = new JsonValue {
-				{"test", 1}, {
+				{ "test", 1 }, {
 					"test2", new JsonValue {
-						{"test3", 3},
-						{"test4", 4}
+						{ "test3", 3 },
+						{ "test4", 4 }
 					}
 				}
 			};
 			var prettyJson = "{\n\t\"test\": 1,\n\t\"test2\": {\n\t\t\"test3\": 3,\n\t\t\"test4\": 4\n\t}\n}";
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo(prettyJson));
+		}
+
+		[Test]
+		public void PrettyPrintDeeplyNestedArray() {
+			var test = new JsonValue { Type = JsonType.Array };
+
+			var current = test;
+			for (int i = 0; i < 21; ++i) {
+				var newVal = new JsonValue { Type = JsonType.Array };
+				current.Add(newVal);
+				current = newVal;
+			}
+            current.Add(new JsonValue(42));
+			
+			var expected
+				= "[\n"
+				+ "\t[\n"
+				+ "\t\t[\n"
+				+ "\t\t\t[\n"
+				+ "\t\t\t\t[\n"
+				+ "\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t[\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t42\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t\t]\n"
+				+ "\t\t\t\t\t]\n"
+				+ "\t\t\t\t]\n"
+				+ "\t\t\t]\n"
+				+ "\t\t]\n"
+				+ "\t]\n"
+				+ "]";
+			Assert.That(JsonWriter.ToJson(test), Is.EqualTo(expected));
 		}
 	}
 }

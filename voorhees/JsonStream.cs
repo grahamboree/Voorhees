@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -18,7 +17,6 @@ namespace Voorhees {
                 case JsonType.Float:   Write((float) val); break;
                 case JsonType.Boolean: Write((bool) val); break;
                 case JsonType.String:  Write((string) val); break;
-                case JsonType.Null:    WriteNull(); break;
                 case JsonType.Array: {
                     WriteArrayStart();
 
@@ -56,7 +54,8 @@ namespace Voorhees {
 
                     WriteObjectEnd();
                 } break;
-                default: throw new ArgumentOutOfRangeException();
+                case JsonType.Null:
+                default: WriteNull(); break;
             }
         }
 
@@ -221,7 +220,7 @@ namespace Voorhees {
             // Add more entries to the tabs cache if necessary.
             for (int i = tabCache.Count; i < indentLevel; ++i) {
                 string tabs = "";
-                for (int j = 0; j < i; ++j) {
+                for (int j = 0; j <= i; ++j) {
                     tabs += "\t";
                 }
                 tabCache.Add(tabs);
