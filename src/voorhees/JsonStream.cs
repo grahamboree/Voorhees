@@ -82,7 +82,7 @@ namespace Voorhees {
 
         #region Json String
         public virtual void Write(string val) { WriteString(val); }
-        public virtual void Write(char val)   { Write("" + val); }
+        public virtual void Write(char val)   { Write(val.ToString()); }
         #endregion
 
         #region Json Array
@@ -112,18 +112,37 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         protected void WriteString(string val) {
-            // Escape special characters
-            string escapedString = val
-                // Replace \ first because other characters expand into sequences that contain \
-                .Replace("\\", "\\\\")
-                .Replace("\"", "\\\"")
-                .Replace("/", "\\/")
-                .Replace("\b", "\\b")
-                .Replace("\f", "\\f")
-                .Replace("\n", "\\n")
-                .Replace("\r", "\\r")
-                .Replace("\t", "\\t");
-            sb.Append("\"" + escapedString + "\"");
+            bool simpleString = true;
+            foreach (char c in val) {
+                simpleString &= c >= 32 && c != '"' && c != '/' && c != '\\';
+            }
+
+            if (simpleString) {
+                sb.Append("\"" + val + "\"");
+                return;
+            }
+
+            sb.Append("\"");
+            foreach (char c in val) {
+                switch (c) {
+                    case '\\': sb.Append("\\\\"); break;
+                    case '\"': sb.Append("\\\""); break;
+                    case '/':  sb.Append("\\/");  break;
+                    case '\b': sb.Append("\\b");  break;
+                    case '\f': sb.Append("\\f");  break;
+                    case '\n': sb.Append("\\n");  break;
+                    case '\r': sb.Append("\\r");  break;
+                    case '\t': sb.Append("\\t");  break;
+                    default: {
+                        if (c < 32) {
+                            sb.Append($"\\u{(int)c:X4}");
+                        } else {
+                            sb.Append(c);
+                        }
+                    } break;
+                }
+            }
+            sb.Append("\"");
         }
     }
 

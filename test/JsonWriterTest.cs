@@ -93,6 +93,24 @@ namespace Voorhees.Tests {
 			test.Type = JsonType.Object;
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\":{\"test2\":2}}"));
 		}
+
+		[Test]
+		public void WriteControlCharacters() {
+			for (int i = 0; i < 32; ++i) {
+				string str = ((char)i).ToString();
+
+				string expected = $"\"\\u{i:X4}\"";
+				switch (i) {
+					case 8:  expected = "\"\\b\""; break;
+					case 9:  expected = "\"\\t\""; break;
+					case 10: expected = "\"\\n\""; break;
+					case 12: expected = "\"\\f\""; break;
+					case 13: expected = "\"\\r\""; break;
+				}
+				
+				Assert.That(JsonWriter.ToJson(new JsonValue(str)), Is.EqualTo(expected));
+			}
+		}
 	}
 
 	[TestFixture]
