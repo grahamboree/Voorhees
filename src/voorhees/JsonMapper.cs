@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using Voorhees.Internal;
+using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
     public static partial class JsonMapper {
