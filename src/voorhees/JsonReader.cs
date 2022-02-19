@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Text;
 
 namespace Voorhees {
-   /// Thrown when trying to read invalid JSON data.
-   /// The <c>message</c> field will contain more info about the specific
-   /// json format error
-   public class InvalidJsonException : Exception {
-      public InvalidJsonException(string message) : base(message) {
-      }
-   }
-
    /// Static class that handles reading and parsing JSON
    public static class JsonReader {
       /// <summary>
@@ -19,19 +10,13 @@ namespace Voorhees {
       /// <returns>A JsonValue object that matches the json data</returns>
       /// <exception cref="InvalidJsonException">If the input JSON has invalid JSON syntax or characters.</exception>
       public static JsonValue Read(string json) {
-         if (json == null) {
-            throw new ArgumentException("Json string is null", nameof(json));
-         }
-
          try {
-            // Read the json.
-            int readIndex = 0;
-            var result = ReadJsonValue(json, ref readIndex);
+            var tokenizer = new JsonTokenizer(json);
+            var result = ReadJsonValue(tokenizer);
 
             // Make sure there's no additional json in the buffer.
-            SkipWhitespace(json, ref readIndex);
-            if (readIndex <= json.Length - 1) {
-               throw new InvalidJsonException($"Expected end of file at column {readIndex}!");
+            if (tokenizer.NextToken != JsonToken.EOF) {
+               throw new InvalidJsonException($"Expected end of file at character {tokenizer.Cursor}!");
             }
             
             return result;
@@ -39,214 +24,109 @@ namespace Voorhees {
             throw new InvalidJsonException("Unexpected end of file!");
          }
       }
-
+      
       /////////////////////////////////////////////////
       
-      static JsonValue ReadJsonValue(string json, ref int readIndex) {
-         SkipWhitespace(json, ref readIndex);
-
-         // array
-         if (json[readIndex] == '[') {
-            return ReadArray(json, ref readIndex);
-         }
-
-         // object
-         if (json[readIndex] == '{') {
-            return ReadObject(json, ref readIndex);
-         }
-
-         // string
-         if (json[readIndex] == '"') {
-            return ReadString(json, ref readIndex);
-         }
-
-         // number
-         if (json[readIndex] == '-' || (json[readIndex] <= '9' && json[readIndex] >= '0')) {
-            return ReadNumber(json, ref readIndex);
-         }
-         
-         int charsLeft = json.Length - readIndex;
-
-         // true
-         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "true") {
-            readIndex += 4;
-            return true;
-         }
-
-         // false
-         if (charsLeft >= 5 && json.Substring(readIndex, 5) == "false") {
-            readIndex += 5;
-            return false;
-         }
-
-         // null
-         if (charsLeft >= 4 && json.Substring(readIndex, 4) == "null") {
-            readIndex += 4;
-            return new JsonValue();
-         }
-
-         throw new InvalidJsonException($"Unexpected character '{json[readIndex]}' at column {readIndex}!");
-      }
-   
-      static JsonValue ReadNumber(string json, ref int readIndex) {
-         int startIndex = readIndex;
-         readIndex++;
-         while (readIndex < json.Length &&
-               ((json[readIndex] >= '0' && json[readIndex] <= '9') ||
-                json[readIndex] == '.' || json[readIndex] == 'e' ||
-                json[readIndex] == 'E' || json[readIndex] == '-' ||
-                json[readIndex] == '+')) {
-            readIndex++;
-         }
-         string numberString = json.Substring(startIndex, readIndex - startIndex);
-
-         if (int.TryParse(numberString, out int intVal)) {
-            return intVal;
-         }
-
-         if (float.TryParse(numberString, out float floatVal)) {
-            return floatVal;
-         }
-
-         throw new InvalidJsonException($"'{numberString}' is not a number");
-      }
-
-      static JsonValue ReadString(string json, ref int readIndex) {
-         readIndex++; // Skip the '"'
-
-         // trivial string parsing short-circuit
-         for (int readAheadIndex = readIndex; readAheadIndex < json.Length; ++readAheadIndex) {
-            char readAheadChar = json[readAheadIndex];
-            if (readAheadChar == '\\') {
-               // This string isn't trivial, so use the normal expensive parsing.
-               break;
-            }
-            
-            if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-               throw new InvalidJsonException($"Disallowed control character in string at column {readAheadIndex}!");
-            }
-
-            if (readAheadChar == '"') {
-               int start = readIndex;
-               int length = readAheadIndex - start;
-               readIndex = readAheadIndex + 1; // skip to after the closing "
-               return json.Substring(start, length);
-            }
-         }
-
-         var stringData = new StringBuilder();
-         bool backslash = false;
-         for (bool done = false; !done; ++readIndex) {
-            if (backslash) {
-               backslash = false;
-               switch (json[readIndex]) {
-                  case '\\': stringData.Append('\\'); break;
-                  case '"': stringData.Append('"'); break;
-                  case '/': stringData.Append('/'); break;
-                  case 'b': stringData.Append('\b'); break;
-                  case 'f': stringData.Append('\f'); break;
-                  case 'n': stringData.Append('\n'); break;
-                  case 'r': stringData.Append('\r'); break;
-                  case 't': stringData.Append('\t'); break;
-                  case 'u': {
-                     // Read 4 hex digits
-                     var codePoint = Convert.ToInt16(json.Substring(readIndex + 1, 4), 16);
-                     readIndex += 4;
-                     stringData.Append(char.ConvertFromUtf32(codePoint));
-                  } break;
-                  default:
-                     throw new InvalidJsonException($"Unknown escape character sequence: \\{json[readIndex]} at column {readIndex}!");
+      static JsonValue ReadJsonValue(JsonTokenizer tokenizer) {
+         switch (tokenizer.NextToken) {
+            case JsonToken.ArrayStart: return ReadArray(tokenizer);
+            case JsonToken.ArrayEnd: break;
+            case JsonToken.ObjectStart: return ReadObject(tokenizer);
+            case JsonToken.ObjectEnd: break;
+            case JsonToken.Separator: break;
+            case JsonToken.String: return new JsonValue(tokenizer.ConsumeString());
+            case JsonToken.Number: {
+               string numberString = tokenizer.ConsumeNumber();
+               
+               if (int.TryParse(numberString, out int intVal)) {
+                  return new JsonValue(intVal);
                }
-            } else {
-               switch (json[readIndex]) {
-                  case '\\':
-                     backslash = true;
-                     break;
-                  case '"':
-                     done = true;
-                     break;
-                  default:
-                     if (json[readIndex] <= 0x1F || json[readIndex] == 0x7F || (json[readIndex] >= 0x80 && json[readIndex] <= 0x9F)) {
-                        throw new InvalidJsonException($"Disallowed control character in string at column {readIndex}!");
-                     }
-                     stringData.Append(json[readIndex]);
-                     break;
-               }
-            }
 
+               if (float.TryParse(numberString, out float floatVal)) {
+                  return new JsonValue(floatVal);
+               }
+
+               throw new InvalidJsonException(
+                  $"Can't parse number string {numberString} ending at character {tokenizer.Cursor}");
+            }
+            case JsonToken.True:
+               tokenizer.ConsumeToken();
+               return new JsonValue(true);
+            case JsonToken.False:
+               tokenizer.ConsumeToken();
+               return new JsonValue(false);
+            case JsonToken.Null:
+               tokenizer.ConsumeToken();
+               return new JsonValue();
+            case JsonToken.None:
+            case JsonToken.EOF:
+               throw new InvalidJsonException($"Unexpected end of file at character {tokenizer.Cursor}");
+            default:
+               throw new ArgumentOutOfRangeException($"Unknown json token {tokenizer.NextToken}");
          }
-         return stringData.ToString();
+
+         throw new InvalidJsonException($"Unexpected character '{tokenizer.Json[tokenizer.Cursor]}' at column {tokenizer.Cursor}!");
       }
 
-      static JsonValue ReadArray(string json, ref int readIndex) {
-         readIndex++; // Skip the '['
-         SkipWhitespace(json, ref readIndex);
-
+      static JsonValue ReadArray(JsonTokenizer tokenizer) {
          var arrayValue = new JsonValue {Type = JsonType.Array};
+         
+         tokenizer.ConsumeToken(); // [
 
          bool expectingValue = false;
-         while (json[readIndex] != ']') {
+         
+         while (tokenizer.NextToken != JsonToken.ArrayEnd) {
             expectingValue = false;
-            arrayValue.Add(ReadJsonValue(json, ref readIndex));
-            SkipWhitespace(json, ref readIndex);
-            if (json[readIndex] == ',') {
+            arrayValue.Add(ReadJsonValue(tokenizer));
+            if (tokenizer.NextToken == JsonToken.Separator) {
                expectingValue = true;
-               readIndex++;
-               SkipWhitespace(json, ref readIndex);
-            } else if (json[readIndex] != ']') {
-               throw new InvalidJsonException($"Expected end array token at column {readIndex}!");
+               tokenizer.ConsumeToken(); // ,
+            } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
+               throw new InvalidJsonException($"Expected end array token or separator at column {tokenizer.Cursor}!");
             }
          }
 
          if (expectingValue) {
-            throw new InvalidJsonException($"Unexpected end array token at column {readIndex}!");
+            throw new InvalidJsonException($"Unexpected end array token at column {tokenizer.Cursor}!");
          }
 
-         readIndex++; // Skip the ']'
+         tokenizer.ConsumeToken(); // ]
+         
          return arrayValue;
       }
 
-      static JsonValue ReadObject(string json, ref int readIndex) {
+      static JsonValue ReadObject(JsonTokenizer tokenizer) {
          var result = new JsonValue { Type = JsonType.Object };
+         
+         tokenizer.ConsumeToken(); // {
+      
+         bool expectingValue = false;
+         while (tokenizer.NextToken != JsonToken.ObjectEnd) {
+            expectingValue = false;
+            string key = tokenizer.ConsumeString();
+            
+            if (tokenizer.NextToken != JsonToken.KeyValueSeparator) {
+               throw new InvalidJsonException($"Expected ':' at character {tokenizer.Cursor}!");
+            }
+            tokenizer.ConsumeToken(); // :
+            
+            result.Add(key, ReadJsonValue(tokenizer));
 
-         readIndex++; // Skip the '{'
-         SkipWhitespace(json, ref readIndex);
-         if (json[readIndex] != '}') {
-            while (true) {
-               SkipWhitespace(json, ref readIndex);
-               var key = ReadString(json, ref readIndex);
-               SkipWhitespace(json, ref readIndex);
-               if (json[readIndex] != ':') {
-                  throw new InvalidJsonException($"Expected ':' at column {readIndex }!");
-               }
-               ++readIndex; // Skip the ':'
-               SkipWhitespace(json, ref readIndex);
-               var value = ReadJsonValue(json, ref readIndex);
-               result.Add((string)key, value);
-
-               SkipWhitespace(json, ref readIndex);
-
-               if (json[readIndex] == ',') {
-                  readIndex++; // Skip the ','
-               } else {
-                  break;
-               }
+            if (tokenizer.NextToken == JsonToken.Separator) {
+               expectingValue = true;
+               tokenizer.ConsumeToken(); // ,
+            } else if (tokenizer.NextToken != JsonToken.ObjectEnd) {
+               throw new InvalidJsonException($"Unexpected token {tokenizer.NextToken} at character {tokenizer.Cursor}!");
             }
          }
 
-         if (json[readIndex] != '}') {
-            throw new InvalidJsonException($"Expected closing object token at column {readIndex}!");
+         if (expectingValue) {
+            throw new InvalidJsonException($"Unexpected end object token at column {tokenizer.Cursor}!");
          }
-
-         readIndex++; // Skip the '}'
-
+         
+         tokenizer.ConsumeToken(); // }
+         
          return result;
-      }
-
-      static void SkipWhitespace(string json, ref int readIndex) {
-         while (readIndex < json.Length && char.IsWhiteSpace(json[readIndex])) {
-            readIndex++;
-         }
       }
    }
 }
