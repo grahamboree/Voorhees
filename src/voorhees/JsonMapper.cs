@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
+    // Writing
     public static partial class JsonMapper {
-        // Writing
         public static string ToJson<T>(T obj) {
             var os = JsonConfig.CurrentConfig.PrettyPrint ? new PrettyPrintJsonOutputStream()
                 : new JsonOutputStream();
@@ -208,174 +209,266 @@ namespace Voorhees {
         }
     }
 
+    // Reading
     public static partial class JsonMapper {
-        // Reading
         public static T FromJson<T>(string jsonString) {
-            return (T) FromJson(JsonReader.Read(jsonString), typeof(T));
+            return (T) FromJson(new JsonTokenizer(jsonString), typeof(T));
         }
 
         /////////////////////////////////////////////////
 
-        static object FromJson(JsonValue jsonValue, Type destinationType) {
+        static object FromJson(JsonTokenizer tokenizer, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;
 
-            if (jsonValue.Type == JsonType.Null) {
+            if (tokenizer.NextToken == JsonToken.Null) {
                 if (destinationType.IsClass || underlyingType != null) {
                     return null;
                 }
                 throw new Exception($"Can't assign null to an instance of type {destinationType}");
             }
 
-            var jsonType = typeof(object);
-            switch (jsonValue.Type) {
-                case JsonType.Null:
-                case JsonType.Object: jsonType = typeof(object); break;
-                case JsonType.Array: jsonType = typeof(Array); break;
-                case JsonType.String: jsonType = typeof(string); break;
-                case JsonType.Boolean: jsonType = typeof(bool); break;
-                case JsonType.Int: jsonType = typeof(int); break;
-                case JsonType.Float: jsonType = typeof(float); break;
+            Type jsonType;
+            object jsonValue = null;
+            
+            switch (tokenizer.NextToken) {
+                case JsonToken.Null: 
+                case JsonToken.ObjectStart: jsonType = typeof(object); break;
+                case JsonToken.ArrayStart: jsonType = typeof(Array); break;
+                case JsonToken.String: jsonType = typeof(string); jsonValue = tokenizer.ConsumeString(); break;
+                case JsonToken.Number: {
+                    string numberString = tokenizer.ConsumeNumber();
+                    if (int.TryParse(numberString, out int intVal)) {
+                        jsonType = typeof(int);
+                        jsonValue = intVal;
+                    } else if (float.TryParse(numberString, out float floatVal)) {
+                        jsonType = typeof(float);
+                        jsonValue = floatVal;
+                    } else {
+                        throw new InvalidJsonException($"Can't parse number value: \"{numberString}\" at character {tokenizer.Cursor}");
+                    }
+                } break;
+                case JsonToken.True: jsonType = typeof(bool); jsonValue = true; break;
+                case JsonToken.False: jsonType = typeof(bool); jsonValue = false; break;
+                default: throw new ArgumentOutOfRangeException();
             }
 
             // If there's a custom importer that fits, use it
             var config = JsonConfig.CurrentConfig;
             if (config.customImporters.ContainsKey(jsonType) && config.customImporters[jsonType].ContainsKey(valueType)) {
-                return config.customImporters[jsonType][valueType](jsonValue.Value);
+                return config.customImporters[jsonType][valueType](jsonValue);
             }
 
             // Maybe there's a base importer that works
             if (JsonConfig.builtInImporters.ContainsKey(jsonType) && JsonConfig.builtInImporters[jsonType].ContainsKey(valueType)) {
-                return JsonConfig.builtInImporters[jsonType][valueType](jsonValue.Value);
+                return JsonConfig.builtInImporters[jsonType][valueType](jsonValue);
             }
 
-            switch (jsonValue.Type) {
-                case JsonType.Null:
-                case JsonType.Int: return MapValueToType(jsonValue, typeof(int), valueType, destinationType);
-                case JsonType.Float: return MapValueToType(jsonValue, typeof(float), valueType, destinationType);
-                case JsonType.Boolean: return MapValueToType(jsonValue, typeof(bool), valueType, destinationType);
-                case JsonType.String: return MapValueToType(jsonValue, typeof(string), valueType, destinationType);
-                case JsonType.Array: {
-                    var arrayMetadata = TypeInfo.GetCachedArrayMetadata(destinationType);
-                    
-                    if (arrayMetadata.IsArray) {
-                        int rank = arrayMetadata.ArrayRank;
-                        var elementType = destinationType.GetElementType();
+            if (jsonType == typeof(Array)) {
+                return MapArray(tokenizer, destinationType);
+            }
 
-                        if (elementType == null) {
-                            throw new InvalidOperationException("Attempting to map an array but the array element type is null");
-                        }
-                        
-                        if (rank == 1) { // Simple array
-                            var result = Array.CreateInstance(elementType, jsonValue.Count);
-                            for (int i = 0; i < jsonValue.Count; i++) {
-                                result.SetValue(FromJson(jsonValue[i], elementType), i);
-                            }
-                            return result;
-                        } else {
-                            if (jsonValue.Count == 0) {
-                                return Array.CreateInstance(elementType, new int[rank]);
-                            }
+            if (jsonType == typeof(object)) {
+                return MapObject(tokenizer, destinationType);
+            }
 
-                            // Figure out the size of each dimension the array.
-                            var lengths = new int[rank];
-                            var currentArray = jsonValue;
-                            for (int dimension = 0; dimension < rank; ++dimension) {
-                                lengths[dimension] = currentArray.Count;
-                                currentArray = currentArray[0];
-                            }
-                            
-                            var result = Array.CreateInstance(elementType, lengths);
-                            var currentIndex = new int[lengths.Length];
-                            void ReadArray(JsonValue current, int currentDimension) {
-                                for (int i = 0; i < current.Count; ++i) {
-                                    currentIndex[currentDimension] = i;
-                                    if (currentDimension == rank - 1) {
-                                        result.SetValue(FromJson(current[i], elementType), currentIndex);
-                                    } else {
-                                        ReadArray(current[i], currentDimension + 1);
-                                    }
-                                }
-                            }
-                            ReadArray(jsonValue, 0);
-                            return result;
-                        }
-                    }
-
-                    if (arrayMetadata.IsList) {
-                        var list = (IList) Activator.CreateInstance(destinationType);
-                        list.Clear();
-                        foreach (var element in jsonValue) {
-                            list.Add(FromJson(element, arrayMetadata.ElementType));
-                        }
-                        return list;
-                    }
-                    
-                    throw new Exception($"Type {destinationType} can't act as an array");
+            return MapValueToType(jsonValue, jsonType, valueType, destinationType);
+        }
+        
+        static void ReadList(JsonTokenizer tokenizer, IList list, Type elementType) {
+            tokenizer.ConsumeToken(); // [
+            
+            bool expectingValue = false;
+            while (tokenizer.NextToken != JsonToken.ArrayEnd) {
+                expectingValue = false;
+                list.Add(FromJson(tokenizer, elementType));
+                if (tokenizer.NextToken == JsonToken.Separator) {
+                    expectingValue = true;
+                    tokenizer.ConsumeToken(); // ,
+                } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
+                    throw new InvalidJsonException($"Expected end array token or separator at column {tokenizer.Cursor}!");
                 }
-                case JsonType.Object: {
-                    var objectMetadata = TypeInfo.GetObjectMetadata(valueType);
+            }
 
-                    var instance = Activator.CreateInstance(valueType);
+            if (expectingValue) {
+                throw new InvalidJsonException($"Unexpected end array token at column {tokenizer.Cursor}!");
+            }
 
-                    foreach (string property in jsonValue.Keys) {
-                        var val = jsonValue[property];
+            tokenizer.ConsumeToken(); // ]
+        }
 
-                        if (objectMetadata.Properties.TryGetValue(property, out var propertyMetadata)) {
-                            if (propertyMetadata.Ignored) {
-                                continue;
-                            }
-                            if (propertyMetadata.IsField) {
-                                ((FieldInfo) propertyMetadata.Info).SetValue(instance, FromJson(val, propertyMetadata.Type));
+        static IList ReadMultiList(JsonTokenizer tokenizer, Type elementType, int rank) {
+            tokenizer.ConsumeToken(); // [
+
+            IList list = new ArrayList();
+            
+            bool expectingValue = false;
+            while (tokenizer.NextToken != JsonToken.ArrayEnd) {
+                expectingValue = false;
+
+                if (rank > 1) {
+                    list.Add(ReadMultiList(tokenizer, elementType, rank - 1));
+                } else {
+                    list.Add(FromJson(tokenizer, elementType));
+                }
+                
+                if (tokenizer.NextToken == JsonToken.Separator) {
+                    expectingValue = true;
+                    tokenizer.ConsumeToken(); // ,
+                } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
+                    throw new InvalidJsonException($"Expected end array token or separator at column {tokenizer.Cursor}!");
+                }
+            }
+
+            if (expectingValue) {
+                throw new InvalidJsonException($"Unexpected end array token at column {tokenizer.Cursor}!");
+            }
+            
+            tokenizer.ConsumeToken(); // ]
+
+            return list;
+        }
+        
+        static void CopyArray(int[] currentIndex, int currentDimension, int rank, Array result, IList list, Type elementType) {
+            for (int i = 0; i < list.Count; ++i) {
+                currentIndex[currentDimension] = i;
+                if (currentDimension == rank - 1) {
+                    result.SetValue(Convert.ChangeType(list[i], elementType), currentIndex);
+                } else {
+                    CopyArray(currentIndex, currentDimension + 1, rank, result, (IList)list[i], elementType);
+                }
+            }
+        }
+        
+        static object MapArray(JsonTokenizer tokenizer, Type destinationType) {
+            var arrayMetadata = TypeInfo.GetCachedArrayMetadata(destinationType);
+            
+            if (arrayMetadata.IsArray) {
+                int rank = arrayMetadata.ArrayRank;
+                var elementType = destinationType.GetElementType();
+
+                if (elementType == null) {
+                    throw new InvalidOperationException("Attempting to map an array but the array element type is null");
+                }
+                
+                if (rank == 1) { // Simple array
+                    var tempValues = new List<object>(); 
+                    ReadList(tokenizer, tempValues, elementType);
+                    
+                    var result = Array.CreateInstance(elementType, tempValues.Count);
+                    for (int i = 0; i < tempValues.Count; i++) {
+                        result.SetValue(tempValues[i], i);
+                    }
+                    return result;
+                } else {
+                    var list = ReadMultiList(tokenizer, elementType, rank);
+                    
+                    // Compute rank
+                    var lengths = new int[rank];
+                    var curList = list;
+                    for (int i = 0; i < rank; ++i) {
+                        if (curList == null) {
+                            lengths[i] = 0;
+                        } else {
+                            lengths[i] = curList.Count;
+                            curList = (curList.Count != 0 && i < rank - 1) ? (IList)curList[0] : null;
+                        }
+                    }
+
+                    // Create the instance and copy the data.
+                    var result = Array.CreateInstance(elementType, lengths);
+                    CopyArray(new int[lengths.Length], 0, rank, result, list, elementType);
+                    return result;
+                }
+            }
+
+            if (arrayMetadata.IsList) {
+                var list = (IList) Activator.CreateInstance(destinationType);
+                ReadList(tokenizer, list, arrayMetadata.ElementType);
+                return list;
+            }
+            
+            throw new Exception($"Type {destinationType} can't act as an array");
+        }
+
+        static object MapObject(JsonTokenizer tokenizer, Type destinationType) {
+            var objectMetadata = TypeInfo.GetObjectMetadata(destinationType);
+            tokenizer.ConsumeToken(); // {
+
+            var instance = Activator.CreateInstance(destinationType);
+
+            bool expectingValue = false;
+
+            while (tokenizer.NextToken != JsonToken.ObjectEnd) {
+                expectingValue = false;
+                string propertyName = tokenizer.ConsumeString();
+                tokenizer.ConsumeToken(); // : 
+                
+                if (objectMetadata.Properties.TryGetValue(propertyName, out var propertyMetadata)) {
+                    if (propertyMetadata.Ignored) {
+                        // Read the value so we advance the tokenizer, but don't do anything with it.
+                        FromJson(tokenizer, propertyMetadata.Type);
+                    } else {
+                        if (propertyMetadata.IsField) {
+                            ((FieldInfo) propertyMetadata.Info).SetValue(instance, FromJson(tokenizer, propertyMetadata.Type));
+                        } else {
+                            var propertyInfo = (PropertyInfo)propertyMetadata.Info;
+                            if (propertyInfo.CanWrite) {
+                                propertyInfo.SetValue(instance, FromJson(tokenizer, propertyMetadata.Type), null);
                             } else {
-                                var propertyInfo = (PropertyInfo)propertyMetadata.Info;
-                                if (propertyInfo.CanWrite) {
-                                    propertyInfo.SetValue(instance, FromJson(val, propertyMetadata.Type), null);
-                                } else {
-                                    throw new Exception("Read property value from json but the property " +
-                                                        $"{propertyInfo.Name} in type {valueType} is read-only.");
-                                }
+                                throw new Exception("Read property value from json but the property " +
+                                                    $"{propertyInfo.Name} in type {destinationType} is read-only.");
                             }
-                        } else if (objectMetadata.IsDictionary) {
-                            ((IDictionary) instance).Add(property, FromJson(val, objectMetadata.ElementType));
-                        } else {
-                            throw new Exception($"The type {destinationType} doesn't have the property '{property}'");
                         }
                     }
-
-                    return instance;
+                } else if (objectMetadata.IsDictionary) {
+                    ((IDictionary) instance).Add(propertyName, FromJson(tokenizer, objectMetadata.ElementType));
+                } else {
+                    throw new Exception($"The type {destinationType} doesn't have the property '{propertyName}'");
                 }
-                default: throw new ArgumentOutOfRangeException();
+
+                if (tokenizer.NextToken == JsonToken.Separator) {
+                    expectingValue = true;
+                    tokenizer.ConsumeToken(); // ,
+                }
             }
+
+            if (expectingValue) {
+                throw new InvalidJsonException($"Unexpected \'}}\' at character {tokenizer.Cursor}");
+            }
+
+            tokenizer.ConsumeToken(); // }
+            
+            return instance;
         }
 
         /// <summary>
         /// Converts a basic json value to an object of the specified type.
         /// </summary>
-        /// <param name="json">The json value</param>
+        /// <param name="jsonValue">The json value</param>
         /// <param name="jsonType">The type of the json value (int, float, string, etc.)</param>
-        /// <param name="valueType"></param>
-        /// <param name="destinationType"></param>
+        /// <param name="valueType">The underlying value's type. e.g. an instance of a derived class.</param>
+        /// <param name="destinationType">The destination type.  e.g. a reference to a base class.</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        static object MapValueToType(JsonValue json, Type jsonType, Type valueType, Type destinationType) {
+        static object MapValueToType(object jsonValue, Type jsonType, Type valueType, Type destinationType) {
             if (valueType.IsAssignableFrom(jsonType)) {
-                return json.Value;
+                return Convert.ChangeType(Convert.ChangeType(jsonValue, valueType), destinationType);
             }
 
             // Integral value can be converted to enum values
             if (jsonType == typeof(int) && valueType.IsEnum) {
-                return Enum.ToObject(valueType, json.Value);
+                return Convert.ChangeType(Enum.ToObject(valueType, jsonValue), destinationType);
             }
             
             // Try using an implicit conversion operator
             var implicitConversionOperator = TypeInfo.GetImplicitConversionOperator(valueType, jsonType);
             if (implicitConversionOperator != null) {
-                return implicitConversionOperator.Invoke(null, new[] {json.Value});
+                return implicitConversionOperator.Invoke(null, new[] {jsonValue});
             }
 
             // No luck
-            throw new Exception($"Can't assign value '{JsonWriter.ToJson(json)}' ({jsonType}) to type {destinationType}");
+            throw new Exception($"Can't assign value of type '{jsonType}' to value type {valueType} and destination type {destinationType}");
         }
     }
 }
