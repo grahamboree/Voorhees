@@ -228,13 +228,24 @@ namespace Voorhees {
                 throw new Exception($"Can't assign null to an instance of type {destinationType}");
             }
 
+            // If there's a custom importer that fits, use it
+            var config = JsonConfig.CurrentConfig;
+            if (config.customImporters.TryGetValue(destinationType, out var customImporter)) {
+                return customImporter(JsonReader.ReadJsonValue(tokenizer));
+            }
+            
+            // Maybe there's a base importer that works
+            if (JsonConfig.builtInImporters.TryGetValue(destinationType, out var builtInImporter)) {
+                return builtInImporter(JsonReader.ReadJsonValue(tokenizer));
+            }
+            
             Type jsonType;
             object jsonValue = null;
             
             switch (tokenizer.NextToken) {
                 case JsonToken.Null: 
-                case JsonToken.ObjectStart: jsonType = typeof(object); break;
-                case JsonToken.ArrayStart: jsonType = typeof(Array); break;
+                case JsonToken.ObjectStart: return MapObject(tokenizer, destinationType);
+                case JsonToken.ArrayStart: return MapArray(tokenizer, destinationType);
                 case JsonToken.String: jsonType = typeof(string); jsonValue = tokenizer.ConsumeString(); break;
                 case JsonToken.Number: {
                     string numberString = tokenizer.ConsumeNumber();
@@ -251,25 +262,6 @@ namespace Voorhees {
                 case JsonToken.True: jsonType = typeof(bool); jsonValue = true; break;
                 case JsonToken.False: jsonType = typeof(bool); jsonValue = false; break;
                 default: throw new ArgumentOutOfRangeException();
-            }
-
-            // If there's a custom importer that fits, use it
-            var config = JsonConfig.CurrentConfig;
-            if (config.customImporters.ContainsKey(jsonType) && config.customImporters[jsonType].ContainsKey(valueType)) {
-                return config.customImporters[jsonType][valueType](jsonValue);
-            }
-
-            // Maybe there's a base importer that works
-            if (JsonConfig.builtInImporters.ContainsKey(jsonType) && JsonConfig.builtInImporters[jsonType].ContainsKey(valueType)) {
-                return JsonConfig.builtInImporters[jsonType][valueType](jsonValue);
-            }
-
-            if (jsonType == typeof(Array)) {
-                return MapArray(tokenizer, destinationType);
-            }
-
-            if (jsonType == typeof(object)) {
-                return MapObject(tokenizer, destinationType);
             }
 
             return MapValueToType(jsonValue, jsonType, valueType, destinationType);

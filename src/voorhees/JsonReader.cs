@@ -27,7 +27,7 @@ namespace Voorhees {
       
       /////////////////////////////////////////////////
       
-      static JsonValue ReadJsonValue(JsonTokenizer tokenizer) {
+      internal static JsonValue ReadJsonValue(JsonTokenizer tokenizer) {
          switch (tokenizer.NextToken) {
             case JsonToken.ArrayStart: return ReadArray(tokenizer);
             case JsonToken.ArrayEnd: break;

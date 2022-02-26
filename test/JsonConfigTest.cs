@@ -102,14 +102,12 @@ namespace Voorhees.Tests {
 
         [SetUp]
         public void SetUp() {
-            JsonConfig.CurrentConfig.RegisterImporter<int, TestType>(json =>
-                new TestType {PubIntVal = json}
-            );
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = (int)json});
         }
 
         [TearDown]
         public void TearDown() {
-            JsonConfig.CurrentConfig.UnRegisterImporter<int, TestType>();
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
         }
 
         [Test]
@@ -128,18 +126,18 @@ namespace Voorhees.Tests {
 
         [TearDown]
         public void TearDown() {
-            JsonConfig.CurrentConfig.UnRegisterImporter<int, TestType>();
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
         }
 
         [Test]
         public void UnRegisterImporter() {
-            JsonConfig.CurrentConfig.RegisterImporter<int, TestType>(i => new TestType {PubIntVal = i});
+            JsonConfig.CurrentConfig.RegisterImporter(jsonValue => new TestType {PubIntVal = (int)jsonValue});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
             Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
             
-            JsonConfig.CurrentConfig.UnRegisterImporter<int, TestType>();
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
             
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
         }
@@ -157,7 +155,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnregistersSingleImporter() {
-            JsonConfig.CurrentConfig.RegisterImporter<int, TestType>(i => new TestType {PubIntVal = i});
+            JsonConfig.CurrentConfig.RegisterImporter(jsonValue => new TestType {PubIntVal = (int)jsonValue});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -170,8 +168,8 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnregistersMultipleImporters() {
-            JsonConfig.CurrentConfig.RegisterImporter<int, TestType>(i => new TestType {PubIntVal = i});
-            JsonConfig.CurrentConfig.RegisterImporter<string, TestType2>(s => new TestType2 { PubString = s});
+            JsonConfig.CurrentConfig.RegisterImporter(jsonValue => new TestType {PubIntVal = (int)jsonValue});
+            JsonConfig.CurrentConfig.RegisterImporter(jsonValue => new TestType2 {PubString = (string)jsonValue});
 
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
