@@ -131,6 +131,8 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnRegisterImporter() {
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            
             JsonConfig.CurrentConfig.RegisterImporter(jsonValue => new TestType {PubIntVal = (int)jsonValue});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
@@ -185,4 +187,127 @@ namespace Voorhees.Tests {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
         }
     }
+    
+    [TestFixture]
+    public class JsonConfig_RegisterLowLevelImporter {
+        class TestType {
+            public int PubIntVal;
+        }
+
+        [SetUp]
+        public void SetUp() {
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = int.Parse(json.ConsumeNumber())});
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
+        }
+
+        [Test]
+        public void RegisterImporter() {
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+        }
+    }
+
+    [TestFixture]
+    public class JsonConfig_UnRegisterLowLevelImporter {
+        class TestType {
+            public int PubIntVal;
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
+        }
+
+        [Test]
+        public void UnRegisterImporter() {
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = int.Parse(json.ConsumeNumber())});
+            
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+            
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
+            
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+        }
+    }
+    
+    [TestFixture]
+    public class JsonConfig_UnRegisterAllLowLevelImporters {
+        class TestType {
+            public int PubIntVal;
+        }
+
+        class TestType2 {
+            public string PubString;
+        }
+
+        [Test]
+        public void UnregistersSingleImporter() {
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = int.Parse(json.ConsumeNumber())});
+            
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+
+            JsonConfig.CurrentConfig.UnRegisterAllImporters();
+            
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+        }
+
+        [Test]
+        public void UnregistersMultipleImporters() {
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
+            
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = int.Parse(json.ConsumeNumber())});
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType2 {PubString = json.ConsumeString()});
+
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+
+            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.TypeOf<TestType2>());
+            Assert.That(JsonMapper.FromJson<TestType2>("\"test\"").PubString, Is.EqualTo("test"));
+
+            JsonConfig.CurrentConfig.UnRegisterAllImporters();
+            
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
+        }
+    }
+
+    [TestFixture]
+    public class JsonConfig_RegisterHighAndLowLevelImporter {
+        class TestType {
+            public int PubIntVal;
+        }
+
+        [SetUp]
+        public void SetUp() {
+            JsonConfig.CurrentConfig.RegisterImporter((JsonValue json) => new TestType {PubIntVal = 999});
+            JsonConfig.CurrentConfig.RegisterImporter(json => new TestType {PubIntVal = int.Parse(json.ConsumeNumber())});
+        }
+
+        [TearDown]
+        public void TearDown() {
+            JsonConfig.CurrentConfig.UnRegisterImporter<TestType>();
+        }
+
+        [Test]
+        public void RegisterImporter() {
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+        }
+    }
+
 }

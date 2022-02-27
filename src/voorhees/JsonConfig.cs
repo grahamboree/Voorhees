@@ -19,63 +19,70 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         public void RegisterExporter<T>(ExporterFunc<T> exporter) {
-            customExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
+            CustomExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
         }
 
         public void UnRegisterExporter<T>() {
-            customExporters.Remove(typeof(T));
+            CustomExporters.Remove(typeof(T));
         }
 
         public void UnRegisterAllExporters() {
-            customExporters.Clear();
+            CustomExporters.Clear();
         }
 
         public void RegisterImporter<T>(ImporterFunc<T> importer) {
-            customImporters[typeof(T)] = json => importer(json);
+            CustomImporters[typeof(T)] = json => importer(json);
+        }
+
+        public void RegisterImporter<T>(LowLevelImporterFunc<T> importer) {
+            LowLevelCustomImporters[typeof(T)] = json => importer(json);
         }
 
         public void UnRegisterImporter<T>() {
-            customImporters.Remove(typeof(T));
+            CustomImporters.Remove(typeof(T));
+            LowLevelCustomImporters.Remove(typeof(T));
         }
 
         public void UnRegisterAllImporters() {
-            customImporters.Clear();
+            CustomImporters.Clear();
+            LowLevelCustomImporters.Clear();
         }
 
         /////////////////////////////////////////////////
 
         internal delegate void ExporterFunc(object obj, JsonOutputStream os);
-        internal static readonly Dictionary<Type, ExporterFunc> builtInExporters = new Dictionary<Type, ExporterFunc>();
-        internal readonly Dictionary<Type, ExporterFunc> customExporters = new Dictionary<Type, ExporterFunc>();
-
+        internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new Dictionary<Type, ExporterFunc>();
+        internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new Dictionary<Type, ExporterFunc>();
+        
         internal delegate object ImporterFunc(JsonValue input);
+        internal static readonly Dictionary<Type, LowLevelImporterFunc> BuiltInImporters = new Dictionary<Type, LowLevelImporterFunc>();
+        
         internal delegate object LowLevelImporterFunc(JsonTokenizer input);
-        internal static readonly Dictionary<Type, LowLevelImporterFunc> builtInImporters =
-            new Dictionary<Type, LowLevelImporterFunc>();
-        internal readonly Dictionary<Type, ImporterFunc> customImporters = new Dictionary<Type, ImporterFunc>();
+        internal readonly Dictionary<Type, ImporterFunc> CustomImporters = new Dictionary<Type, ImporterFunc>();
+        internal readonly Dictionary<Type, LowLevelImporterFunc> LowLevelCustomImporters = new Dictionary<Type, LowLevelImporterFunc>();
 
         /////////////////////////////////////////////////
 
         static JsonConfig() {
-            builtInExporters[typeof(DateTime)] = (obj, os) =>
+            BuiltInExporters[typeof(DateTime)] = (obj, os) =>
                 os.Write(((DateTime) obj).ToString("o"));
-            builtInExporters[typeof(DateTimeOffset)] = (obj, os) =>
+            BuiltInExporters[typeof(DateTimeOffset)] = (obj, os) =>
                 os.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
             
-            builtInImporters[typeof(byte)] = json => byte.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(sbyte)] = json => sbyte.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(short)] = json => short.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(ushort)] = json => ushort.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(int)] = json => int.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(uint)] = json => uint.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(long)] = json => long.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(ulong)] = json => ulong.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(byte)] = json => byte.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(sbyte)] = json => sbyte.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(short)] = json => short.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(ushort)] = json => ushort.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(int)] = json => int.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(uint)] = json => uint.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(long)] = json => long.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(ulong)] = json => ulong.Parse(json.ConsumeNumber());
 
-            builtInImporters[typeof(float)] = json => float.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(double)] = json => double.Parse(json.ConsumeNumber());
-            builtInImporters[typeof(decimal)] = json => decimal.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(float)] = json => float.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(double)] = json => double.Parse(json.ConsumeNumber());
+            BuiltInImporters[typeof(decimal)] = json => decimal.Parse(json.ConsumeNumber());
             
-            builtInImporters[typeof(char)] = json => {
+            BuiltInImporters[typeof(char)] = json => {
                 string stringVal = json.ConsumeString();
                 if (stringVal.Length > 1) {
                     throw new FormatException($"Trying to map a string of length > 1 to a char: \"{stringVal}\"");
@@ -83,8 +90,8 @@ namespace Voorhees {
                 return stringVal[0];
             };
 
-            builtInImporters[typeof(DateTime)] = json => DateTime.Parse(json.ConsumeString());
-            builtInImporters[typeof(DateTimeOffset)] = json => DateTimeOffset.Parse(json.ConsumeString());
+            BuiltInImporters[typeof(DateTime)] = json => DateTime.Parse(json.ConsumeString());
+            BuiltInImporters[typeof(DateTimeOffset)] = json => DateTimeOffset.Parse(json.ConsumeString());
         }
     }
 }

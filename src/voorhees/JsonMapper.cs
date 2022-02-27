@@ -24,13 +24,13 @@ namespace Voorhees {
             }
 
             // See if there's a custom exporter for the object
-            if (JsonConfig.CurrentConfig.customExporters.TryGetValue(objType, out var customExporter)) {
+            if (JsonConfig.CurrentConfig.CustomExporters.TryGetValue(objType, out var customExporter)) {
                 customExporter(obj, os);
                 return;
             }
 
             // If not, maybe there's a built-in serializer
-            if (JsonConfig.builtInExporters.TryGetValue(objType, out var builtInExporter)) {
+            if (JsonConfig.BuiltInExporters.TryGetValue(objType, out var builtInExporter)) {
                 builtInExporter(obj, os);
                 return;
             }
@@ -230,12 +230,15 @@ namespace Voorhees {
 
             // If there's a custom importer that fits, use it
             var config = JsonConfig.CurrentConfig;
-            if (config.customImporters.TryGetValue(destinationType, out var customImporter)) {
+            if (config.LowLevelCustomImporters.TryGetValue(destinationType, out var lowLevelImporter)) {
+                return lowLevelImporter(tokenizer);
+            }
+            if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
                 return customImporter(JsonReader.ReadJsonValue(tokenizer));
             }
             
             // Maybe there's a base importer that works
-            if (JsonConfig.builtInImporters.TryGetValue(destinationType, out var builtInImporter)) {
+            if (JsonConfig.BuiltInImporters.TryGetValue(destinationType, out var builtInImporter)) {
                 return builtInImporter(tokenizer);
             }
             
