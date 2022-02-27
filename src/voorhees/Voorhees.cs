@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 
 namespace Voorhees {
-    public class JsonConfig {
-        public static JsonConfig CurrentConfig = new JsonConfig();
+    public class Voorhees {
+        public static Voorhees Instance = new Voorhees();
         
         /////////////////////////////////////////////////
         
@@ -59,7 +59,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        static JsonConfig() {
+        static Voorhees() {
             BuiltInExporters[typeof(DateTime)] = (obj, os) =>
                 os.Write(((DateTime) obj).ToString("o"));
             BuiltInExporters[typeof(DateTimeOffset)] = (obj, os) =>

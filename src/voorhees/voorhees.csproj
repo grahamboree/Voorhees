@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internal\TypeInfo.cs" />
-    <Compile Include="JsonConfig.cs" />
+    <Compile Include="Voorhees.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />
     <Compile Include="JsonReader.cs" />
     <Compile Include="JsonOutputStream.cs" />
