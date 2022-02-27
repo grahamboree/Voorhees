@@ -5,6 +5,8 @@ using System.Collections.Generic;
 namespace Voorhees {
    /// JSON data type
    public enum JsonType {
+      Unspecified,
+      
       Null,
 
       Object,
@@ -21,7 +23,7 @@ namespace Voorhees {
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
       #region Fields
-      JsonType type = JsonType.Null;
+      JsonType type = JsonType.Unspecified;
 
       List<JsonValue> arrayValue;
       Dictionary<string, JsonValue> objectValue;
@@ -240,7 +242,7 @@ namespace Voorhees {
       /////////////////////////////////////////////////
 
       IDictionary<string, JsonValue> EnsureObject() {
-         if (type == JsonType.Null) {
+         if (type == JsonType.Unspecified) {
             type = JsonType.Object;
             objectValue = new Dictionary<string, JsonValue>();
          }
@@ -253,7 +255,7 @@ namespace Voorhees {
       }
 
       IList<JsonValue> EnsureArray() {
-         if (type == JsonType.Null) {
+         if (type == JsonType.Unspecified) {
             type = JsonType.Array;
             arrayValue = new List<JsonValue>();
          }

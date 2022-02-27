@@ -57,7 +57,7 @@ namespace Voorhees {
                return new JsonValue(false);
             case JsonToken.Null:
                tokenizer.ConsumeToken();
-               return new JsonValue();
+               return new JsonValue(null);
             case JsonToken.None:
             case JsonToken.EOF:
                throw new InvalidJsonException($"Unexpected end of file at character {tokenizer.Cursor}");

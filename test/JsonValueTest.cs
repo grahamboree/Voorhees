@@ -9,7 +9,7 @@ namespace Voorhees.Tests {
 		[Test]
 		public void Constructors() {
 			var test = new JsonValue();
-			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
+			Assert.That(test.Type, Is.EqualTo(JsonType.Unspecified));
 
 			test = new JsonValue(false);
 			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
