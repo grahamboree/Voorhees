@@ -8,9 +8,8 @@ using TypeInfo = Voorhees.Internal.TypeInfo;
 namespace Voorhees {
     // Writing
     public static partial class JsonMapper {
-        public static string ToJson<T>(T obj) {
-            var os = JsonConfig.CurrentConfig.PrettyPrint ? new PrettyPrintJsonOutputStream()
-                : new JsonOutputStream();
+        public static string ToJson<T>(T obj, bool prettyPrint = false) {
+            var os = new JsonOutputStream(prettyPrint);
             WriteJsonToStream(obj, os, typeof(T));
             return os.ToString();
         }

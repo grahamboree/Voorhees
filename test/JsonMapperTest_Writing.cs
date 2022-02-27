@@ -91,16 +91,6 @@ namespace Voorhees.Tests {
     
     [TestFixture]
     public class JsonMapper_Write_JsonValue_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-
         [Test]
         public void MapJsonValue() {
             var val = new JsonValue {
@@ -118,7 +108,7 @@ namespace Voorhees.Tests {
                 "\t\t\"san\"\n" +
                 "\t]\n" +
                 "}";
-            Assert.That(JsonMapper.ToJson(val), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(val, true), Is.EqualTo(expected));
         }
     }
     
@@ -174,62 +164,42 @@ namespace Voorhees.Tests {
 
     [TestFixture]
     public class JsonMapper_Write_Array_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-
         [Test]
         public void EmptyArray() {
-            Assert.That(JsonMapper.ToJson(new int[] { }), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(new int[] { }, true), Is.EqualTo("[\n]"));
         }
 
         [Test]
         public void Length1Array() {
-            Assert.That(JsonMapper.ToJson(new[] {1}), Is.EqualTo("[\n\t1\n]"));
+            Assert.That(JsonMapper.ToJson(new[] {1}, true), Is.EqualTo("[\n\t1\n]"));
         }
 
         [Test]
         public void IntArray() {
-            Assert.That(JsonMapper.ToJson(new[] {1, 2, 3}), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
+            Assert.That(JsonMapper.ToJson(new[] {1, 2, 3}, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
         }
 
         [Test]
         public void IntList() {
-            Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
+            Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
         }
     }
 
     [TestFixture]
     public class JsonMapper_Write_List_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-
         [Test]
         public void EmptyArray() {
-            Assert.That(JsonMapper.ToJson(new List<int>()), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(new List<int>(), true), Is.EqualTo("[\n]"));
         }
 
         [Test]
         public void Length1Array() {
-            Assert.That(JsonMapper.ToJson(new List<int> {1}), Is.EqualTo("[\n\t1\n]"));
+            Assert.That(JsonMapper.ToJson(new List<int> {1}, true), Is.EqualTo("[\n\t1\n]"));
         }
 
         [Test]
         public void IntArray() {
-            Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
+            Assert.That(JsonMapper.ToJson(new List<int> {1, 2, 3}, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3\n]"));
         }
     }
 
@@ -310,24 +280,14 @@ namespace Voorhees.Tests {
     
     [TestFixture]
     public class JsonMapper_Write_MultiDimensionalArray_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-        
         [Test]
         public void EmptyJaggedArray() {
-            Assert.That(JsonMapper.ToJson(new int[][] { }), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(new int[][] { }, true), Is.EqualTo("[\n]"));
         }
 
         [Test]
         public void EmptyMultiArray() {
-            Assert.That(JsonMapper.ToJson(new int[,] { }), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(new int[,] { }, true), Is.EqualTo("[\n]"));
         }
 
         [Test]
@@ -354,7 +314,7 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             
-            Assert.That(JsonMapper.ToJson(arrayOfArrays), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(arrayOfArrays, true), Is.EqualTo(json));
         }
 
         [Test]
@@ -369,7 +329,7 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             
-            Assert.That(JsonMapper.ToJson(new[,] {{1}, {2}}), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(new[,] {{1}, {2}}, true), Is.EqualTo(json));
         }
 
         [Test]
@@ -441,25 +401,15 @@ namespace Voorhees.Tests {
                 "\t\t]\n" +
                 "\t]\n" +
                 "]";
-            Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(multi, true), Is.EqualTo(json));
         }
     }
     
     [TestFixture]
     public class JsonMapper_Write_MultiDimensionalList_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-        
         [Test]
         public void EmptyJaggedList() {
-            Assert.That(JsonMapper.ToJson(new List<List<int>>()), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(new List<List<int>>(), true), Is.EqualTo("[\n]"));
         }
 
         [Test]
@@ -486,7 +436,7 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             
-            Assert.That(JsonMapper.ToJson(listOfLists), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(listOfLists, true), Is.EqualTo(json));
         }
     }
 
@@ -518,26 +468,16 @@ namespace Voorhees.Tests {
 
     [TestFixture]
     public class JsonMapper_Write_Dictionary_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-        
         [Test]
         public void EmptyDictionary() {
             var dict = new Dictionary<string, int>();
-            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo("{\n}"));
+            Assert.That(JsonMapper.ToJson(dict, true), Is.EqualTo("{\n}"));
         }
 
         [Test]
         public void Length1Dictionary() {
             var dict = new Dictionary<string, int> {{"one", 1}};
-            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo("{\n\t\"one\": 1\n}"));
+            Assert.That(JsonMapper.ToJson(dict, true), Is.EqualTo("{\n\t\"one\": 1\n}"));
         }
 
         [Test]
@@ -548,7 +488,7 @@ namespace Voorhees.Tests {
                 {"three", 3}
             };
             const string expected = "{\n\t\"one\": 1,\n\t\"two\": 2,\n\t\"three\": 3\n}";
-            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(dict, true), Is.EqualTo(expected));
         }
     }
     
@@ -610,16 +550,6 @@ namespace Voorhees.Tests {
 
     [TestFixture]
     public class JsonMapper_Write_Object_PrettyPrint {
-        [SetUp]
-        public void Setup() {
-            JsonConfig.CurrentConfig.PrettyPrint = true;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            JsonConfig.CurrentConfig.PrettyPrint = false;
-        }
-
         class TestType {
             public int PubIntVal;
 #pragma warning disable 414
@@ -631,7 +561,7 @@ namespace Voorhees.Tests {
         public void OnlySerializePublicFields() {
             var instance = new TestType {PubIntVal = 42};
             const string expected = "{\n\t\"PubIntVal\": 42\n}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
         }
         
         class MultiFieldType {
@@ -646,7 +576,7 @@ namespace Voorhees.Tests {
                 PubStringVal = "test"
             };
             const string expected = "{\n\t\"PubIntVal\": 42,\n\t\"PubStringVal\": \"test\"\n}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
         }
 
         class NestedClass {
@@ -669,7 +599,7 @@ namespace Voorhees.Tests {
                 "\t\t\"PubIntVal\": 99\n" +
                 "\t}\n" +
                 "}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
         }
     }
 

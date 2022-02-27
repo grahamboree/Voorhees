@@ -115,87 +115,77 @@ namespace Voorhees.Tests {
 
 	[TestFixture]
 	public class JsonWriterPrettyPrint {
-		[SetUp]
-		public void SetUp() {
-			JsonConfig.CurrentConfig.PrettyPrint = true;
-		}
-
-		[TearDown]
-		public void TearDown() {
-			JsonConfig.CurrentConfig.PrettyPrint = false;
-		}
-
 		[Test]
 		public void WriteNullWritesNull() {
-			var os = new PrettyPrintJsonOutputStream();
+			var os = new JsonOutputStream(true);
 			os.WriteNull();
 			Assert.That(os.ToString(), Is.EqualTo("null"));
 		}
 
 		[Test]
 		public void WriteBoolWritesJsonTrueOrFalse() {
-			var os = new PrettyPrintJsonOutputStream();
+			var os = new JsonOutputStream(true);
 			os.Write(true);
 			Assert.That(os.ToString(), Is.EqualTo("true"));
 		}
 
 		[Test]
 		public void WriteIntegralTypesWritesInts() {
-			var os = new PrettyPrintJsonOutputStream();
+			var os = new JsonOutputStream(true);
 			os.Write((byte)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((sbyte)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((short)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((ushort)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write(1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((uint)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((long)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write((ulong)1);
 			Assert.That(os.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteFloatingPointTypesWritesNumber() {
-			var os = new PrettyPrintJsonOutputStream();
+			var os = new JsonOutputStream(true);
 			os.Write(1.5f);
 			Assert.That(os.ToString(), Is.EqualTo("1.5"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write(1.5);
 			Assert.That(os.ToString(), Is.EqualTo("1.5"));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write(1.5m);
 			Assert.That(os.ToString(), Is.EqualTo("1.5"));
 		}
 
 		[Test]
 		public void WriteStringTypesWritesString() {
-			var os = new PrettyPrintJsonOutputStream();
+			var os = new JsonOutputStream(true);
 			os.Write('c');
 			Assert.That(os.ToString(), Is.EqualTo("\"c\""));
 
-			os = new PrettyPrintJsonOutputStream();
+			os = new JsonOutputStream(true);
 			os.Write("test");
 			Assert.That(os.ToString(), Is.EqualTo("\"test\""));
 		}
@@ -203,13 +193,13 @@ namespace Voorhees.Tests {
 		[Test]
 		public void WriteArrayWritesPrettyPrintedArray() {
 			var test = new JsonValue { 1, 2, 3, 4 };
-			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
+			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
 		}
 
 		[Test]
 		public void WriteNestedArrayWritesPrettyPrintedArrays() {
 			var test = new JsonValue { 1, new JsonValue { 2, 3 }, 4 };
-			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[\n\t1,\n\t[\n\t\t2,\n\t\t3\n\t],\n\t4\n]"));
+			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("[\n\t1,\n\t[\n\t\t2,\n\t\t3\n\t],\n\t4\n]"));
 		}
 
 		[Test]
@@ -218,7 +208,7 @@ namespace Voorhees.Tests {
 				{ "test", 1 },
 				{ "test2", 2 }
 			};
-			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\n\t\"test\": 1,\n\t\"test2\": 2\n}"));
+			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo("{\n\t\"test\": 1,\n\t\"test2\": 2\n}"));
 		}
 
 		[Test]
@@ -232,7 +222,7 @@ namespace Voorhees.Tests {
 				}
 			};
 			var prettyJson = "{\n\t\"test\": 1,\n\t\"test2\": {\n\t\t\"test3\": 3,\n\t\t\"test4\": 4\n\t}\n}";
-			Assert.That(JsonWriter.ToJson(test), Is.EqualTo(prettyJson));
+			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo(prettyJson));
 		}
 
 		[Test]
@@ -293,7 +283,7 @@ namespace Voorhees.Tests {
 				+ "\t\t]\n"
 				+ "\t]\n"
 				+ "]";
-			Assert.That(JsonWriter.ToJson(test), Is.EqualTo(expected));
+			Assert.That(JsonWriter.ToJson(test, true), Is.EqualTo(expected));
 		}
 	}
 }

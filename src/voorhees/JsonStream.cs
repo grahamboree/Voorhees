@@ -4,9 +4,13 @@ using System.Text;
 
 namespace Voorhees {
     public class JsonOutputStream {
-        public virtual void WriteNull() { sb.Append("null"); }
+        public JsonOutputStream(bool prettyPrint = false) {
+            this.prettyPrint = prettyPrint;
+        }
+        
+        public void WriteNull() { tabs(); sb.Append("null"); }
 
-        public virtual void Write(JsonValue val) {
+        public void Write(JsonValue val) {
             if (val == null) {
                 WriteNull();
                 return;
@@ -60,45 +64,42 @@ namespace Voorhees {
         }
 
         #region Json Boolean
-        public virtual void Write(bool val) { sb.Append(val ? "true" : "false"); }
+        public void Write(bool val) { tabs(); sb.Append(val ? "true" : "false"); }
         #endregion
 
         #region Json Number
         // Integral types
-        public virtual void Write(byte val)   { sb.Append(val); }
-        public virtual void Write(sbyte val)  { sb.Append(val); }
-        public virtual void Write(short val)  { sb.Append(val); }
-        public virtual void Write(ushort val) { sb.Append(val); }
-        public virtual void Write(int val)    { sb.Append(val); }
-        public virtual void Write(uint val)   { sb.Append(val); }
-        public virtual void Write(long val)   { sb.Append(val); }
-        public virtual void Write(ulong val)  { sb.Append(val); }
+        public void Write(byte val)   { tabs(); sb.Append(val); }
+        public void Write(sbyte val)  { tabs(); sb.Append(val); }
+        public void Write(short val)  { tabs(); sb.Append(val); }
+        public void Write(ushort val) { tabs(); sb.Append(val); }
+        public void Write(int val)    { tabs(); sb.Append(val); }
+        public void Write(uint val)   { tabs(); sb.Append(val); }
+        public void Write(long val)   { tabs(); sb.Append(val); }
+        public void Write(ulong val)  { tabs(); sb.Append(val); }
 
         // Floating point types
-        public virtual void Write(float val)   { sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
-        public virtual void Write(double val)  { sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
-        public virtual void Write(decimal val) { sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(float val)   { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(double val)  { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(decimal val) { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
         #endregion
 
         #region Json String
-        public virtual void Write(string val) { WriteString(val); }
-        public virtual void Write(char val)   { Write(val.ToString()); }
+        public void Write(string val) { tabs(); WriteString(val); } 
+        public void Write(char val) { Write(val.ToString()); }
         #endregion
 
         #region Json Array
-        public virtual void WriteArrayStart() { sb.Append("["); }
-        public virtual void WriteArraySeparator() { sb.Append(","); }
-        public virtual void WriteArrayListTerminator() { }
-        public virtual void WriteArrayEnd() { sb.Append("]"); }
+        public void WriteArrayStart() { tabs(); sb.Append(prettyPrint ? "[\n" : "["); indentLevel++; }
+        public void WriteArraySeparator() { sb.Append(prettyPrint ? ",\n" : ","); }
+        public void WriteArrayListTerminator() { if (prettyPrint) { sb.Append("\n"); } }
+        public void WriteArrayEnd() { indentLevel--; tabs(); sb.Append("]"); }
         #endregion
 
         #region Json Object
-        public virtual void WriteObjectStart() { sb.Append("{"); }
-        public virtual void WriteObjectKeyValueSeparator() {
-            sb.Append(":");
-            skipNextTabs = true; 
-        }
-        public virtual void WriteObjectEnd() { sb.Append("}"); }
+        public void WriteObjectStart() { tabs(); sb.Append(prettyPrint ? "{\n" : "{"); indentLevel++; }
+        public void WriteObjectKeyValueSeparator() { sb.Append(prettyPrint ? ": " : ":"); skipNextTabs = true; }
+        public void WriteObjectEnd() { indentLevel--; tabs(); sb.Append("}"); }
         #endregion
 
         /// Get the json stream contents.
@@ -106,12 +107,41 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        protected readonly StringBuilder sb = new StringBuilder();
-        protected bool skipNextTabs;
+        static readonly List<string> tabCache;
+        readonly StringBuilder sb = new StringBuilder();
+        bool skipNextTabs;
+        bool prettyPrint;
+        int indentLevel;
 
         /////////////////////////////////////////////////
 
-        protected void WriteString(string val) {
+        static JsonOutputStream() {
+            // 20 levels to start with.
+            tabCache = new List<string> {
+                "\t",
+                "\t\t",
+                "\t\t\t",
+                "\t\t\t\t",
+                "\t\t\t\t\t",
+                "\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
+            };
+        }
+
+        void WriteString(string val) {
             bool simpleString = true;
             foreach (char c in val) {
                 simpleString &= c >= 32 && c != '"' && c != '/' && c != '\\';
@@ -144,108 +174,29 @@ namespace Voorhees {
             }
             sb.Append("\"");
         }
-    }
 
-    public class PrettyPrintJsonOutputStream : JsonOutputStream {
-        public PrettyPrintJsonOutputStream() {
-            // 20 levels to start with.
-            tabCache = new List<string> {
-                "\t",
-                "\t\t",
-                "\t\t\t",
-                "\t\t\t\t",
-                "\t\t\t\t\t",
-                "\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-            };
-        }
-
-        public override void WriteNull() { tabs(); sb.Append("null"); }
-
-        #region Json Boolean
-        public override void Write(bool val) { tabs(); sb.Append(val ? "true" : "false"); }
-        #endregion
-
-        #region Json Number
-        // Integral types
-        public override void Write(byte val)   { tabs(); sb.Append(val); }
-        public override void Write(sbyte val)  { tabs(); sb.Append(val); }
-        public override void Write(short val)  { tabs(); sb.Append(val); }
-        public override void Write(ushort val) { tabs(); sb.Append(val); }
-        public override void Write(int val)    { tabs(); sb.Append(val); }
-        public override void Write(uint val)   { tabs(); sb.Append(val); }
-        public override void Write(long val)   { tabs(); sb.Append(val); }
-        public override void Write(ulong val)  { tabs(); sb.Append(val); }
-
-        // Floating point types
-        public override void Write(float val)   { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
-        public override void Write(double val)  { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
-        public override void Write(decimal val) { tabs(); sb.Append(val.ToString(CultureInfo.InvariantCulture)); }
-        #endregion
-
-        #region Json String
-        public override void Write(string val) { tabs(); WriteString(val); } 
-        public override void Write(char val) { Write("" + val); }
-        #endregion
-
-        #region Json Array
-        public override void WriteArrayStart() { tabs(); sb.Append("[\n"); indentLevel++; }
-        public override void WriteArraySeparator() { sb.Append(",\n"); }
-        public override void WriteArrayListTerminator() { sb.Append("\n"); }
-        public override void WriteArrayEnd() { indentLevel--; tabs(); sb.Append("]"); }
-        #endregion
-
-        #region Json Object
-        public override void WriteObjectStart() { tabs(); sb.Append("{\n"); indentLevel++; }
-
-        public override void WriteObjectKeyValueSeparator() {
-            sb.Append(": ");
-            skipNextTabs = true;
-        }
-        public override void WriteObjectEnd() { indentLevel--; tabs(); sb.Append("}"); }
-        #endregion
-
-        /////////////////////////////////////////////////
-
-        int indentLevel;
-        readonly List<string> tabCache;
-
-        /////////////////////////////////////////////////
-
-        // Append the right number of tabs for the current indent level.
         void tabs() {
-            if (skipNextTabs) {
-                skipNextTabs = false;
-                return;
-            }
-
-            if (indentLevel == 0) {
-                return;
-            }
-
-            // Add more entries to the tabs cache if necessary.
-            for (int i = tabCache.Count; i < indentLevel; ++i) {
-                string tabs = "";
-                for (int j = 0; j <= i; ++j) {
-                    tabs += "\t";
+            if (prettyPrint) {
+                if (skipNextTabs) {
+                    skipNextTabs = false;
+                    return;
                 }
-                tabCache.Add(tabs);
-            }
 
-            sb.Append(tabCache[indentLevel - 1]);
+                if (indentLevel == 0) {
+                    return;
+                }
+
+                // Add more entries to the tabs cache if necessary.
+                for (int i = tabCache.Count; i < indentLevel; ++i) {
+                    string tabs = "";
+                    for (int j = 0; j <= i; ++j) {
+                        tabs += "\t";
+                    }
+                    tabCache.Add(tabs);
+                }
+
+                sb.Append(tabCache[indentLevel - 1]);
+            }
         }
     }
 }

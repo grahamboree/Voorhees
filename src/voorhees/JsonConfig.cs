@@ -11,11 +11,7 @@ namespace Voorhees {
         public delegate void ExporterFunc<in T>(T objectToSerialize, JsonOutputStream os);
         public delegate T ImporterFunc<out T>(JsonValue jsonData);
         public delegate T LowLevelImporterFunc<out T>(JsonTokenizer jsonData);
-        
-        /////////////////////////////////////////////////
 
-        public bool PrettyPrint;
-        
         /////////////////////////////////////////////////
 
         public void RegisterExporter<T>(ExporterFunc<T> exporter) {
