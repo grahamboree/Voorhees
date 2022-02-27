@@ -236,11 +236,11 @@ namespace Voorhees {
             
             // Maybe there's a base importer that works
             if (JsonConfig.builtInImporters.TryGetValue(destinationType, out var builtInImporter)) {
-                return builtInImporter(JsonReader.ReadJsonValue(tokenizer));
+                return builtInImporter(tokenizer);
             }
             
             Type jsonType;
-            object jsonValue = null;
+            object jsonValue;
             
             switch (tokenizer.NextToken) {
                 case JsonToken.Null: 
