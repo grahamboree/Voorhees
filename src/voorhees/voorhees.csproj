@@ -50,7 +50,7 @@
     <Compile Include="JsonConfig.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />
     <Compile Include="JsonReader.cs" />
-    <Compile Include="JsonStream.cs" />
+    <Compile Include="JsonOutputStream.cs" />
     <Compile Include="JsonTokenizer.cs" />
     <Compile Include="JsonValue.cs" />
     <Compile Include="JsonWriter.cs" />
