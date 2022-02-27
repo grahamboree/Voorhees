@@ -227,6 +227,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void PrettyPrintDeeplyNestedArray() {
+			// Tests that exceeding the tab cache will correctly generate the right number of tabs.
 			var test = new JsonValue { Type = JsonType.Array };
 
 			var current = test;

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace Voorhees {
+   /// JSON data type
    public enum JsonType {
       Null,
 
@@ -15,6 +16,9 @@ namespace Voorhees {
       Float
    }
 
+   /// A union-type representing a value that can exist in a JSON document.
+   /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
+   /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
       #region Fields
       JsonType type = JsonType.Null;
@@ -27,22 +31,6 @@ namespace Voorhees {
       float floatValue;
       int intValue;
       #endregion
-
-      internal object Value {
-         get {
-            switch (type) {
-               case JsonType.Null: return null;
-               case JsonType.Object: return objectValue;
-               case JsonType.Array: return arrayValue;
-               case JsonType.String: return stringValue;
-               case JsonType.Boolean: return boolValue;
-               case JsonType.Int: return intValue;
-               case JsonType.Float: return floatValue;
-               default:
-                  throw new ArgumentOutOfRangeException();
-            }
-         }
-      }
 
       #region Type Properties
       public bool IsObject => type == JsonType.Object;
@@ -104,7 +92,7 @@ namespace Voorhees {
       }
       #endregion
 
-      #region Implicit Conversions from other types to JsonValue
+      #region Implicit Conversions to JsonValue from other types
       public static implicit operator JsonValue(bool data) { return new JsonValue(data); }
       public static implicit operator JsonValue(float data) { return new JsonValue(data); }
       public static implicit operator JsonValue(int data) { return new JsonValue(data); }
@@ -247,8 +235,10 @@ namespace Voorhees {
       public bool Remove(string key) => EnsureObject().Remove(key);
       public bool ContainsKey(string key) => EnsureObject().ContainsKey(key);
       #endregion
+      
+              
+      /////////////////////////////////////////////////
 
-      #region Private methods.
       IDictionary<string, JsonValue> EnsureObject() {
          if (type == JsonType.Null) {
             type = JsonType.Object;
@@ -274,6 +264,5 @@ namespace Voorhees {
 
          throw new InvalidOperationException("Instance of JsonValue is not an array");
       }
-      #endregion
    }
 }

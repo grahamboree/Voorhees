@@ -2,12 +2,9 @@ using System;
 using System.Text;
 
 namespace Voorhees {
-    /// Thrown when trying to rea invalid JSON data.
-    /// The <c>message</c> field will contain more info about the specific
-    /// json format error
+    /// Thrown when trying to read invalid JSON data.
     public class InvalidJsonException : Exception {
-        public InvalidJsonException(string message) : base(message) {
-        }
+        public InvalidJsonException(string message) : base(message) { }
     }
     
     public enum JsonToken {
@@ -38,16 +35,19 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
 
-        public JsonTokenizer(string jsonString) {
-            if (jsonString == null) {
-                throw new ArgumentException("Json string is null", nameof(jsonString));
-            }
-            Json = jsonString;
+        /// <summary>
+        /// Construct a new tokenizer from the start of the given json string.
+        /// </summary>
+        /// <param name="json">JSON to parse</param>
+        /// <exception cref="ArgumentException">If <see cref="json"/> is null.</exception>
+        public JsonTokenizer(string json) {
+            Json = json ?? throw new ArgumentException("Json string is null", nameof(json));
             Cursor = 0;
             
-            SkipToNextToken();
+            AdvanceToNextToken();
         }
-
+        
+        /// Advance <see cref="Cursor"/> to the next token in the JSON string.
         public void ConsumeToken() {
             switch (NextToken) {
                 case JsonToken.ArrayStart:
@@ -65,22 +65,37 @@ namespace Voorhees {
                 case JsonToken.Null: Cursor += 4; break;
                 case JsonToken.EOF:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
-            SkipToNextToken();
+            AdvanceToNextToken();
         }
 
+        /// <summary>
+        /// Return a copy the current number token and advance <see cref="Cursor"/> to the next token. 
+        /// </summary>
+        /// <returns>A copy of the number token as a parseable string.</returns>
+        /// <exception cref="InvalidOperationException">If the next token in the string is not a number</exception>
         public string ConsumeNumber() {
+            if (NextToken != JsonToken.Number) {
+                throw new InvalidOperationException("Trying to consume a number string, but the next JSON token is not a number.");
+            }
             int start = Cursor;
             while (Cursor < Json.Length && isNumberChar(Json[Cursor])) {
                 Cursor++;
             }
             string numberString = Json.Substring(start, Cursor - start);
-            SkipToNextToken();
+            AdvanceToNextToken();
             return numberString;
         }
 
+        /// <summary>
+        /// Return a copy of the current string token and advance <see cref="Cursor"/> to the next token.
+        /// </summary>
+        /// <returns>A copy of the current string token</returns>
+        /// <exception cref="InvalidJsonException">
+        /// If the string contains a
+        /// <a href="https://www.crockford.com/mckeeman.html">disallowed control character</a>
+        /// or a malformed escape character sequence.
+        /// </exception>
         public string ConsumeString() {
             Cursor++; // Skip the '"'
 
@@ -103,7 +118,7 @@ namespace Voorhees {
                     int length = readAheadIndex - start;
                     Cursor = readAheadIndex + 1; // skip to after the closing "
                     var stringVal = Json.Substring(start, length);
-                    SkipToNextToken();
+                    AdvanceToNextToken();
                     return stringVal;
                 }
             }
@@ -154,13 +169,34 @@ namespace Voorhees {
             }
 
             string strinvVal = stringData.ToString();
-            SkipToNextToken();
+            AdvanceToNextToken();
             return strinvVal;
         }
         
         /////////////////////////////////////////////////
+
+        /// Set of characters that can appear in a valid JSON number.
+        static readonly char[] numberChars;
         
-        void SkipToNextToken() {
+        /////////////////////////////////////////////////
+
+        static JsonTokenizer() {
+            numberChars = new [] {
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                '.',
+                'e', 'E',
+                '-', '+'
+            };
+        }
+        
+        /// <summary>
+        /// Moves <see cref="Cursor"/> to the next non-whitespace token.
+        /// Identifies the type of token that starts at the cursor position and sets <see cref="NextToken"/>.
+        /// </summary>
+        /// <exception cref="InvalidJsonException">
+        /// If the next non-whitespace character does not begin a valid JSON token.
+        /// </exception>
+        void AdvanceToNextToken() {
             while (Cursor < Json.Length && char.IsWhiteSpace(Json[Cursor])) {
                 Cursor++;
             }
@@ -212,13 +248,18 @@ namespace Voorhees {
             throw new InvalidJsonException($"Unexpected character '{Json[Cursor]}' at character {Cursor}!");
         }
 
+        /// <summary>
+        /// Is <paramref name="c"/> a character that could appear in a JSON number?
+        /// </summary>
+        /// <param name="c">Potential number character</param>
+        /// <returns>True if <paramref name="c"/> could appear in a valid JSON number.</returns>
         bool isNumberChar(char c) {
-            return (c >= '0' && c <= '9') ||
-                c == '.' ||
-                c == 'e' ||
-                c == 'E' ||
-                c == '-' ||
-                c == '+';
+            for (int i = 0; i < numberChars.Length; ++i) {
+                if (c == numberChars[i]) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

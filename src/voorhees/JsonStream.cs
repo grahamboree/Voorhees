@@ -4,9 +4,7 @@ using System.Text;
 
 namespace Voorhees {
     public class JsonOutputStream {
-        public JsonOutputStream(bool prettyPrint = false) {
-            this.prettyPrint = prettyPrint;
-        }
+        public JsonOutputStream(bool prettyPrint = false) { this.prettyPrint = prettyPrint; }
         
         public void WriteNull() { tabs(); sb.Append("null"); }
 
@@ -110,7 +108,7 @@ namespace Voorhees {
         static readonly List<string> tabCache;
         readonly StringBuilder sb = new StringBuilder();
         bool skipNextTabs;
-        bool prettyPrint;
+        readonly bool prettyPrint;
         int indentLevel;
 
         /////////////////////////////////////////////////
@@ -176,27 +174,29 @@ namespace Voorhees {
         }
 
         void tabs() {
-            if (prettyPrint) {
-                if (skipNextTabs) {
-                    skipNextTabs = false;
-                    return;
-                }
-
-                if (indentLevel == 0) {
-                    return;
-                }
-
-                // Add more entries to the tabs cache if necessary.
-                for (int i = tabCache.Count; i < indentLevel; ++i) {
-                    string tabs = "";
-                    for (int j = 0; j <= i; ++j) {
-                        tabs += "\t";
-                    }
-                    tabCache.Add(tabs);
-                }
-
-                sb.Append(tabCache[indentLevel - 1]);
+            if (!prettyPrint) {
+                return;
             }
+            
+            if (skipNextTabs) {
+                skipNextTabs = false;
+                return;
+            }
+
+            if (indentLevel == 0) {
+                return;
+            }
+
+            // Add more entries to the tabs cache if necessary.
+            for (int i = tabCache.Count; i < indentLevel; ++i) {
+                string tabs = "";
+                for (int j = 0; j <= i; ++j) {
+                    tabs += '\t';
+                }
+                tabCache.Add(tabs);
+            }
+
+            sb.Append(tabCache[indentLevel - 1]);
         }
     }
 }
