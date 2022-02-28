@@ -238,7 +238,6 @@ namespace Voorhees {
       public bool ContainsKey(string key) => EnsureObject().ContainsKey(key);
       #endregion
       
-              
       /////////////////////////////////////////////////
 
       IDictionary<string, JsonValue> EnsureObject() {

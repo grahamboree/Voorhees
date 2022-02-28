@@ -30,7 +30,7 @@ namespace Voorhees {
     
     public class JsonTokenizer {
         public JsonToken NextToken = JsonToken.None;
-        public int Cursor = 0;
+        public int Cursor;
         public readonly string Json;
         
         /////////////////////////////////////////////////
