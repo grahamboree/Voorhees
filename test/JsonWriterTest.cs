@@ -120,135 +120,150 @@ namespace Voorhees.Tests {
 		[Test]
 		public void WriteNullWritesNull() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.WriteNull();
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.WriteNull();
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("null"));
 		}
 
 		[Test]
 		public void WriteBoolWritesJsonTrueOrFalse() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(true);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(true);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("true"));
 		}
 
 		[Test]
 		public void WriteByte() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write((byte)1);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write((byte)1);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteSByte() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write((sbyte)1);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write((sbyte)1);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteShort() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write((short)1);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write((short)1);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteUShort() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write((ushort)1);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write((ushort)1);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteInt() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteUInt() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1u);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1u);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteLong() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1L);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1L);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteULong() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1UL);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1UL);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
 
 		[Test]
 		public void WriteFloat() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1.5f);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1.5f);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
 		
 		[Test]
 		public void WriteDouble() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1.5);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1.5);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
 
 		[Test]
 		public void WriteDecimal() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write(1.5m);
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write(1.5m);
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
 		
 		[Test]
 		public void WriteChar() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write('c');
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write('c');
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("\"c\""));
 		}
 		
 		[Test]
 		public void WriteString() {
 			var sb = new StringBuilder();
-			var sw = new StringWriter(sb);
-			var writer = new JsonWriter(sw, true);
-			writer.Write("test");
+			using (var sw = new StringWriter(sb)) {
+				var writer = new JsonWriter(sw, true);
+				writer.Write("test");
+			}
 			Assert.That(sb.ToString(), Is.EqualTo("\"test\""));
 		}
 

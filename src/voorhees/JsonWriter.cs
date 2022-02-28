@@ -7,9 +7,10 @@ namespace Voorhees {
     public class JsonWriter {
         public static string ToJson(JsonValue json, bool prettyPrint = false) {
             var sb = new StringBuilder();
-            var sw = new StringWriter(sb);
-            var jsonWriter = new JsonWriter(sw, prettyPrint);
-            jsonWriter.Write(json);
+            using (var sw = new StringWriter(sb)) {
+                var jsonWriter = new JsonWriter(sw, prettyPrint);
+                jsonWriter.Write(json);
+            }
             return sb.ToString();
         }
 
