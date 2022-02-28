@@ -2,66 +2,70 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
     // Writing
     public static partial class JsonMapper {
         public static string ToJson<T>(T obj, bool prettyPrint = false) {
-            var os = new JsonOutputStream(prettyPrint);
-            WriteJsonToStream(obj, os, typeof(T));
-            return os.ToString();
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb);
+            var jsonWriter = new JsonWriter(sw, prettyPrint);
+            WriteJsonToStream(obj, jsonWriter, typeof(T));
+            return sb.ToString();
         }
 
         /////////////////////////////////////////////////
 
-        static void WriteJsonToStream(object obj, JsonOutputStream os, Type objType) {
+        static void WriteJsonToStream(object obj, JsonWriter writer, Type objType) {
             if (obj == null) {
-                os.WriteNull();
+                writer.WriteNull();
                 return;
             }
 
             // See if there's a custom exporter for the object
             if (Voorhees.Instance.CustomExporters.TryGetValue(objType, out var customExporter)) {
-                customExporter(obj, os);
+                customExporter(obj, writer);
                 return;
             }
 
             // If not, maybe there's a built-in serializer
             if (Voorhees.BuiltInExporters.TryGetValue(objType, out var builtInExporter)) {
-                builtInExporter(obj, os);
+                builtInExporter(obj, writer);
                 return;
             }
             
             switch (obj) { 
-                case JsonValue jsonValue: os.Write(jsonValue); return;
+                case JsonValue jsonValue: writer.Write(jsonValue); return;
 
                 // JSON String
-                case string stringVal: os.Write(stringVal); return;
-                case char charVal: os.Write(charVal); return;
+                case string stringVal: writer.Write(stringVal); return;
+                case char charVal: writer.Write(charVal); return;
 
                 // JSON Number
-                case byte byteVal: os.Write(byteVal); return;
-                case sbyte sbyteVal: os.Write(sbyteVal); return;
-                case short shortVal: os.Write(shortVal); return;
-                case ushort ushortVal: os.Write(ushortVal); return;
-                case int intVal: os.Write(intVal); return;
-                case uint uintVal: os.Write(uintVal); return;
-                case long longVal: os.Write(longVal); return;
-                case ulong ulongVal: os.Write(ulongVal); return;
-                case float floatVal: os.Write(floatVal); return;
-                case double doubleVal: os.Write(doubleVal); return;
-                case decimal decimalVal: os.Write(decimalVal); return;
+                case byte byteVal: writer.Write(byteVal); return;
+                case sbyte sbyteVal: writer.Write(sbyteVal); return;
+                case short shortVal: writer.Write(shortVal); return;
+                case ushort ushortVal: writer.Write(ushortVal); return;
+                case int intVal: writer.Write(intVal); return;
+                case uint uintVal: writer.Write(uintVal); return;
+                case long longVal: writer.Write(longVal); return;
+                case ulong ulongVal: writer.Write(ulongVal); return;
+                case float floatVal: writer.Write(floatVal); return;
+                case double doubleVal: writer.Write(doubleVal); return;
+                case decimal decimalVal: writer.Write(decimalVal); return;
 
                 // JSON Boolean
-                case bool boolVal: os.Write(boolVal); return;
+                case bool boolVal: writer.Write(boolVal); return;
 
                 // JSON Array
                 case Array arrayVal: {
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        Write1DArrayJsonToStream(arrayVal, os);
+                        Write1DArrayJsonToStream(arrayVal, writer);
                         return;
                     }
                     
@@ -69,7 +73,7 @@ namespace Voorhees {
                     int[] index = new int[arrayVal.Rank];
 
                     void jsonifyArray(Array arr, int currentDimension) {
-                        os.WriteArrayStart();
+                        writer.WriteArrayStart();
 
                         int length = arr.GetLength(currentDimension);
                         for (int i = 0; i < length; ++i) {
@@ -77,28 +81,28 @@ namespace Voorhees {
 
                             if (currentDimension == arr.Rank - 1) {
                                 var arrayObject = arr.GetValue(index);
-                                WriteJsonToStream(arrayObject, os, arr.GetType().GetElementType());
+                                WriteJsonToStream(arrayObject, writer, arr.GetType().GetElementType());
                             } else {
                                 jsonifyArray(arr, currentDimension + 1);
                             }
                             
                             if (i < length - 1) {
-                                os.WriteArraySeparator();
+                                writer.WriteArraySeparator();
                             } else {
-                                os.WriteArrayListTerminator();
+                                writer.WriteArrayListTerminator();
                             }
                         }
 
-                        os.WriteArrayEnd();
+                        writer.WriteArrayEnd();
                     }
                     jsonifyArray(arrayVal, 0);
                     return;
                 }
-                case IList listVal: Write1DArrayJsonToStream(listVal, os); return;
+                case IList listVal: Write1DArrayJsonToStream(listVal, writer); return;
 
                 // JSON Object
                 case IDictionary dictionary: {
-                    os.WriteObjectStart();
+                    writer.WriteObjectStart();
 
                     int entryIndex = 0;
                     int length = dictionary.Count;
@@ -107,20 +111,20 @@ namespace Voorhees {
                         string propertyName = entry.Key is string key
                             ? key
                             : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                        os.Write(propertyName);
-                        os.WriteObjectKeyValueSeparator();
+                        writer.Write(propertyName);
+                        writer.WriteObjectKeyValueSeparator();
                         var value = entry.Value;
-                        WriteJsonToStream(value, os, value.GetType());
+                        WriteJsonToStream(value, writer, value.GetType());
                         
                         if (entryIndex < length - 1) {
-                            os.WriteArraySeparator();
+                            writer.WriteArraySeparator();
                         } else {
-                            os.WriteArrayListTerminator();
+                            writer.WriteArrayListTerminator();
                         }
                         entryIndex++;
                     }
 
-                    os.WriteObjectEnd();
+                    writer.WriteObjectEnd();
                     return;
                 }
             }
@@ -128,26 +132,26 @@ namespace Voorhees {
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(objType);
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(byte)) { os.Write((byte) obj); return; }
+                if (enumType == typeof(byte)) { writer.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(sbyte)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(short)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(ushort)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(int)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(uint)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(long)) { writer.Write((byte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { os.Write((byte) obj);  return; }
+                if (enumType == typeof(ulong)) { writer.Write((byte) obj);  return; }
 
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
             }
 
-            os.WriteObjectStart();
+            writer.WriteObjectStart();
             
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(objType);
             for (var fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
@@ -178,21 +182,21 @@ namespace Voorhees {
                     value = propertyInfo.GetValue(obj, null);
                 }
 
-                os.Write(key);
-                os.WriteObjectKeyValueSeparator();
-                WriteJsonToStream(value, os, value.GetType());
+                writer.Write(key);
+                writer.WriteObjectKeyValueSeparator();
+                WriteJsonToStream(value, writer, value.GetType());
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
-                    os.WriteArraySeparator();
+                    writer.WriteArraySeparator();
                 } else {
-                    os.WriteArrayListTerminator();
+                    writer.WriteArrayListTerminator();
                 }
             }
 
-            os.WriteObjectEnd();
+            writer.WriteObjectEnd();
         }
 
-        static void Write1DArrayJsonToStream(IList list, JsonOutputStream os) {
+        static void Write1DArrayJsonToStream(IList list, JsonWriter os) {
             os.WriteArrayStart();
             for (var i = 0; i < list.Count; i++) {
                 var listVal = list[i];

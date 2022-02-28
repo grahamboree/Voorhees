@@ -8,7 +8,7 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
         
-        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonOutputStream os);
+        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonWriter writer);
         public delegate T ImporterFunc<out T>(JsonValue jsonData);
         public delegate T LowLevelImporterFunc<out T>(JsonTokenizer jsonData);
 
@@ -46,7 +46,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        internal delegate void ExporterFunc(object obj, JsonOutputStream os);
+        internal delegate void ExporterFunc(object obj, JsonWriter os);
         internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new Dictionary<Type, ExporterFunc>();
         internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new Dictionary<Type, ExporterFunc>();
         
@@ -60,10 +60,10 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         static Voorhees() {
-            BuiltInExporters[typeof(DateTime)] = (obj, os) =>
-                os.Write(((DateTime) obj).ToString("o"));
-            BuiltInExporters[typeof(DateTimeOffset)] = (obj, os) =>
-                os.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
+            BuiltInExporters[typeof(DateTime)] = (obj, writer) =>
+                writer.Write(((DateTime) obj).ToString("o"));
+            BuiltInExporters[typeof(DateTimeOffset)] = (obj, writer) =>
+                writer.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
             
             BuiltInImporters[typeof(byte)] = json => byte.Parse(json.ConsumeNumber());
             BuiltInImporters[typeof(sbyte)] = json => sbyte.Parse(json.ConsumeNumber());
