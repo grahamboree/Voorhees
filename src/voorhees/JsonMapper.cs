@@ -135,19 +135,19 @@ namespace Voorhees {
                 // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(byte)) { writer.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(sbyte)) { writer.Write((sbyte) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(short)) { writer.Write((short) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(ushort)) { writer.Write((ushort) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(int)) { writer.Write((int) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(uint)) { writer.Write((uint) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(long)) { writer.Write((long) obj);  return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { writer.Write((byte) obj);  return; }
+                if (enumType == typeof(ulong)) { writer.Write((ulong) obj);  return; }
 
                 throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
             }
