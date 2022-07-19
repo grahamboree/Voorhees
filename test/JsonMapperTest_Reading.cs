@@ -356,4 +356,23 @@ namespace Voorhees.Tests {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(json));
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Read_PolymorphicObjectReference {
+        class BaseClass {
+            public int baseClassValue;
+        }
+
+        class DerivedClass : BaseClass {
+            public bool derivedClassValue;
+        }
+
+        [Test]
+        public void PolymorphicTypeReference() {
+            const string JSON = "{\"derivedClassValue\":false,\"baseClassValue\":2}";
+            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).derivedClassValue, Is.False);
+            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).baseClassValue, Is.EqualTo(2));
+        }
+    }
 }
