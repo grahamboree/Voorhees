@@ -11,30 +11,29 @@ namespace Voorhees {
     // Writing
     public static partial class JsonMapper {
         public static string ToJson<T>(T obj, bool prettyPrint = false) {
-            var sb = new StringBuilder();
-            using (var sw = new StringWriter(sb)) {
-                var jsonWriter = new JsonWriter(sw, prettyPrint);
-                WriteJsonToStream(obj, jsonWriter, typeof(T));
+            var stringBuilder = new StringBuilder();
+            using (var writer = new StringWriter(stringBuilder)) {
+                WriteJsonToStream(obj, new JsonWriter(writer, prettyPrint), typeof(T), obj?.GetType());
             }
-            return sb.ToString();
+            return stringBuilder.ToString();
         }
 
         /////////////////////////////////////////////////
 
-        static void WriteJsonToStream(object obj, JsonWriter writer, Type objType) {
+        static void WriteJsonToStream(object obj, JsonWriter writer, Type referenceType, Type valueType) {
             if (obj == null) {
                 writer.WriteNull();
                 return;
             }
 
             // See if there's a custom exporter for the object
-            if (Voorhees.Instance.CustomExporters.TryGetValue(objType, out var customExporter)) {
+            if (Voorhees.Instance.CustomExporters.TryGetValue(referenceType, out var customExporter)) {
                 customExporter(obj, writer);
                 return;
             }
 
             // If not, maybe there's a built-in serializer
-            if (Voorhees.BuiltInExporters.TryGetValue(objType, out var builtInExporter)) {
+            if (Voorhees.BuiltInExporters.TryGetValue(referenceType, out var builtInExporter)) {
                 builtInExporter(obj, writer);
                 return;
             }
@@ -81,8 +80,8 @@ namespace Voorhees {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                var arrayObject = arr.GetValue(index);
-                                WriteJsonToStream(arrayObject, writer, arr.GetType().GetElementType());
+                                object arrayObject = arr.GetValue(index);
+                                WriteJsonToStream(arrayObject, writer, arr.GetType().GetElementType(), arrayObject.GetType());
                             } else {
                                 jsonifyArray(arr, currentDimension + 1);
                             }
@@ -109,13 +108,11 @@ namespace Voorhees {
                     int length = dictionary.Count;
                     
                     foreach (DictionaryEntry entry in dictionary) {
-                        string propertyName = entry.Key is string key
-                            ? key
-                            : Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
+                        string propertyName = entry.Key as string ?? Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         writer.Write(propertyName);
                         writer.WriteObjectKeyValueSeparator();
-                        var value = entry.Value;
-                        WriteJsonToStream(value, writer, value.GetType());
+                        object value = entry.Value;
+                        WriteJsonToStream(value, writer, value.GetType(), value.GetType());
                         
                         if (entryIndex < length - 1) {
                             writer.WriteArraySeparator();
@@ -131,7 +128,7 @@ namespace Voorhees {
             }
 
             if (obj is Enum) {
-                var enumType = Enum.GetUnderlyingType(objType);
+                var enumType = Enum.GetUnderlyingType(valueType);
                 // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(byte)) { writer.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
@@ -154,10 +151,12 @@ namespace Voorhees {
 
             writer.WriteObjectStart();
             
-            var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(objType);
-            for (var fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
+            var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
+            
+            // TODO This should be instead done in TypeInfo.GetTypePropertyMetadata
+            // Remove any non-readable properties from the list
+            for (int fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
                 var propertyMetadata = fieldsAndProperties[fieldIndex];
-
                 if (!propertyMetadata.IsField) {
                     var propertyInfo = propertyMetadata.Info as PropertyInfo;
                     if (propertyInfo != null && !propertyInfo.CanRead) {
@@ -167,25 +166,23 @@ namespace Voorhees {
                 }
             }
 
-            for (var fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
+            // Write the object's field and property values
+            for (int fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
                 var propertyMetadata = fieldsAndProperties[fieldIndex];
                 
-                string key;
-                object value;
-
                 if (propertyMetadata.IsField) {
                     var fieldInfo = (FieldInfo) propertyMetadata.Info;
-                    key = fieldInfo.Name;
-                    value = fieldInfo.GetValue(obj);
+                    object value = fieldInfo.GetValue(obj);
+                    writer.Write(fieldInfo.Name);
+                    writer.WriteObjectKeyValueSeparator();
+                    WriteJsonToStream(value, writer, fieldInfo.FieldType, value.GetType());
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
-                    key = propertyInfo.Name;
-                    value = propertyInfo.GetValue(obj, null);
+                    object value = propertyInfo.GetValue(obj);
+                    writer.Write(propertyInfo.Name);
+                    writer.WriteObjectKeyValueSeparator();
+                    WriteJsonToStream(value, writer, propertyInfo.PropertyType, value.GetType());
                 }
-
-                writer.Write(key);
-                writer.WriteObjectKeyValueSeparator();
-                WriteJsonToStream(value, writer, value.GetType());
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
                     writer.WriteArraySeparator();
@@ -199,9 +196,9 @@ namespace Voorhees {
 
         static void Write1DArrayJsonToStream(IList list, JsonWriter os) {
             os.WriteArrayStart();
-            for (var i = 0; i < list.Count; i++) {
-                var listVal = list[i];
-                WriteJsonToStream(listVal, os, listVal.GetType());
+            for (int i = 0; i < list.Count; i++) {
+                object listVal = list[i];
+                WriteJsonToStream(listVal, os, listVal.GetType(), listVal.GetType());
 
                 if (i < list.Count - 1) {
                     os.WriteArraySeparator();
