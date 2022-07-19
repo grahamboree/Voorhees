@@ -266,8 +266,8 @@ namespace Voorhees {
                         throw new InvalidJsonException($"Can't parse number value: \"{numberString}\" at character {tokenizer.Cursor}");
                     }
                 } break;
-                case JsonToken.True: jsonType = typeof(bool); jsonValue = true; break;
-                case JsonToken.False: jsonType = typeof(bool); jsonValue = false; break;
+                case JsonToken.True: jsonType = typeof(bool); jsonValue = true; tokenizer.ConsumeToken(); break;
+                case JsonToken.False: jsonType = typeof(bool); jsonValue = false; tokenizer.ConsumeToken(); break;
                 default: throw new ArgumentOutOfRangeException();
             }
 
