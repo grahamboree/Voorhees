@@ -51,4 +51,4 @@ jobs:
       - uses: nelonoel/branch-name@v1.0.1
       - uses: rlespinasse/git-commit-data-action@v1
       - name: Upload to coveralls
-        run: dotnet tool run csmacnz.Coveralls --opencover -i opencoverCoverage.xml --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ GITHUB_SHA }} --commitBranch ${BRANCH_NAME} --commitAuthor ${{ env.GIT_COMMIT_AUTHOR_NAME }} --commitEmail ${{ env.GIT_COMMIT_AUTHOR_EMAIL }} --commitMessage ${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}
+        run: dotnet tool run csmacnz.Coveralls --opencover -i opencoverCoverage.xml --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ env.GITHUB_SHA }} --commitBranch ${BRANCH_NAME} --commitAuthor ${{ env.GIT_COMMIT_AUTHOR_NAME }} --commitEmail ${{ env.GIT_COMMIT_AUTHOR_EMAIL }} --commitMessage ${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}
