@@ -1,5 +1,0 @@
-language: csharp
-solution: voorhees.sln
-
-install:
-  - nuget restore voorhees.sln
