@@ -47,7 +47,7 @@ jobs:
         run: dotnet tool install --local coveralls.net --version 4.0.0
       - run: dotnet restore
       - name: Generate Coverage Report
-        run: .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register -target:.\packages\NUnit.ConsoleRunner.3.15.2\tools\nunit3-console.exe -targetargs:tests/bin/Debug/voorhees-tests.dll -filter:"+[voorhees]*" -output:opencoverCoverage.xml
+        run: .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register -target:.\packages\NUnit.ConsoleRunner.3.15.2\tools\nunit3-console.exe -targetargs:test/bin/Debug/voorhees.tests.dll -filter:"+[voorhees]*" -output:opencoverCoverage.xml
       - uses: nelonoel/branch-name@v1.0.1
       - uses: rlespinasse/git-commit-data-action@v1
       - name: Upload to coveralls
