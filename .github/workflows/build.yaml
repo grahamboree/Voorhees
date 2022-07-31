@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         dotnet-version: ['6.0']
@@ -23,21 +24,18 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal
+
   code-coverage:
     runs-on: windows-latest
-    env:
-      branch: $()
 
     steps:
       - uses: actions/checkout@v3
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+      - name: Setup .NET Core SDK 6.0
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
-      - name: Install dependencies
-        run: dotnet restore
+          dotnet-version: '6.0'
       - name: Build
-        run: dotnet build --configuration Debug --no-restore
+        run: dotnet build --configuration Debug
       - name: Install NUnit.ConsoleRunner
         run: nuget install NUnit.ConsoleRunner -OutputDirectory packages -NonInteractive -Version 3.15.2
       - name: Install OpenCover
@@ -45,9 +43,8 @@ jobs:
       - run: dotnet new tool-manifest
       - name: install Coveralls.net
         run: dotnet tool install --local coveralls.net --version 4.0.0
-      - run: dotnet restore
       - name: Generate Coverage Report
-        run: .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register -target:.\packages\NUnit.ConsoleRunner.3.15.2\tools\nunit3-console.exe -targetargs:test/bin/Debug/voorhees.tests.dll -filter:"+[voorhees]*" -output:opencoverCoverage.xml
+        run: .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:administrator -target:.\packages\NUnit.ConsoleRunner.3.15.2\tools\nunit3-console.exe -targetargs:test/bin/Debug/voorhees.tests.dll -output:opencoverCoverage.xml
       - uses: nelonoel/branch-name@v1.0.1
       - uses: rlespinasse/git-commit-data-action@v1
       - name: Upload to coveralls
