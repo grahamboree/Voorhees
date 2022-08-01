@@ -41,8 +41,5 @@ jobs:
         run: dotnet tool install --local coveralls.net --version 4.0.0
       - name: Generate Coverage Report
         run: dotnet test --collect:"XPlat Code Coverage" -r . -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - name: Find the output file
-        run: $env:COVERAGE_FILE_PATH = Get-ChildItem -Path . -Recurse coverage.opencover.xml | % { Write-Host $_.FullName }
-      - run: $env:COVERAGE_FILE_PATH
       - name: Upload to coveralls
-        run: dotnet tool run csmacnz.Coveralls --opencover -i $env:COVERAGE_FILE_PATH --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ env.GITHUB_SHA }} --commitBranch "${BRANCH_NAME}" --commitAuthor "${{ env.GIT_COMMIT_AUTHOR_NAME }}" --commitEmail "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}" --commitMessage "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}"
+        run: dotnet tool run csmacnz.Coveralls --opencover -i $($env:COVERAGE_FILE_PATH = Get-ChildItem -Path . -Recurse coverage.opencover.xml | % { Write-Host $_.FullName }) --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ env.GITHUB_SHA }} --commitBranch "${BRANCH_NAME}" --commitAuthor "${{ env.GIT_COMMIT_AUTHOR_NAME }}" --commitEmail "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}" --commitMessage "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}"
