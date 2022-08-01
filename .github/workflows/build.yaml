@@ -36,17 +36,13 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: '6.0'
-      - name: Install NUnit.ConsoleRunner
-        run: nuget install NUnit.ConsoleRunner -OutputDirectory packages -NonInteractive -Version 3.15.2
-      - name: Install OpenCover
-        run: nuget install OpenCover -OutputDirectory packages -NonInteractive -Version 4.6.166
       - run: dotnet new tool-manifest
       - name: install Coveralls.net
         run: dotnet tool install --local coveralls.net --version 4.0.0
-      - name: Build
-        run: dotnet publish -c Debug -o bin
       - name: Generate Coverage Report
-        run: .\packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:administrator -target:.\packages\NUnit.ConsoleRunner.3.15.2\tools\nunit3-console.exe -targetargs:bin/voorhees.tests.dll -filter:"+[voorhees]*" -output:opencoverCoverage.xml
-      - run: cat opencoverCoverage.xml
+        run: dotnet test --collect:"XPlat Code Coverage" -r . -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - name: Find the output file
+        run: $env:COVERAGE_FILE_PATH = Get-ChildItem -Path . -Recurse coverage.opencover.xml | % { Write-Host $_.FullName }
+      - run: $env:COVERAGE_FILE_PATH
       - name: Upload to coveralls
-        run: dotnet tool run csmacnz.Coveralls --opencover -i opencoverCoverage.xml --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ env.GITHUB_SHA }} --commitBranch ${BRANCH_NAME} --commitAuthor ${{ env.GIT_COMMIT_AUTHOR_NAME }} --commitEmail ${{ env.GIT_COMMIT_AUTHOR_EMAIL }} --commitMessage ${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}
+        run: dotnet tool run csmacnz.Coveralls --opencover -i $env:COVERAGE_FILE_PATH --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ env.GITHUB_SHA }} --commitBranch "${BRANCH_NAME}" --commitAuthor "${{ env.GIT_COMMIT_AUTHOR_NAME }}" --commitEmail "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}" --commitMessage "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}"
