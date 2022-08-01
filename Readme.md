@@ -5,7 +5,7 @@ Voorhees
 
 Current Status
 ------
-[![Build Status](https://img.shields.io/github/workflow/status/grahamboree/voorhees/Build%20&%20Test)](https://github.com/grahamboree/Voorhees/actions/workflows/build.yaml)[![Build status](https://ci.appveyor.com/api/projects/status/6nl98purvr2186iw?svg=true)](https://ci.appveyor.com/project/grahamboree/voorhees)[![Coverage Status](https://coveralls.io/repos/github/grahamboree/voorhees/badge.svg?branch=master)](https://coveralls.io/github/grahamboree/voorhees?branch=master)
+[![Build Status](https://img.shields.io/github/workflow/status/grahamboree/voorhees/Build%20&%20Test)](https://github.com/grahamboree/Voorhees/actions/workflows/build.yaml)[![Build status](https://ci.appveyor.com/api/projects/status/6nl98purvr2186iw?svg=true)](https://ci.appveyor.com/project/grahamboree/voorhees)[![Coverage Status](https://coveralls.io/repos/github/grahamboree/Voorhees/badge.svg?branch=master)](https://coveralls.io/github/grahamboree/Voorhees?branch=master)
 
 [Kanban board](https://github.com/grahamboree/Voorhees/projects/1)
 
