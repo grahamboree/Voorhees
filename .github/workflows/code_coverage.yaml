@@ -18,7 +18,7 @@ jobs:
           dotnet-version: '6.0'
       - run: dotnet new tool-manifest
       - name: install Coveralls.net
-        run: dotnet tool install --local coveralls.net --version 4.0.0
+        run: dotnet tool install --local coveralls.net
       - name: Generate Coverage Report
         run: dotnet test --collect:"XPlat Code Coverage" -r . -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - name: Upload to coveralls
