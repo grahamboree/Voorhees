@@ -360,11 +360,15 @@ namespace Voorhees.Tests {
     [TestFixture]
     public class JsonMapper_Read_PolymorphicObjectReference {
         class BaseClass {
+#pragma warning disable CS0649
             public int baseClassValue;
+#pragma warning restore CS0649
         }
 
         class DerivedClass : BaseClass {
+#pragma warning disable CS0649
             public bool derivedClassValue;
+#pragma warning restore CS0649
         }
 
         [Test]
