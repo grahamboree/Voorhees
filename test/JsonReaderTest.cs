@@ -1,22 +1,27 @@
 ﻿using NUnit.Framework;
 
 namespace Voorhees.Tests {
+	
+	// Int
 	[TestFixture]
-	public class JsonReaderTest {
+	public partial class JsonReaderTest {
 		[Test]
 		public void Int() {
 			var test = JsonReader.Read("1");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-			Assert.That((int) test, Is.EqualTo(1));
+			Assert.That((int)test, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void NegativeInt() {
 			var test = JsonReader.Read("-1");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-			Assert.That((int) test, Is.EqualTo(-1));
+			Assert.That((int)test, Is.EqualTo(-1));
 		}
-
+	}
+	
+	// Float
+	public partial class JsonReaderTest {
 		[Test]
 		public void Float() {
 			var test = JsonReader.Read("1.5");
@@ -72,7 +77,10 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
 			Assert.That((float) test, Is.EqualTo(-1.5e-2f));
 		}
-
+	}
+	
+	// String
+	public partial class JsonReaderTest {
 		[Test]
 		public void String() {
 			var test = JsonReader.Read("\"test\"");
@@ -86,7 +94,69 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.String));
 			Assert.That((string) test, Is.EqualTo("\\"));
 		}
+		
+		[Test]
+		public void SpecialCharacters() {
+			var test = JsonReader.Read("\"\\\\\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\\"));
 
+			test = JsonReader.Read("\"\\\"\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\""));
+
+			test = JsonReader.Read("\"\\/\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("/"));
+
+			test = JsonReader.Read("\"\\b\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\b"));
+
+			test = JsonReader.Read("\"\\b\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\b"));
+
+			test = JsonReader.Read("\"\\f\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\f"));
+
+			test = JsonReader.Read("\"\\n\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\n"));
+
+			test = JsonReader.Read("\"\\r\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\r"));
+
+			test = JsonReader.Read("\"\\t\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\t"));
+
+			// ☃
+			test = JsonReader.Read("\"\\u2603\"");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.That((string) test, Is.EqualTo("\u2603"));
+		}
+
+		[Test]
+		public void DisallowControlCharacters() {
+			for (int i = 0; i < 0x20; i++) {
+				string controlChar = char.ConvertFromUtf32(i);
+				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+			}
+
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{char.ConvertFromUtf32(0x7F)}\""); });
+
+			for (int i = 0x80; i <= 0x9F; i++) {
+				string controlChar = char.ConvertFromUtf32(i);
+				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+			}
+		}
+	}
+	
+	// Boolean
+	public partial class JsonReaderTest {
 		[Test]
 		public void True() {
 			var test = JsonReader.Read("true");
@@ -100,14 +170,20 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
 			Assert.That((bool) test, Is.False);
 		}
-
+	}
+	
+	// Null
+	public partial class JsonReaderTest {
 		[Test]
 		public void Null() {
 			var test = JsonReader.Read("null");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
 			Assert.That(test.IsNull);
 		}
-
+	}
+	
+	// Arrays
+	public partial class JsonReaderTest {
 		[Test]
 		public void EmptyArray() {
 			var test = JsonReader.Read("[]");
@@ -116,7 +192,7 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void SimpleArray() {
+		public void SingleValueArray() {
 			var test = JsonReader.Read("[1]");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Array));
 			Assert.That(test.Count, Is.EqualTo(1));
@@ -125,7 +201,7 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void MultivalueArray() {
+		public void MultiValueArray() {
 			var test = JsonReader.Read("[1, 2, 3]");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Array));
 			Assert.That(test.Count, Is.EqualTo(3));
@@ -204,35 +280,43 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void MissingComma() {
+		public void MissingArrayComma() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[1 2]"); });
 		}
 
 		[Test]
-		public void ExtraLeadingComma() {
+		public void ExtraLeadingArrayComma() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[,1, 2]"); });
 		}
 
 		[Test]
-		public void ExtraSeparatingComma() {
+		public void ExtraSeparatingArrayComma() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[1,, 2]"); });
 		}
 
 		[Test]
-		public void ExtraTrailingComma() {
+		public void ExtraTrailingArrayComma() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[1, 2,]"); });
 		}
 
 		[Test]
-		public void TooManyClosingArrays() {
+		public void TooManyClosingArrayBrackets() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[1, 2]]"); });
 		}
 
 		[Test]
-		public void TooFewClosingArrays() {
+		public void TooFewClosingArrayBrackets() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[1, 2"); });
 		}
 
+		[Test]
+		public void LeadingClosingArrayBracket() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("]1, 2]"); });
+		}
+	}
+	
+	// Objects
+	public partial class JsonReaderTest {
 		[Test]
 		public void EmptyObject() {
 			var test = JsonReader.Read("{}");
@@ -293,62 +377,8 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void SpecialCharacters() {
-			var test = JsonReader.Read("\"\\\\\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\\"));
-
-			test = JsonReader.Read("\"\\\"\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\""));
-
-			test = JsonReader.Read("\"\\/\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("/"));
-
-			test = JsonReader.Read("\"\\b\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\b"));
-
-			test = JsonReader.Read("\"\\b\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\b"));
-
-			test = JsonReader.Read("\"\\f\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\f"));
-
-			test = JsonReader.Read("\"\\n\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\n"));
-
-			test = JsonReader.Read("\"\\r\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\r"));
-
-			test = JsonReader.Read("\"\\t\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\t"));
-
-			// ☃
-			test = JsonReader.Read("\"\\u2603\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\u2603"));
-		}
-
-		[Test]
-		public void DisallowControlCharacters() {
-			for (int i = 0; i < 0x20; i++) {
-				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
-			}
-
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{char.ConvertFromUtf32(0x7F)}\""); });
-
-			for (int i = 0x80; i <= 0x9F; i++) {
-				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
-			}
+		public void LeadingObjectClosingBrace() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("}\"test\": 1}"); });
 		}
 	}
 }
