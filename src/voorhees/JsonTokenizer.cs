@@ -98,79 +98,76 @@ namespace Voorhees {
         /// </exception>
         public string ConsumeString() {
             Cursor++; // Skip the '"'
-
-            // trivial string parsing short-circuit
+            
+            // Read the string length
+            int len = 0;
+            int endCursor = Cursor; // Where the ending " is in JsonData
+            bool trivial = true;
             for (int readAheadIndex = Cursor; readAheadIndex < JsonData.Length; ++readAheadIndex) {
                 char readAheadChar = JsonData[readAheadIndex];
+                if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
+                    throw new InvalidJsonException($"Disallowed control character in string at column {readAheadIndex}!");
+                }
+                
                 if (readAheadChar == '\\') {
-                    // This string isn't trivial, so use the normal expensive parsing.
+                    trivial = false; // This string isn't trivial, so use the normal expensive parsing.
+                    readAheadIndex++;
+                    if (JsonData[readAheadIndex] == 'u') {
+                        readAheadIndex += 4;
+                    }
+                } else if (readAheadChar == '"') {
+                    endCursor = readAheadIndex;
                     break;
                 }
-
-                if (readAheadChar <= 0x1F || readAheadChar == 0x7F ||
-                    (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    throw new InvalidJsonException(
-                        $"Disallowed control character in string at column {readAheadIndex}!");
-                }
-
-                if (readAheadChar == '"') {
-                    int start = Cursor;
-                    int length = readAheadIndex - start;
-                    Cursor = readAheadIndex + 1; // skip to after the closing "
-                    var stringVal = JsonData.Substring(start, length);
-                    AdvanceToNextToken();
-                    return stringVal;
-                }
+                len++;
             }
 
-            var stringData = new StringBuilder();
-            bool backslash = false;
-            for (bool done = false; !done; ++Cursor) {
-                if (backslash) {
-                    backslash = false;
-                    switch (JsonData[Cursor]) {
-                        case '\\': stringData.Append('\\'); break;
-                        case '"': stringData.Append('"'); break;
-                        case '/': stringData.Append('/'); break;
-                        case 'b': stringData.Append('\b'); break;
-                        case 'f': stringData.Append('\f'); break;
-                        case 'n': stringData.Append('\n'); break;
-                        case 'r': stringData.Append('\r'); break;
-                        case 't': stringData.Append('\t'); break;
-                        case 'u': {
-                            // Read 4 hex digits
-                            var codePoint = Convert.ToInt16(JsonData.Substring(Cursor + 1, 4), 16);
-                            Cursor += 4;
-                            stringData.Append(char.ConvertFromUtf32(codePoint));
-                        } break;
-                        default:
-                            throw new InvalidJsonException(
-                                $"Unknown escape character sequence: \\{JsonData[Cursor]} at column {Cursor}!");
+            if (trivial) {
+                Span<char> s = stackalloc char[len];
+                JsonData.AsSpan().Slice(Cursor, len).CopyTo(s);
+                
+                Cursor += len + 1; // skip to after the closing "
+                AdvanceToNextToken();
+                
+                return new string(s);
+            }
+            
+            Span<char> result = stackalloc char[len];
+            int resultIndex = 0;
+            
+            for (; Cursor < endCursor; ++Cursor) {
+                switch (JsonData[Cursor]) {
+                    case '\\': {
+                        Cursor++;
+                        switch (JsonData[Cursor]) {
+                            case '\\': result[resultIndex++] = '\\'; break;
+                            case '"':  result[resultIndex++] = '"';  break;
+                            case '/':  result[resultIndex++] = '/';  break;
+                            case 'b':  result[resultIndex++] = '\b'; break;
+                            case 'f':  result[resultIndex++] = '\f'; break;
+                            case 'n':  result[resultIndex++] = '\n'; break;
+                            case 'r':  result[resultIndex++] = '\r'; break;
+                            case 't':  result[resultIndex++] = '\t'; break;
+                            case 'u': {
+                                // Read 4 hex digits
+                                short codePoint = Convert.ToInt16(JsonData.Substring(Cursor + 1, 4), 16);
+                                Cursor += 4;
+                                result[resultIndex++] = char.ConvertFromUtf32(codePoint)[0];
+                            } break;
+                            default:
+                                throw new InvalidJsonException($"Unknown escape character sequence: \\{JsonData[Cursor]} at column {Cursor}!");
+                        }
                     }
-                } else {
-                    switch (JsonData[Cursor]) {
-                        case '\\':
-                            backslash = true;
-                            break;
-                        case '"':
-                            done = true;
-                            break;
-                        default:
-                            if (JsonData[Cursor] <= 0x1F || JsonData[Cursor] == 0x7F ||
-                                (JsonData[Cursor] >= 0x80 && JsonData[Cursor] <= 0x9F)) {
-                                throw new InvalidJsonException(
-                                    $"Disallowed control character in string at column {Cursor}!");
-                            }
-
-                            stringData.Append(JsonData[Cursor]);
-                            break;
-                    }
+                    break;
+                default:
+                    result[resultIndex++] = JsonData[Cursor];
+                    break;
                 }
             }
-
-            string result = stringData.ToString();
+            Cursor++; // Skip closing "
+            
             AdvanceToNextToken();
-            return result;
+            return new string(result);
         }
         
         /////////////////////////////////////////////////
