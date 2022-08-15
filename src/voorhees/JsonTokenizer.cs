@@ -78,12 +78,53 @@ namespace Voorhees {
         [return: NotNull]
         public string ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
-                throw new InvalidOperationException("Trying to consume a number string, but the next JSON token is not a number.");
+                throw new InvalidOperationException("Trying to consume a number, but the next JSON token is not a number.");
             }
+            
             int start = Cursor;
-            while (Cursor < JsonData.Length && isNumberChar(JsonData[Cursor])) {
+            
+            // optional leading -
+            if (Cursor < JsonData.Length && JsonData[Cursor] == '-') {
                 Cursor++;
             }
+
+            // a leading zero needs to be followed by a decimal or exponent marker
+            if (Cursor < JsonData.Length && JsonData[Cursor] == '0') {
+                if (Cursor + 1 >= JsonData.Length || (JsonData[Cursor + 1] != '.' && JsonData[Cursor + 1] != 'e' && JsonData[Cursor + 1] != 'E')) {
+                    throw new InvalidJsonException($"Leading zero in a number must be immediately followed by a decimal point or exponent at character {start}");
+                }
+            }
+
+            // whole part digits
+            while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
+                Cursor++;
+            }
+            
+            // decimal
+            if (Cursor < JsonData.Length && JsonData[Cursor] == '.') {
+                Cursor++;
+                
+                // fractional part digits
+                while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
+                    Cursor++;
+                }
+            }
+
+            // Optional exponent
+            if (Cursor < JsonData.Length && (JsonData[Cursor] == 'e' || JsonData[Cursor] == 'E')) {
+                Cursor++;
+                
+                // optional + or -
+                if (Cursor < JsonData.Length && (JsonData[Cursor] == '+' || JsonData[Cursor] == '-')) {
+                    Cursor++;
+                }
+
+                // exponent digits
+                while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
+                    Cursor++;
+                }
+            }
+            
             string numberString = JsonData.Substring(start, Cursor - start);
             AdvanceToNextToken();
             return numberString;
@@ -172,23 +213,9 @@ namespace Voorhees {
             AdvanceToNextToken();
             return new string(result);
         }
-        
+
         /////////////////////////////////////////////////
 
-        /// Set of characters that can appear in a valid JSON number.
-        static readonly char[] numberChars;
-        
-        /////////////////////////////////////////////////
-
-        static JsonTokenizer() {
-            numberChars = new [] {
-                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                '.',
-                'e', 'E',
-                '-', '+'
-            };
-        }
-        
         /// <summary>
         /// Moves <see cref="Cursor"/> to the next non-whitespace token.
         /// Identifies the type of token that starts at the cursor position and sets <see cref="NextToken"/>.
@@ -219,7 +246,7 @@ namespace Voorhees {
             }
 
             // number
-            if (JsonData[Cursor] == '-' || (JsonData[Cursor] <= '9' && JsonData[Cursor] >= '0')) {
+            if (JsonData[Cursor] == '-' || (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
                 NextToken = JsonToken.Number;
                 return;
             }
@@ -246,20 +273,6 @@ namespace Voorhees {
             }
 
             throw new InvalidJsonException($"Unexpected character '{JsonData[Cursor]}' at character {Cursor}!");
-        }
-
-        /// <summary>
-        /// Is <paramref name="c"/> a character that could appear in a JSON number?
-        /// </summary>
-        /// <param name="c">Potential number character</param>
-        /// <returns>True if <paramref name="c"/> could appear in a valid JSON number.</returns>
-        bool isNumberChar(char c) {
-            for (int i = 0; i < numberChars.Length; ++i) {
-                if (c == numberChars[i]) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

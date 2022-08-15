@@ -18,6 +18,21 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
 			Assert.That((int)test, Is.EqualTo(-1));
 		}
+
+		[Test]
+		public void InvalidNumberFormat_Dash() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("1-234"); });
+		}
+
+		[Test]
+		public void InvalidNumberFormat_Letters() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("1234asdf"); });
+		}
+
+		[Test]
+		public void InvalidNumberFormat_LeadingZero() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("01234"); });
+		}
 	}
 	
 	// Float
