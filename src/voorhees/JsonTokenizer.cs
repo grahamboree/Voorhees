@@ -168,9 +168,9 @@ namespace Voorhees {
                 }
             }
 
-            string strinvVal = stringData.ToString();
+            string result = stringData.ToString();
             AdvanceToNextToken();
-            return strinvVal;
+            return result;
         }
         
         /////////////////////////////////////////////////
