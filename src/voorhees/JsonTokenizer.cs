@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Voorhees {
@@ -74,6 +75,7 @@ namespace Voorhees {
         /// </summary>
         /// <returns>A copy of the number token as a parseable string.</returns>
         /// <exception cref="InvalidOperationException">If the next token in the string is not a number</exception>
+        [return: NotNull]
         public string ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
                 throw new InvalidOperationException("Trying to consume a number string, but the next JSON token is not a number.");
@@ -96,6 +98,7 @@ namespace Voorhees {
         /// <a href="https://www.crockford.com/mckeeman.html">disallowed control character</a>
         /// or a malformed escape character sequence.
         /// </exception>
+        [return: NotNull]
         public string ConsumeString() {
             Cursor++; // Skip the '"'
             

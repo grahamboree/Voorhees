@@ -37,17 +37,8 @@ namespace Voorhees {
             case JsonToken.String: return new JsonValue(tokenizer.ConsumeString());
             case JsonToken.Number: {
                string numberString = tokenizer.ConsumeNumber();
-               
-               if (int.TryParse(numberString, out int intVal)) {
-                  return new JsonValue(intVal);
-               }
-
-               if (float.TryParse(numberString, out float floatVal)) {
-                  return new JsonValue(floatVal);
-               }
-
-               throw new InvalidJsonException(
-                  $"Can't parse number string {numberString} ending at character {tokenizer.Cursor}");
+               return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
+                  : new JsonValue(float.Parse(numberString));
             }
             case JsonToken.True:
                tokenizer.ConsumeToken();
