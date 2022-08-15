@@ -31,19 +31,19 @@ namespace Voorhees {
     public class JsonTokenizer {
         public JsonToken NextToken = JsonToken.None;
         public int Cursor;
-        public readonly string Json;
+        public readonly string JsonData;
         
         /////////////////////////////////////////////////
 
         /// <summary>
         /// Construct a new tokenizer from the start of the given json string.
         /// </summary>
-        /// <param name="json">JSON to parse</param>
-        /// <exception cref="ArgumentException">If <see cref="json"/> is null.</exception>
-        public JsonTokenizer(string json) {
-            Json = json ?? throw new ArgumentException("Json string is null", nameof(json));
+        /// <param name="jsonData">JSON to parse</param>
+        /// <exception cref="ArgumentException">If <see cref="jsonData"/> is null.</exception>
+        public JsonTokenizer(string jsonData) {
+            JsonData = jsonData ?? throw new ArgumentException("Json string is null", nameof(jsonData));
             Cursor = 0;
-            
+
             AdvanceToNextToken();
         }
         
@@ -79,10 +79,10 @@ namespace Voorhees {
                 throw new InvalidOperationException("Trying to consume a number string, but the next JSON token is not a number.");
             }
             int start = Cursor;
-            while (Cursor < Json.Length && isNumberChar(Json[Cursor])) {
+            while (Cursor < JsonData.Length && isNumberChar(JsonData[Cursor])) {
                 Cursor++;
             }
-            string numberString = Json.Substring(start, Cursor - start);
+            string numberString = JsonData.Substring(start, Cursor - start);
             AdvanceToNextToken();
             return numberString;
         }
@@ -100,8 +100,8 @@ namespace Voorhees {
             Cursor++; // Skip the '"'
 
             // trivial string parsing short-circuit
-            for (int readAheadIndex = Cursor; readAheadIndex < Json.Length; ++readAheadIndex) {
-                char readAheadChar = Json[readAheadIndex];
+            for (int readAheadIndex = Cursor; readAheadIndex < JsonData.Length; ++readAheadIndex) {
+                char readAheadChar = JsonData[readAheadIndex];
                 if (readAheadChar == '\\') {
                     // This string isn't trivial, so use the normal expensive parsing.
                     break;
@@ -117,7 +117,7 @@ namespace Voorhees {
                     int start = Cursor;
                     int length = readAheadIndex - start;
                     Cursor = readAheadIndex + 1; // skip to after the closing "
-                    var stringVal = Json.Substring(start, length);
+                    var stringVal = JsonData.Substring(start, length);
                     AdvanceToNextToken();
                     return stringVal;
                 }
@@ -128,7 +128,7 @@ namespace Voorhees {
             for (bool done = false; !done; ++Cursor) {
                 if (backslash) {
                     backslash = false;
-                    switch (Json[Cursor]) {
+                    switch (JsonData[Cursor]) {
                         case '\\': stringData.Append('\\'); break;
                         case '"': stringData.Append('"'); break;
                         case '/': stringData.Append('/'); break;
@@ -139,16 +139,16 @@ namespace Voorhees {
                         case 't': stringData.Append('\t'); break;
                         case 'u': {
                             // Read 4 hex digits
-                            var codePoint = Convert.ToInt16(Json.Substring(Cursor + 1, 4), 16);
+                            var codePoint = Convert.ToInt16(JsonData.Substring(Cursor + 1, 4), 16);
                             Cursor += 4;
                             stringData.Append(char.ConvertFromUtf32(codePoint));
                         } break;
                         default:
                             throw new InvalidJsonException(
-                                $"Unknown escape character sequence: \\{Json[Cursor]} at column {Cursor}!");
+                                $"Unknown escape character sequence: \\{JsonData[Cursor]} at column {Cursor}!");
                     }
                 } else {
-                    switch (Json[Cursor]) {
+                    switch (JsonData[Cursor]) {
                         case '\\':
                             backslash = true;
                             break;
@@ -156,13 +156,13 @@ namespace Voorhees {
                             done = true;
                             break;
                         default:
-                            if (Json[Cursor] <= 0x1F || Json[Cursor] == 0x7F ||
-                                (Json[Cursor] >= 0x80 && Json[Cursor] <= 0x9F)) {
+                            if (JsonData[Cursor] <= 0x1F || JsonData[Cursor] == 0x7F ||
+                                (JsonData[Cursor] >= 0x80 && JsonData[Cursor] <= 0x9F)) {
                                 throw new InvalidJsonException(
                                     $"Disallowed control character in string at column {Cursor}!");
                             }
 
-                            stringData.Append(Json[Cursor]);
+                            stringData.Append(JsonData[Cursor]);
                             break;
                     }
                 }
@@ -197,18 +197,18 @@ namespace Voorhees {
         /// If the next non-whitespace character does not begin a valid JSON token.
         /// </exception>
         void AdvanceToNextToken() {
-            while (Cursor < Json.Length && char.IsWhiteSpace(Json[Cursor])) {
+            while (Cursor < JsonData.Length && char.IsWhiteSpace(JsonData[Cursor])) {
                 Cursor++;
             }
             
-            int charsLeft = Json.Length - Cursor;
+            int charsLeft = JsonData.Length - Cursor;
 
             if (charsLeft <= 0) {
                 NextToken = JsonToken.EOF;
                 return;
             }
 
-            switch (Json[Cursor]) {
+            switch (JsonData[Cursor]) {
                 case '[': NextToken = JsonToken.ArrayStart; return;
                 case ']': NextToken = JsonToken.ArrayEnd; return;
                 case '{': NextToken = JsonToken.ObjectStart; return;
@@ -219,33 +219,33 @@ namespace Voorhees {
             }
 
             // number
-            if (Json[Cursor] == '-' || (Json[Cursor] <= '9' && Json[Cursor] >= '0')) {
+            if (JsonData[Cursor] == '-' || (JsonData[Cursor] <= '9' && JsonData[Cursor] >= '0')) {
                 NextToken = JsonToken.Number;
                 return;
             }
             
             // true
             const string trueToken = "true";
-            if (charsLeft >= 4 && string.CompareOrdinal(Json, Cursor, trueToken, 0, trueToken.Length) == 0) {
+            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, trueToken, 0, trueToken.Length) == 0) {
                 NextToken = JsonToken.True;
                 return;
             }
 
             // false
             const string falseToken = "false";
-            if (charsLeft >= 5 && string.CompareOrdinal(Json, Cursor, falseToken, 0, falseToken.Length) == 0) {
+            if (charsLeft >= 5 && string.CompareOrdinal(JsonData, Cursor, falseToken, 0, falseToken.Length) == 0) {
                 NextToken = JsonToken.False;
                 return;
             }
 
             // null
             const string nullToken = "null";
-            if (charsLeft >= 4 && string.CompareOrdinal(Json, Cursor, nullToken, 0, nullToken.Length) == 0) {
+            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, nullToken, 0, nullToken.Length) == 0) {
                 NextToken = JsonToken.Null;
                 return;
             }
 
-            throw new InvalidJsonException($"Unexpected character '{Json[Cursor]}' at character {Cursor}!");
+            throw new InvalidJsonException($"Unexpected character '{JsonData[Cursor]}' at character {Cursor}!");
         }
 
         /// <summary>
