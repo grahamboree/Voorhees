@@ -74,45 +74,45 @@ namespace Voorhees {
             }
         }
 
-        public void WriteNull() { tabs(); writer.Write("null"); }
+        public void WriteNull() { WriteIndent(); writer.Write("null"); }
 
         #region Json Boolean
-        public void Write(bool val) { tabs(); writer.Write(val ? "true" : "false"); }
+        public void Write(bool val) { WriteIndent(); writer.Write(val ? "true" : "false"); }
         #endregion
 
         #region Json Number
         // Integral types
-        public void Write(byte val)   { tabs(); writer.Write(val); }
-        public void Write(sbyte val)  { tabs(); writer.Write(val); }
-        public void Write(short val)  { tabs(); writer.Write(val); }
-        public void Write(ushort val) { tabs(); writer.Write(val); }
-        public void Write(int val)    { tabs(); writer.Write(val); }
-        public void Write(uint val)   { tabs(); writer.Write(val); }
-        public void Write(long val)   { tabs(); writer.Write(val); }
-        public void Write(ulong val)  { tabs(); writer.Write(val); }
+        public void Write(byte val)   { WriteIndent(); writer.Write(val); }
+        public void Write(sbyte val)  { WriteIndent(); writer.Write(val); }
+        public void Write(short val)  { WriteIndent(); writer.Write(val); }
+        public void Write(ushort val) { WriteIndent(); writer.Write(val); }
+        public void Write(int val)    { WriteIndent(); writer.Write(val); }
+        public void Write(uint val)   { WriteIndent(); writer.Write(val); }
+        public void Write(long val)   { WriteIndent(); writer.Write(val); }
+        public void Write(ulong val)  { WriteIndent(); writer.Write(val); }
 
         // Floating point types
-        public void Write(float val)   { tabs(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(double val)  { tabs(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(decimal val) { tabs(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(float val)   { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(double val)  { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(decimal val) { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
         #endregion
 
         #region Json String
-        public void Write(string val) { tabs(); WriteString(val); } 
-        public void Write(char val) { tabs(); WriteString(val.ToString()); }
+        public void Write(string val) { WriteIndent(); WriteString(val); } 
+        public void Write(char val) { WriteIndent(); WriteString(val.ToString()); }
         #endregion
 
         #region Json Array
-        public void WriteArrayStart() { tabs(); writer.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
+        public void WriteArrayStart() { WriteIndent(); writer.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
         public void WriteArraySeparator() { writer.Write(prettyPrint ? ",\n" : ","); }
         public void WriteArrayListTerminator() { if (prettyPrint) { writer.Write("\n"); } }
-        public void WriteArrayEnd() { indentLevel--; tabs(); writer.Write("]"); }
+        public void WriteArrayEnd() { indentLevel--; WriteIndent(); writer.Write("]"); }
         #endregion
 
         #region Json Object
-        public void WriteObjectStart() { tabs(); writer.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
+        public void WriteObjectStart() { WriteIndent(); writer.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
         public void WriteObjectKeyValueSeparator() { writer.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
-        public void WriteObjectEnd() { indentLevel--; tabs(); writer.Write("}"); }
+        public void WriteObjectEnd() { indentLevel--; WriteIndent(); writer.Write("}"); }
         #endregion
         
         /////////////////////////////////////////////////
@@ -186,7 +186,7 @@ namespace Voorhees {
             }
         }
 
-        void tabs() {
+        void WriteIndent() {
             if (!prettyPrint) {
                 return;
             }
