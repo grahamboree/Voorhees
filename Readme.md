@@ -14,18 +14,17 @@ Current Status
 * Map complex objects to and from json values
 * Multidimensional array mapping support
 * Field and Property annotations to ignore specific values when serializing
+* Optionally generate pretty-printed JSON instead of condensed JSON
 
 **In-Development**
-* Add mapping option to read and de-serialize in one pass so it's not allocating a bunch of intermediate JsonValue's 
 * Serialize and de-serialize correct underlying value for polymorphic type references
-* dll release
 * Serialized object versioning and version data migration system
-* Optionally generate pretty-printed JSON instead of condensed JSON
+* De-dupe multiple references to the same value.  Handle serializing circular references.
 
 Why
 ---
 
-Why do we need another C# JSON library in 2020?  The simple answer is, we don't really.  Voorhees was created as a distraction from 2020, but it's also designed specifically with game development in mind.  This means a specific focus on memory and CPU performance, along with the ability to control these to suit your specific needs.  
+Voorhees was designed specifically with game development in mind.  This means a specific focus on CPU performance and reducing allocations.
 
 ---
 
