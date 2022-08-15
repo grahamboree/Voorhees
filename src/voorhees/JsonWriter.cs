@@ -99,7 +99,7 @@ namespace Voorhees {
 
         #region Json String
         public void Write(string val) { tabs(); WriteString(val); } 
-        public void Write(char val) { Write(val.ToString()); }
+        public void Write(char val) { tabs(); WriteString(val.ToString()); }
         #endregion
 
         #region Json Array
