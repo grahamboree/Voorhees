@@ -1,10 +1,8 @@
 ﻿using NUnit.Framework;
 
 namespace Voorhees.Tests {
-	
-	// Int
 	[TestFixture]
-	public partial class JsonReaderTest {
+	public class JsonReaderTest_Primitives {
 		[Test]
 		public void Int() {
 			var test = JsonReader.Read("1");
@@ -18,160 +16,21 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
 			Assert.That((int)test, Is.EqualTo(-1));
 		}
-
-		[Test]
-		public void InvalidNumberFormat_Dash() {
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("1-234"); });
-		}
-
-		[Test]
-		public void InvalidNumberFormat_Letters() {
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("1234asdf"); });
-		}
-
-		[Test]
-		public void InvalidNumberFormat_LeadingZero() {
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("01234"); });
-		}
-	}
-	
-	// Float
-	public partial class JsonReaderTest {
+		
 		[Test]
 		public void Float() {
 			var test = JsonReader.Read("1.5");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
 			Assert.That((float) test, Is.EqualTo(1.5f));
 		}
-
-		[Test]
-		public void NegativeFloat() {
-			var test = JsonReader.Read("-1.5");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(-1.5f));
-		}
-
-		[Test]
-		public void FloatPositiveE() {
-			var test = JsonReader.Read("1.5e+1");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(15f));
-		}
-
-		[Test]
-		public void FloatE() {
-			var test = JsonReader.Read("1.5e2");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(1.5e2f));
-		}
-
-		[Test]
-		public void FloatNegativeE() {
-			var test = JsonReader.Read("1.5e-2");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(1.5e-2f));
-		}
-
-		[Test]
-		public void NegativeFloatPositiveE() {
-			var test = JsonReader.Read("-1.5e+1");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(-15f));
-		}
-
-		[Test]
-		public void NegativeFloatE() {
-			var test = JsonReader.Read("-1.5e2");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(-1.5e2f));
-		}
-
-		[Test]
-		public void NegativeFloatNegativeE() {
-			var test = JsonReader.Read("-1.5e-2");
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(-1.5e-2f));
-		}
-	}
-	
-	// String
-	public partial class JsonReaderTest {
+		
 		[Test]
 		public void String() {
 			var test = JsonReader.Read("\"test\"");
 			Assert.That(test.Type, Is.EqualTo(JsonType.String));
 			Assert.That((string) test, Is.EqualTo("test"));
 		}
-
-		[Test]
-		public void StringWithEscapedQuotes() {
-			var test = JsonReader.Read("\"\\\\\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\\"));
-		}
 		
-		[Test]
-		public void SpecialCharacters() {
-			var test = JsonReader.Read("\"\\\\\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\\"));
-
-			test = JsonReader.Read("\"\\\"\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\""));
-
-			test = JsonReader.Read("\"\\/\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("/"));
-
-			test = JsonReader.Read("\"\\b\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\b"));
-
-			test = JsonReader.Read("\"\\b\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\b"));
-
-			test = JsonReader.Read("\"\\f\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\f"));
-
-			test = JsonReader.Read("\"\\n\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\n"));
-
-			test = JsonReader.Read("\"\\r\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\r"));
-
-			test = JsonReader.Read("\"\\t\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\t"));
-
-			// ☃
-			test = JsonReader.Read("\"\\u2603\"");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("\u2603"));
-		}
-
-		[Test]
-		public void DisallowControlCharacters() {
-			for (int i = 0; i < 0x20; i++) {
-				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
-			}
-
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{char.ConvertFromUtf32(0x7F)}\""); });
-
-			for (int i = 0x80; i <= 0x9F; i++) {
-				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
-			}
-		}
-	}
-	
-	// Boolean
-	public partial class JsonReaderTest {
 		[Test]
 		public void True() {
 			var test = JsonReader.Read("true");
@@ -185,10 +44,7 @@ namespace Voorhees.Tests {
 			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
 			Assert.That((bool) test, Is.False);
 		}
-	}
-	
-	// Null
-	public partial class JsonReaderTest {
+		
 		[Test]
 		public void Null() {
 			var test = JsonReader.Read("null");
@@ -197,8 +53,7 @@ namespace Voorhees.Tests {
 		}
 	}
 	
-	// Arrays
-	public partial class JsonReaderTest {
+	public class JsonReaderTest_Arrays {
 		[Test]
 		public void EmptyArray() {
 			var test = JsonReader.Read("[]");
@@ -330,8 +185,7 @@ namespace Voorhees.Tests {
 		}
 	}
 	
-	// Objects
-	public partial class JsonReaderTest {
+	public class JsonReaderTest_Objects {
 		[Test]
 		public void EmptyObject() {
 			var test = JsonReader.Read("{}");
