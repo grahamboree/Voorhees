@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Voorhees {
     /// Thrown when trying to read invalid JSON data.
@@ -224,9 +222,12 @@ namespace Voorhees {
         /// If the next non-whitespace character does not begin a valid JSON token.
         /// </exception>
         void AdvanceToNextToken() {
+            // Skip whitespace
             while (Cursor < JsonData.Length && char.IsWhiteSpace(JsonData[Cursor])) {
                 Cursor++;
             }
+            
+            // Detect token type
             
             int charsLeft = JsonData.Length - Cursor;
 
@@ -252,22 +253,22 @@ namespace Voorhees {
             }
             
             // true
-            const string trueToken = "true";
-            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, trueToken, 0, trueToken.Length) == 0) {
+            const string TOKEN_TRUE = "true";
+            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, TOKEN_TRUE, 0, TOKEN_TRUE.Length) == 0) {
                 NextToken = JsonToken.True;
                 return;
             }
 
             // false
-            const string falseToken = "false";
-            if (charsLeft >= 5 && string.CompareOrdinal(JsonData, Cursor, falseToken, 0, falseToken.Length) == 0) {
+            const string TOKEN_FALSE = "false";
+            if (charsLeft >= 5 && string.CompareOrdinal(JsonData, Cursor, TOKEN_FALSE, 0, TOKEN_FALSE.Length) == 0) {
                 NextToken = JsonToken.False;
                 return;
             }
 
             // null
-            const string nullToken = "null";
-            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, nullToken, 0, nullToken.Length) == 0) {
+            const string TOKEN_NULL = "null";
+            if (charsLeft >= 4 && string.CompareOrdinal(JsonData, Cursor, TOKEN_NULL, 0, TOKEN_NULL.Length) == 0) {
                 NextToken = JsonToken.Null;
                 return;
             }
