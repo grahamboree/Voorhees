@@ -36,7 +36,7 @@ namespace Voorhees {
             case JsonToken.Separator: break;
             case JsonToken.String: return new JsonValue(tokenizer.ConsumeString());
             case JsonToken.Number: {
-               string numberString = tokenizer.ConsumeNumber();
+               var numberString = tokenizer.ConsumeNumber();
                return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
                   : new JsonValue(float.Parse(numberString));
             }

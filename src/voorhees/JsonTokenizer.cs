@@ -57,8 +57,8 @@ namespace Voorhees {
                 case JsonToken.Separator:
                     Cursor++;
                     break;
-                case JsonToken.String: ConsumeString(); break;
-                case JsonToken.Number: ConsumeNumber(); break;
+                case JsonToken.String: ConsumeString(); break; // TODO Skip instead of consume
+                case JsonToken.Number: ConsumeNumber(); break; // TODO Skip instead of consume
                 case JsonToken.True: Cursor += 4; break;
                 case JsonToken.False: Cursor += 5; break;
                 case JsonToken.Null: Cursor += 4; break;
@@ -71,10 +71,9 @@ namespace Voorhees {
         /// <summary>
         /// Return a copy the current number token and advance <see cref="Cursor"/> to the next token. 
         /// </summary>
-        /// <returns>A copy of the number token as a parseable string.</returns>
-        /// <exception cref="InvalidOperationException">If the next token in the string is not a number</exception>
-        [return: NotNull]
-        public string ConsumeNumber() {
+        /// <returns>A ReadOnlySpan mapping to the number character span in the original JsonData string</returns>
+        /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
+        public ReadOnlySpan<char> ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
                 throw new InvalidOperationException("Trying to consume a number, but the next JSON token is not a number.");
             }
@@ -122,10 +121,10 @@ namespace Voorhees {
                     Cursor++;
                 }
             }
-            
-            string numberString = JsonData.Substring(start, Cursor - start);
+
+            int length = Cursor - start;
             AdvanceToNextToken();
-            return numberString;
+            return JsonData.AsSpan(start, length);
         }
 
         /// <summary>
@@ -209,7 +208,7 @@ namespace Voorhees {
             Cursor++; // Skip closing "
             
             AdvanceToNextToken();
-            return new string(result);
+            return new string(result); // TODO To String.Create
         }
 
         /////////////////////////////////////////////////

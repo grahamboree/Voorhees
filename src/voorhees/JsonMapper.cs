@@ -252,15 +252,13 @@ namespace Voorhees {
                 case JsonToken.ArrayStart: return MapArray(tokenizer, destinationType);
                 case JsonToken.String: jsonType = typeof(string); jsonValue = tokenizer.ConsumeString(); break;
                 case JsonToken.Number: {
-                    string numberString = tokenizer.ConsumeNumber();
+                    var numberString = tokenizer.ConsumeNumber();
                     if (int.TryParse(numberString, out int intVal)) {
                         jsonType = typeof(int);
                         jsonValue = intVal;
-                    } else if (float.TryParse(numberString, out float floatVal)) {
-                        jsonType = typeof(float);
-                        jsonValue = floatVal;
                     } else {
-                        throw new InvalidJsonException($"Can't parse number value: \"{numberString}\" at character {tokenizer.Cursor}");
+                        jsonType = typeof(float);
+                        jsonValue = float.Parse(numberString);
                     }
                 } break;
                 case JsonToken.True: jsonType = typeof(bool); jsonValue = true; tokenizer.ConsumeToken(); break;
