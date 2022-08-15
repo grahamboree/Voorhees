@@ -125,37 +125,65 @@ namespace Voorhees {
         /////////////////////////////////////////////////
         
         void WriteString(string val) {
-            bool simpleString = true;
-            foreach (char c in val) {
-                simpleString &= c >= 32 && c != '"' && c != '/' && c != '\\';
-            }
-
-            if (simpleString) {
-                writer.Write("\"" + val + "\"");
-                return;
-            }
-
-            writer.Write("\"");
+            int extraLength = 0;
             foreach (char c in val) {
                 switch (c) {
-                    case '\\': writer.Write("\\\\"); break;
-                    case '\"': writer.Write("\\\""); break;
-                    case '/':  writer.Write("\\/");  break;
-                    case '\b': writer.Write("\\b");  break;
-                    case '\f': writer.Write("\\f");  break;
-                    case '\n': writer.Write("\\n");  break;
-                    case '\r': writer.Write("\\r");  break;
-                    case '\t': writer.Write("\\t");  break;
+                    case '\\': 
+                    case '\"': 
+                    case '/':  
+                    case '\b': 
+                    case '\f': 
+                    case '\n': 
+                    case '\r': 
+                    case '\t': 
+                        extraLength++; break;
                     default: {
                         if (c < 32) {
-                            writer.Write($"\\u{(int)c:X4}");
-                        } else {
-                            writer.Write(c);
+                            extraLength += 5;
                         }
                     } break;
                 }
             }
-            writer.Write("\"");
+            
+            if (extraLength == 0) {
+                // No special characters, so no escaping necessary; just quote it.
+                Span<char> buffer = stackalloc char[val.Length + 2];
+                buffer[0] = '\"';
+                val.AsSpan().CopyTo(buffer[1..]);
+                buffer[val.Length + 1] = '\"';
+                writer.Write(buffer);
+            } else {
+                // There are special characters in the string we need to escape.
+                Span<char> buffer = stackalloc char[val.Length + 2 + extraLength];
+                int bufferIndex = 0;
+                buffer[bufferIndex++] = '\"';
+                foreach (char c in val) {
+                    switch (c) {
+                        case '\\': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '\\'; break;
+                        case '\"': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '"';  break;
+                        case '/':  buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '/';  break;
+                        case '\b': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'b';  break;
+                        case '\f': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'f';  break;
+                        case '\n': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'n';  break;
+                        case '\r': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'r';  break;
+                        case '\t': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 't';  break;
+                        default: {
+                            if (c < 32) {
+                                buffer[bufferIndex++] = '\\';
+                                buffer[bufferIndex++] = 'u';
+                                // TODO: This might be faster if we avoided the ToString() ?
+                                string hex = ((int)c).ToString("X4");
+                                hex.CopyTo(buffer.Slice(bufferIndex, 4));
+                                bufferIndex += 4;
+                            } else {
+                                buffer[bufferIndex++] = c;
+                            }
+                        } break;
+                    }
+                }
+                buffer[bufferIndex] = '\"';
+                writer.Write(buffer);
+            }
         }
 
         void tabs() {
