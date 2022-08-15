@@ -116,8 +116,6 @@ namespace Voorhees {
         #endregion
         
         /////////////////////////////////////////////////
-
-        static readonly List<string> tabCache;
         
         readonly TextWriter writer;
         int indentLevel;
@@ -125,33 +123,6 @@ namespace Voorhees {
         readonly bool prettyPrint;
         
         /////////////////////////////////////////////////
-
-        static JsonWriter() {
-            // 20 levels to start with.
-            tabCache = new List<string> {
-                "\t",
-                "\t\t",
-                "\t\t\t",
-                "\t\t\t\t",
-                "\t\t\t\t\t",
-                "\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-                "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t",
-            };
-        }
-        
         
         void WriteString(string val) {
             bool simpleString = true;
@@ -200,17 +171,12 @@ namespace Voorhees {
             if (indentLevel == 0) {
                 return;
             }
-
-            // Add more entries to the tabs cache if necessary.
-            for (int i = tabCache.Count; i < indentLevel; ++i) {
-                string tabs = "";
-                for (int j = 0; j <= i; ++j) {
-                    tabs += '\t';
-                }
-                tabCache.Add(tabs);
+            
+            Span<char> buffer = stackalloc char[indentLevel];
+            for (int i = 0; i < indentLevel; ++i) {
+                buffer[i] = '\t';
             }
-
-            writer.Write(tabCache[indentLevel - 1]);
+            writer.Write(buffer);
         }
     }
 }
