@@ -193,6 +193,18 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
+		public void InvalidEscapeCode() {
+			var tokenizer = new JsonTokenizer("\"\\g\"");
+			Assert.Throws<InvalidJsonException>(() => tokenizer.ConsumeString());
+		}
+
+		[Test]
+		public void MixedRegularAndEscapedChars() {
+			var tokenizer = new JsonTokenizer("\"¿ni\\u597Dma?\"");
+			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("¿ni好ma?"));
+		}
+
+		[Test]
 		public void DisallowsControlCharacters() {
 			for (int i = 0; i < 0x20; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
@@ -205,6 +217,13 @@ namespace Voorhees.Tests {
 				string controlChar = char.ConvertFromUtf32(i);
 				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
 			}
+		}
+
+		[Test]
+		public void AdvancingToRandomCharactersThrows() {
+			Assert.Throws<InvalidJsonException>(() => {
+				var tokenizer = new JsonTokenizer("asdf");
+			});
 		}
 	}
 }
