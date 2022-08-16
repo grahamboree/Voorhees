@@ -207,8 +207,20 @@ namespace Voorhees.Tests {
 		[Test]
 		public void AdvancingToRandomCharactersThrows() {
 			Assert.Throws<InvalidJsonException>(() => {
-				var tokenizer = new JsonTokenizer("asdf");
+				new JsonTokenizer("asdf");
 			});
+		}
+		
+		[Test]
+		public void ParsesUnicodeSurrogatePairsCorrectly() {
+			var tokenizer = new JsonTokenizer("\"\\ud83d\\ude80\"");
+			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("🚀"));
+		}
+		
+		[Test]
+		public void ParsesEmojiCorrectly() {
+			var tokenizer = new JsonTokenizer("\"🚀\"");
+			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("🚀"));
 		}
 	}
 }

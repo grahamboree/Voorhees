@@ -212,7 +212,7 @@ namespace Voorhees {
                                 // Read 4 hex digits
                                 short codePoint = Convert.ToInt16(JsonData.Substring(current + 1, 4), 16);
                                 current += 4;
-                                result[resultIndex++] = char.ConvertFromUtf32(codePoint)[0];
+                                result[resultIndex++] = (char)codePoint;
                             } break;
                             default:
                                 throw new InvalidJsonException($"{LineColString} Unknown escape character sequence");
