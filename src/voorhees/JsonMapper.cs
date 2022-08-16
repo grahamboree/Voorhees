@@ -280,12 +280,12 @@ namespace Voorhees {
                     expectingValue = true;
                     tokenizer.ConsumeToken(); // ,
                 } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
-                    throw new InvalidJsonException($"Expected end array token or separator at column {tokenizer.Cursor}!");
+                    throw new InvalidJsonException($"{tokenizer.LineColString} Expected end array token or separator");
                 }
             }
 
             if (expectingValue) {
-                throw new InvalidJsonException($"Unexpected end array token at column {tokenizer.Cursor}!");
+                throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end array token");
             }
 
             tokenizer.ConsumeToken(); // ]
@@ -310,12 +310,12 @@ namespace Voorhees {
                     expectingValue = true;
                     tokenizer.ConsumeToken(); // ,
                 } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
-                    throw new InvalidJsonException($"Expected end array token or separator at column {tokenizer.Cursor}!");
+                    throw new InvalidJsonException($"{tokenizer.LineColString} Expected end array token or separator");
                 }
             }
 
             if (expectingValue) {
-                throw new InvalidJsonException($"Unexpected end array token at column {tokenizer.Cursor}!");
+                throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end array token");
             }
             
             tokenizer.ConsumeToken(); // ]
@@ -428,7 +428,7 @@ namespace Voorhees {
             }
 
             if (expectingValue) {
-                throw new InvalidJsonException($"Unexpected \'}}\' at character {tokenizer.Cursor}");
+                throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected object end token");
             }
 
             tokenizer.ConsumeToken(); // }

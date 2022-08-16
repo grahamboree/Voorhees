@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Voorhees {
     /// Thrown when trying to read invalid JSON data.
@@ -28,9 +29,15 @@ namespace Voorhees {
     }
     
     public class JsonTokenizer {
-        public JsonToken NextToken = JsonToken.None;
-        public int Cursor;
         public readonly string JsonData;
+        public JsonToken NextToken = JsonToken.None;
+        
+        /// Index of the current character in the entire json document. 0-indexed
+        public int Cursor;
+        /// Index of the current line in the json document. 1-indexed
+        public int Line;
+        /// Index of the current character on the current line in the json document.  1-indexed
+        public int Column;
         
         /////////////////////////////////////////////////
 
@@ -41,8 +48,11 @@ namespace Voorhees {
         /// <exception cref="ArgumentException">If <see cref="jsonData"/> is null.</exception>
         public JsonTokenizer(string jsonData) {
             JsonData = jsonData ?? throw new ArgumentException("Json string is null", nameof(jsonData));
+            
             Cursor = 0;
-
+            Line = 1;
+            Column = 1;
+            
             AdvanceToNextToken();
         }
         
@@ -54,14 +64,12 @@ namespace Voorhees {
                 case JsonToken.ObjectStart:
                 case JsonToken.KeyValueSeparator:
                 case JsonToken.ObjectEnd:
-                case JsonToken.Separator:
-                    Cursor++;
-                    break;
+                case JsonToken.Separator: AdvanceCursorBy(1); break;
                 case JsonToken.String: ConsumeString(); break; // TODO Skip instead of consume
                 case JsonToken.Number: ConsumeNumber(); break; // TODO Skip instead of consume
-                case JsonToken.True: Cursor += 4; break;
-                case JsonToken.False: Cursor += 5; break;
-                case JsonToken.Null: Cursor += 4; break;
+                case JsonToken.True: AdvanceCursorBy(4); break;
+                case JsonToken.False: AdvanceCursorBy(5); break;
+                case JsonToken.Null: AdvanceCursorBy(4); break;
                 case JsonToken.EOF:
                     break;
             }
@@ -75,55 +83,58 @@ namespace Voorhees {
         /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
         public ReadOnlySpan<char> ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
-                throw new InvalidOperationException("Trying to consume a number, but the next JSON token is not a number.");
+                throw new InvalidOperationException($"{LineColString} Trying to consume a number, but the next JSON token is not a number");
             }
             
             int start = Cursor;
+            int end = start;
             
             // optional leading -
-            if (Cursor < JsonData.Length && JsonData[Cursor] == '-') {
-                Cursor++;
+            if (end < JsonData.Length && JsonData[end] == '-') {
+                end++;
             }
 
             // a leading zero needs to be followed by a decimal or exponent marker
-            if (Cursor < JsonData.Length && JsonData[Cursor] == '0') {
-                if (Cursor + 1 >= JsonData.Length || (JsonData[Cursor + 1] != '.' && JsonData[Cursor + 1] != 'e' && JsonData[Cursor + 1] != 'E')) {
-                    throw new InvalidJsonException($"Leading zero in a number must be immediately followed by a decimal point or exponent at character {start}");
+            if (end < JsonData.Length && JsonData[end] == '0') {
+                if (end + 1 >= JsonData.Length || (JsonData[end + 1] != '.' && JsonData[end + 1] != 'e' && JsonData[end + 1] != 'E')) {
+                    throw new InvalidJsonException($"{LineColString} Leading zero in a number must be immediately followed by a decimal point or exponent");
                 }
             }
 
             // whole part digits
-            while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
-                Cursor++;
+            while (end < JsonData.Length && (JsonData[end] >= '0' && JsonData[end] <= '9')) {
+                end++;
             }
             
             // decimal
-            if (Cursor < JsonData.Length && JsonData[Cursor] == '.') {
-                Cursor++;
+            if (end < JsonData.Length && JsonData[end] == '.') {
+                end++;
                 
                 // fractional part digits
-                while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
-                    Cursor++;
+                while (end < JsonData.Length && (JsonData[end] >= '0' && JsonData[end] <= '9')) {
+                    end++;
                 }
             }
 
             // Optional exponent
-            if (Cursor < JsonData.Length && (JsonData[Cursor] == 'e' || JsonData[Cursor] == 'E')) {
-                Cursor++;
+            if (end < JsonData.Length && (JsonData[end] == 'e' || JsonData[end] == 'E')) {
+                end++;
                 
                 // optional + or -
-                if (Cursor < JsonData.Length && (JsonData[Cursor] == '+' || JsonData[Cursor] == '-')) {
-                    Cursor++;
+                if (end < JsonData.Length && (JsonData[end] == '+' || JsonData[end] == '-')) {
+                    end++;
                 }
 
                 // exponent digits
-                while (Cursor < JsonData.Length && (JsonData[Cursor] >= '0' && JsonData[Cursor] <= '9')) {
-                    Cursor++;
+                while (end < JsonData.Length && (JsonData[end] >= '0' && JsonData[end] <= '9')) {
+                    end++;
                 }
             }
+            int length = end - start;
 
-            int length = Cursor - start;
+            AdvanceCursorBy(length);
             AdvanceToNextToken();
+            
             return JsonData.AsSpan(start, length);
         }
 
@@ -138,49 +149,52 @@ namespace Voorhees {
         /// </exception>
         [return: NotNull]
         public string ConsumeString() {
-            Cursor++; // Skip the '"'
-            
+            int start = Cursor + 1; // Skip the '"'
+            int end = start; // Where the ending " is
+            int resultLength = 0; // Number of characters in the resulting string.
+
             // Read the string length
-            int len = 0;
-            int endCursor = Cursor; // Where the ending " is in JsonData
             bool trivial = true;
-            for (int readAheadIndex = Cursor; readAheadIndex < JsonData.Length; ++readAheadIndex) {
+            for (int readAheadIndex = start; readAheadIndex < JsonData.Length; ++readAheadIndex) {
                 char readAheadChar = JsonData[readAheadIndex];
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    throw new InvalidJsonException($"Disallowed control character in string at column {readAheadIndex}!");
+                    // TODO: This should indicate the line and column number for the offending character, not the start of the string.
+                    throw new InvalidJsonException($"{LineColString} Disallowed control character in string");
                 }
                 
                 if (readAheadChar == '\\') {
-                    trivial = false; // This string isn't trivial, so use the normal expensive parsing.
+                    // This string isn't trivial, so use the normal slower parsing.
+                    trivial = false;
                     readAheadIndex++;
                     if (JsonData[readAheadIndex] == 'u') {
                         readAheadIndex += 4;
                     }
                 } else if (readAheadChar == '"') {
-                    endCursor = readAheadIndex;
+                    end = readAheadIndex;
                     break;
                 }
-                len++;
+                resultLength++;
             }
 
             if (trivial) {
-                Span<char> s = stackalloc char[len];
-                JsonData.AsSpan().Slice(Cursor, len).CopyTo(s);
+                // TODO Use string.Create
+                Span<char> s = stackalloc char[resultLength];
+                JsonData.AsSpan().Slice(start, resultLength).CopyTo(s);
                 
-                Cursor += len + 1; // skip to after the closing "
+                AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
                 AdvanceToNextToken();
                 
-                return new string(s);
+                return new string(s); // TODO to string.Create
             }
             
-            Span<char> result = stackalloc char[len];
+            Span<char> result = stackalloc char[resultLength];
             int resultIndex = 0;
             
-            for (; Cursor < endCursor; ++Cursor) {
-                switch (JsonData[Cursor]) {
+            for (int current = start; current < end; ++current) {
+                switch (JsonData[current]) {
                     case '\\': {
-                        Cursor++;
-                        switch (JsonData[Cursor]) {
+                        current++;
+                        switch (JsonData[current]) {
                             case '\\': result[resultIndex++] = '\\'; break;
                             case '"':  result[resultIndex++] = '"';  break;
                             case '/':  result[resultIndex++] = '/';  break;
@@ -191,28 +205,35 @@ namespace Voorhees {
                             case 't':  result[resultIndex++] = '\t'; break;
                             case 'u': {
                                 // Read 4 hex digits
-                                short codePoint = Convert.ToInt16(JsonData.Substring(Cursor + 1, 4), 16);
-                                Cursor += 4;
+                                short codePoint = Convert.ToInt16(JsonData.Substring(current + 1, 4), 16);
+                                current += 4;
                                 result[resultIndex++] = char.ConvertFromUtf32(codePoint)[0];
                             } break;
                             default:
-                                throw new InvalidJsonException($"Unknown escape character sequence: \\{JsonData[Cursor]} at column {Cursor}!");
+                                throw new InvalidJsonException($"{LineColString} Unknown escape character sequence");
                         }
                     }
                     break;
                 default:
-                    result[resultIndex++] = JsonData[Cursor];
+                    result[resultIndex++] = JsonData[current];
                     break;
                 }
             }
-            Cursor++; // Skip closing "
             
+            AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
             AdvanceToNextToken();
             return new string(result); // TODO To String.Create
         }
 
-        /////////////////////////////////////////////////
+        /// <summary>
+        /// Generates a string containing info about the current line and column numbers that's useful for
+        /// prepending to error messages and exceptions.
+        /// </summary>
+        /// <returns>string containing line and column info for the current cursor position</returns>
+        public string LineColString => $"line: {Line} col: {Column}";
 
+        /////////////////////////////////////////////////
+        
         /// <summary>
         /// Moves <see cref="Cursor"/> to the next non-whitespace token.
         /// Identifies the type of token that starts at the cursor position and sets <see cref="NextToken"/>.
@@ -223,9 +244,9 @@ namespace Voorhees {
         void AdvanceToNextToken() {
             // Skip whitespace
             while (Cursor < JsonData.Length && char.IsWhiteSpace(JsonData[Cursor])) {
-                Cursor++;
+                AdvanceCursorBy(1);
             }
-            
+
             // Detect token type
             
             int charsLeft = JsonData.Length - Cursor;
@@ -272,7 +293,19 @@ namespace Voorhees {
                 return;
             }
 
-            throw new InvalidJsonException($"Unexpected character '{JsonData[Cursor]}' at character {Cursor}!");
+            throw new InvalidJsonException($"{LineColString} Unexpected character '{JsonData[Cursor]}'");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void AdvanceCursorBy(int numCharacters) {
+            for (int i = 0; i < numCharacters; ++i) {
+                if (JsonData[Cursor] == '\n') {
+                    Line++;
+                    Column = 0;
+                }
+                Cursor++;
+                Column++;
+            }
         }
     }
 }
