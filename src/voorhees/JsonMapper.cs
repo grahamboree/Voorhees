@@ -261,8 +261,8 @@ namespace Voorhees {
                         jsonValue = float.Parse(numberString);
                     }
                 } break;
-                case JsonToken.True: jsonType = typeof(bool); jsonValue = true; tokenizer.ConsumeToken(); break;
-                case JsonToken.False: jsonType = typeof(bool); jsonValue = false; tokenizer.ConsumeToken(); break;
+                case JsonToken.True: jsonType = typeof(bool); jsonValue = true; tokenizer.SkipToken(JsonToken.True); break;
+                case JsonToken.False: jsonType = typeof(bool); jsonValue = false; tokenizer.SkipToken(JsonToken.False); break;
                 default: throw new ArgumentOutOfRangeException();
             }
 
@@ -270,7 +270,7 @@ namespace Voorhees {
         }
         
         static void ReadList(JsonTokenizer tokenizer, IList list, Type elementType) {
-            tokenizer.ConsumeToken(); // [
+            tokenizer.SkipToken(JsonToken.ArrayStart);
             
             bool expectingValue = false;
             while (tokenizer.NextToken != JsonToken.ArrayEnd) {
@@ -278,7 +278,7 @@ namespace Voorhees {
                 list.Add(FromJson(tokenizer, elementType));
                 if (tokenizer.NextToken == JsonToken.Separator) {
                     expectingValue = true;
-                    tokenizer.ConsumeToken(); // ,
+                    tokenizer.SkipToken(JsonToken.Separator);
                 } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
                     throw new InvalidJsonException($"{tokenizer.LineColString} Expected end array token or separator");
                 }
@@ -288,11 +288,11 @@ namespace Voorhees {
                 throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end array token");
             }
 
-            tokenizer.ConsumeToken(); // ]
+            tokenizer.SkipToken(JsonToken.ArrayEnd);
         }
 
         static IList ReadMultiList(JsonTokenizer tokenizer, Type elementType, int rank) {
-            tokenizer.ConsumeToken(); // [
+            tokenizer.SkipToken(JsonToken.ArrayStart);
 
             IList list = new ArrayList();
             
@@ -308,7 +308,7 @@ namespace Voorhees {
                 
                 if (tokenizer.NextToken == JsonToken.Separator) {
                     expectingValue = true;
-                    tokenizer.ConsumeToken(); // ,
+                    tokenizer.SkipToken(JsonToken.Separator);
                 } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
                     throw new InvalidJsonException($"{tokenizer.LineColString} Expected end array token or separator");
                 }
@@ -318,7 +318,7 @@ namespace Voorhees {
                 throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end array token");
             }
             
-            tokenizer.ConsumeToken(); // ]
+            tokenizer.SkipToken(JsonToken.ArrayEnd);
 
             return list;
         }
@@ -387,7 +387,7 @@ namespace Voorhees {
 
         static object MapObject(JsonTokenizer tokenizer, Type destinationType) {
             var objectMetadata = TypeInfo.GetObjectMetadata(destinationType);
-            tokenizer.ConsumeToken(); // {
+            tokenizer.SkipToken(JsonToken.ObjectStart);
 
             var instance = Activator.CreateInstance(destinationType);
 
@@ -396,7 +396,7 @@ namespace Voorhees {
             while (tokenizer.NextToken != JsonToken.ObjectEnd) {
                 expectingValue = false;
                 string propertyName = tokenizer.ConsumeString();
-                tokenizer.ConsumeToken(); // : 
+                tokenizer.SkipToken(JsonToken.KeyValueSeparator);
                 
                 if (objectMetadata.Properties.TryGetValue(propertyName, out var propertyMetadata)) {
                     if (propertyMetadata.Ignored) {
@@ -423,7 +423,7 @@ namespace Voorhees {
 
                 if (tokenizer.NextToken == JsonToken.Separator) {
                     expectingValue = true;
-                    tokenizer.ConsumeToken(); // ,
+                    tokenizer.SkipToken(JsonToken.Separator);
                 }
             }
 
@@ -431,7 +431,7 @@ namespace Voorhees {
                 throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected object end token");
             }
 
-            tokenizer.ConsumeToken(); // }
+            tokenizer.SkipToken(JsonToken.ObjectEnd);
             
             return instance;
         }

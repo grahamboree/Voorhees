@@ -41,13 +41,13 @@ namespace Voorhees {
                   : new JsonValue(float.Parse(numberString));
             }
             case JsonToken.True:
-               tokenizer.ConsumeToken();
+               tokenizer.SkipToken(JsonToken.True);
                return new JsonValue(true);
             case JsonToken.False:
-               tokenizer.ConsumeToken();
+               tokenizer.SkipToken(JsonToken.False);
                return new JsonValue(false);
             case JsonToken.Null:
-               tokenizer.ConsumeToken();
+               tokenizer.SkipToken(JsonToken.Null);
                return new JsonValue(null);
             case JsonToken.None:
             case JsonToken.EOF:
@@ -62,7 +62,7 @@ namespace Voorhees {
       static JsonValue ReadArray(JsonTokenizer tokenizer) {
          var arrayValue = new JsonValue {Type = JsonType.Array};
          
-         tokenizer.ConsumeToken(); // [
+         tokenizer.SkipToken(JsonToken.ArrayStart);
 
          bool expectingValue = false;
          
@@ -71,7 +71,7 @@ namespace Voorhees {
             arrayValue.Add(ReadJsonValue(tokenizer));
             if (tokenizer.NextToken == JsonToken.Separator) {
                expectingValue = true;
-               tokenizer.ConsumeToken(); // ,
+               tokenizer.SkipToken(JsonToken.Separator);
             } else if (tokenizer.NextToken != JsonToken.ArrayEnd) {
                throw new InvalidJsonException($"{tokenizer.LineColString} Expected end array token or separator");
             }
@@ -81,16 +81,16 @@ namespace Voorhees {
             throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end array token");
          }
 
-         tokenizer.ConsumeToken(); // ]
-         
+         tokenizer.SkipToken(JsonToken.ArrayEnd);
+
          return arrayValue;
       }
 
       static JsonValue ReadObject(JsonTokenizer tokenizer) {
          var result = new JsonValue { Type = JsonType.Object };
          
-         tokenizer.ConsumeToken(); // {
-      
+         tokenizer.SkipToken(JsonToken.ObjectStart);
+
          bool expectingValue = false;
          while (tokenizer.NextToken != JsonToken.ObjectEnd) {
             expectingValue = false;
@@ -99,13 +99,13 @@ namespace Voorhees {
             if (tokenizer.NextToken != JsonToken.KeyValueSeparator) {
                throw new InvalidJsonException($"{tokenizer.LineColString} Expected ':'");
             }
-            tokenizer.ConsumeToken(); // :
-            
+            tokenizer.SkipToken(JsonToken.KeyValueSeparator);
+
             result.Add(key, ReadJsonValue(tokenizer));
 
             if (tokenizer.NextToken == JsonToken.Separator) {
                expectingValue = true;
-               tokenizer.ConsumeToken(); // ,
+               tokenizer.SkipToken(JsonToken.Separator);
             } else if (tokenizer.NextToken != JsonToken.ObjectEnd) {
                throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected token {tokenizer.NextToken}");
             }
@@ -115,8 +115,8 @@ namespace Voorhees {
             throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected object end token");
          }
          
-         tokenizer.ConsumeToken(); // }
-         
+         tokenizer.SkipToken(JsonToken.ObjectEnd);
+
          return result;
       }
    }

@@ -55,23 +55,28 @@ namespace Voorhees {
             
             AdvanceToNextToken();
         }
-        
-        /// Advance <see cref="Cursor"/> to the next token in the JSON string.
-        public void ConsumeToken() {
-            switch (NextToken) {
+
+        public void SkipToken(JsonToken token) {
+            if (token != NextToken) {
+                throw new InvalidOperationException($"Attempting to skip a token of type {token} but the next token is {NextToken}");
+            }
+
+            switch (token) {
                 case JsonToken.ArrayStart:
                 case JsonToken.ArrayEnd:
                 case JsonToken.ObjectStart:
                 case JsonToken.KeyValueSeparator:
                 case JsonToken.ObjectEnd:
                 case JsonToken.Separator: AdvanceCursorBy(1); break;
-                case JsonToken.String: SkipString(); break;
-                case JsonToken.Number: ConsumeNumber(); break;
                 case JsonToken.True: AdvanceCursorBy(4); break;
                 case JsonToken.False: AdvanceCursorBy(5); break;
                 case JsonToken.Null: AdvanceCursorBy(4); break;
+                case JsonToken.None:
+                case JsonToken.String:
+                case JsonToken.Number:
                 case JsonToken.EOF:
-                    break;
+                default:
+                    throw new InvalidOperationException($"Can't skip token of type {token}");
             }
             AdvanceToNextToken();
         }
@@ -294,33 +299,6 @@ namespace Voorhees {
             }
 
             throw new InvalidJsonException($"{LineColString} Unexpected character '{JsonData[Cursor]}'");
-        }
-
-        // Same as ConsumeString but doesn't bother parsing the result.
-        void SkipString() {
-            int start = Cursor + 1; // Skip the '"'
-            int end = start; // Where the ending " is
-
-            // Read the string length
-            for (end = start; end < JsonData.Length; ++end) {
-                char readAheadChar = JsonData[end];
-                if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    // TODO: This should indicate the line and column number for the offending character, not the start of the string.
-                    throw new InvalidJsonException($"{LineColString} Disallowed control character in string");
-                }
-                
-                if (readAheadChar == '\\') {
-                    end++;
-                    if (JsonData[end] == 'u') {
-                        end += 4;
-                    }
-                } else if (readAheadChar == '"') {
-                    break;
-                }
-            }
-
-            AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
-            AdvanceToNextToken();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
