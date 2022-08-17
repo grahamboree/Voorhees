@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\$(Configuration)</OutputPath>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
 </Project>

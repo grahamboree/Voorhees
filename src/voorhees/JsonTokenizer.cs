@@ -1,5 +1,6 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+
 
 namespace Voorhees {
     /// Thrown when trying to read invalid JSON data.
