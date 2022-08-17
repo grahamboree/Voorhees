@@ -56,7 +56,7 @@ namespace Voorhees {
                throw new ArgumentOutOfRangeException($"Unknown json token {tokenizer.NextToken}");
          }
 
-         throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected character '{tokenizer.JsonData[tokenizer.Cursor]}'");
+         throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected token {tokenizer.NextToken}");
       }
 
       static JsonValue ReadArray(JsonTokenizer tokenizer) {

@@ -6,87 +6,99 @@ namespace Voorhees.Tests {
 	public class JsonTokenizer_SkipToken {
 		[Test]
 		public void ArrayStart() {
-			var tokenizer = new JsonTokenizer("[1,2,3]");
+			var doc = new Internal.DocumentCursor("[1,2,3]");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ArrayStart);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ArrayEnd() {
-			var tokenizer = new JsonTokenizer("][1,2,3]");
+			var doc = new Internal.DocumentCursor("][1,2,3]");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ArrayEnd);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ObjectStart() {
-			var tokenizer = new JsonTokenizer("{\"test\": 123}");
+			var doc = new Internal.DocumentCursor("{\"test\": 123}");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ObjectStart);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void KeyValueSeparator() {
-			var tokenizer = new JsonTokenizer(":123}");
+			var doc = new Internal.DocumentCursor(":123}");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.KeyValueSeparator);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ObjectEnd() {
-			var tokenizer = new JsonTokenizer("}{\"test\": 123}");
+			var doc = new Internal.DocumentCursor("}{\"test\": 123}");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ObjectEnd);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void Separator() {
-			var tokenizer = new JsonTokenizer(",{\"test\": 123}");
+			var doc = new Internal.DocumentCursor(",{\"test\": 123}");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.Separator);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Cursor, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void True() {
-			var tokenizer = new JsonTokenizer("true, true");
+			var doc = new Internal.DocumentCursor("true, true");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.True);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(4));
+			Assert.That(doc.Cursor, Is.EqualTo(4));
 		}
 		
 		[Test]
 		public void False() {
-			var tokenizer = new JsonTokenizer("false, false");
+			var doc = new Internal.DocumentCursor("false, false");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.False);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(5));
+			Assert.That(doc.Cursor, Is.EqualTo(5));
 		}
 		
 		[Test]
 		public void Null() {
-			var tokenizer = new JsonTokenizer("null, null");
+			var doc = new Internal.DocumentCursor("null, null");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.Null);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(4));
+			Assert.That(doc.Cursor, Is.EqualTo(4));
 		}
 
 		
 		[Test]
 		public void String() {
-			var tokenizer = new JsonTokenizer("\"test\", 123");
+			var doc = new Internal.DocumentCursor("\"test\", 123");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.String);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(6));
+			Assert.That(doc.Cursor, Is.EqualTo(6));
 		}
 		
 		[Test]
 		public void Number() {
-			var tokenizer = new JsonTokenizer("-123.456e7, 123");
+			var doc = new Internal.DocumentCursor("-123.456e7, 123");
+			var tokenizer = new JsonTokenizer(doc);
             tokenizer.SkipToken(JsonToken.Number);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(10));
+			Assert.That(doc.Cursor, Is.EqualTo(10));
 		}
 
 		[Test]
 		public void SkipsTrailingWhitespace() {
-			var tokenizer = new JsonTokenizer("true    , false");
+			var doc = new Internal.DocumentCursor("true    , false");
+			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.True);
-			Assert.That(tokenizer.Cursor, Is.EqualTo(8));
+			Assert.That(doc.Cursor, Is.EqualTo(8));
 		}
 		
 		[Test]
@@ -223,7 +235,8 @@ namespace Voorhees.Tests {
 		[Test]
 		public void AdvancingToRandomCharactersThrows() {
 			Assert.Throws<InvalidJsonException>(() => {
-				new JsonTokenizer("asdf");
+				// ReSharper disable once ObjectCreationAsStatement
+				new JsonTokenizer("fail");
 			});
 		}
 		
