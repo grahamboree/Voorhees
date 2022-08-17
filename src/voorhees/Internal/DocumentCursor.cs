@@ -39,6 +39,10 @@ namespace Voorhees.Internal {
             }
         }
 
+        public DocumentCursor Clone() {
+            return (DocumentCursor)MemberwiseClone();
+        }
+
         /// <summary>
         /// Generates a string containing info about the current line and column numbers that's useful for
         /// prepending to error messages and exceptions.

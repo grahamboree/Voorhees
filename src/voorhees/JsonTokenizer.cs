@@ -151,39 +151,37 @@ namespace Voorhees {
         /// </exception>
         [return: NotNull]
         public string ConsumeString() {
-            int start = Doc.Cursor + 1; // Skip the '"'
-            int end = start; // Where the ending " is
+            Doc.AdvanceCursorBy(1); // Skip the "
             int resultLength = 0; // Number of characters in the resulting string.
-
-            // Read the string length
-            bool trivial = true;
-            for (int readAheadIndex = start; readAheadIndex < Doc.Document.Length; ++readAheadIndex) {
-                char readAheadChar = Doc.Document[readAheadIndex];
+            bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed 
+            var lookahead = Doc.Clone(); // We read ahead and determine the string length
+            
+            while (lookahead.CharsLeft > 0) {
+                char readAheadChar = lookahead.Document[lookahead.Cursor];
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    // TODO: This should indicate the line and column number for the offending character, not the start of the string.
-                    throw new InvalidJsonException($"{LineColString} Disallowed control character in string");
+                    throw new InvalidJsonException($"{lookahead} Disallowed control character in string");
                 }
                 
                 if (readAheadChar == '\\') {
                     // This string isn't trivial, so use the normal slower parsing.
-                    trivial = false;
-                    readAheadIndex++;
-                    if (Doc.Document[readAheadIndex] == 'u') {
-                        readAheadIndex += 4;
+                    hasEscapeChars = true;
+                    lookahead.AdvanceCursorBy(1);
+                    if (lookahead.Document[lookahead.Cursor] == 'u') {
+                        lookahead.AdvanceCursorBy(4);
                     }
                 } else if (readAheadChar == '"') {
-                    end = readAheadIndex;
                     break;
                 }
                 resultLength++;
+                lookahead.AdvanceCursorBy(1);
             }
-
-            if (trivial) {
+            
+            if (!hasEscapeChars) {
                 // TODO Use string.Create
                 Span<char> s = stackalloc char[resultLength];
-                Doc.Document.AsSpan().Slice(start, resultLength).CopyTo(s);
+                Doc.Document.AsSpan().Slice(Doc.Cursor, resultLength).CopyTo(s);
                 
-                Doc.AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
+                Doc.AdvanceCursorBy(1 + resultLength); // skip to after the closing "
                 AdvanceToNextToken();
                 
                 return new string(s); // TODO to string.Create
@@ -191,12 +189,12 @@ namespace Voorhees {
             
             Span<char> result = stackalloc char[resultLength];
             int resultIndex = 0;
-            
-            for (int current = start; current < end; ++current) {
-                switch (Doc.Document[current]) {
+
+            while (Doc.Cursor < lookahead.Cursor) {
+                switch (Doc.Document[Doc.Cursor]) {
                     case '\\': {
-                        current++;
-                        switch (Doc.Document[current]) {
+                        Doc.AdvanceCursorBy(1);
+                        switch (Doc.Document[Doc.Cursor]) {
                             case '\\': result[resultIndex++] = '\\'; break;
                             case '"':  result[resultIndex++] = '"';  break;
                             case '/':  result[resultIndex++] = '/';  break;
@@ -207,20 +205,19 @@ namespace Voorhees {
                             case 't':  result[resultIndex++] = '\t'; break;
                             case 'u': {
                                 // Read 4 hex digits
-                                result[resultIndex++] = (char)Convert.ToInt16(Doc.Document.Substring(current + 1, 4), 16);
-                                current += 4;
+                                result[resultIndex++] = (char)Convert.ToInt16(Doc.Document.Substring(Doc.Cursor + 1, 4), 16);
+                                Doc.AdvanceCursorBy(4);
                             } break;
                             default: throw new InvalidJsonException($"{Doc} Unknown escape character sequence");
                         }
                     }
-                    break;
-                default:
-                    result[resultIndex++] = Doc.Document[current];
-                    break;
+                        break;
+                    default:
+                        result[resultIndex++] = Doc.Document[Doc.Cursor];
+                        break;
                 }
+                Doc.AdvanceCursorBy(1);
             }
-            
-            Doc.AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
             AdvanceToNextToken();
             return new string(result); // TODO To String.Create
         }
