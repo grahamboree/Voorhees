@@ -39,6 +39,15 @@ namespace Voorhees.Internal {
             }
         }
 
+        /// <summary>
+        /// Generates a string containing info about the current line and column numbers that's useful for
+        /// prepending to error messages and exceptions.
+        /// </summary>
+        /// <returns>string containing line and column info for the current cursor position</returns>
+        public override string ToString() {
+            return $"line: {Line} col: {Column}";
+        }
+
         /////////////////////////////////////////////////
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

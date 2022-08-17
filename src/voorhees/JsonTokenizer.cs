@@ -85,7 +85,7 @@ namespace Voorhees {
         /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
         public ReadOnlySpan<char> ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
-                throw new InvalidOperationException($"{LineColString} Trying to consume a number, but the next JSON token is not a number");
+                throw new InvalidOperationException($"{Doc} Trying to consume a number, but the next JSON token is not a number");
             }
             
             int start = Doc.Cursor;
@@ -99,7 +99,7 @@ namespace Voorhees {
             // a leading zero needs to be followed by a decimal or exponent marker
             if (end < Doc.Document.Length && Doc.Document[end] == '0') {
                 if (end + 1 >= Doc.Document.Length || (Doc.Document[end + 1] != '.' && Doc.Document[end + 1] != 'e' && Doc.Document[end + 1] != 'E')) {
-                    throw new InvalidJsonException($"{LineColString} Leading zero in a number must be immediately followed by a decimal point or exponent");
+                    throw new InvalidJsonException($"{Doc} Leading zero in a number must be immediately followed by a decimal point or exponent");
                 }
             }
 
@@ -210,7 +210,7 @@ namespace Voorhees {
                                 result[resultIndex++] = (char)Convert.ToInt16(Doc.Document.Substring(current + 1, 4), 16);
                                 current += 4;
                             } break;
-                            default: throw new InvalidJsonException($"{LineColString} Unknown escape character sequence");
+                            default: throw new InvalidJsonException($"{Doc} Unknown escape character sequence");
                         }
                     }
                     break;
@@ -230,7 +230,7 @@ namespace Voorhees {
         /// prepending to error messages and exceptions.
         /// </summary>
         /// <returns>string containing line and column info for the current cursor position</returns>
-        public string LineColString => $"line: {Doc.Line} col: {Doc.Column}";
+        public string LineColString => Doc.ToString();
 
         /////////////////////////////////////////////////
         
@@ -289,7 +289,7 @@ namespace Voorhees {
                 return;
             }
 
-            throw new InvalidJsonException($"{LineColString} Unexpected character '{Doc.Document[Doc.Cursor]}'");
+            throw new InvalidJsonException($"{Doc} Unexpected character '{Doc.Document[Doc.Cursor]}'");
         }
 
         /// Same as ConsumeString but doesn't bother parsing the result.
@@ -302,7 +302,7 @@ namespace Voorhees {
                 char readAheadChar = Doc.Document[end];
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
                     // TODO: This should indicate the line and column number for the offending character, not the start of the string.
-                    throw new InvalidJsonException($"{LineColString} Disallowed control character in string");
+                    throw new InvalidJsonException($"{Doc} Disallowed control character in string");
                 }
                 
                 if (readAheadChar == '\\') {
