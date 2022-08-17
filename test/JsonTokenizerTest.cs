@@ -66,6 +66,21 @@ namespace Voorhees.Tests {
 			Assert.That(tokenizer.Cursor, Is.EqualTo(4));
 		}
 
+		
+		[Test]
+		public void String() {
+			var tokenizer = new JsonTokenizer("\"test\", 123");
+			tokenizer.SkipToken(JsonToken.String);
+			Assert.That(tokenizer.Cursor, Is.EqualTo(6));
+		}
+		
+		[Test]
+		public void Number() {
+			var tokenizer = new JsonTokenizer("-123.456e7, 123");
+            tokenizer.SkipToken(JsonToken.Number);
+			Assert.That(tokenizer.Cursor, Is.EqualTo(10));
+		}
+
 		[Test]
 		public void SkipsTrailingWhitespace() {
 			var tokenizer = new JsonTokenizer("true    , false");
