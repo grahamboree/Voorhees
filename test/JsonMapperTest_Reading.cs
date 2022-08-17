@@ -338,11 +338,14 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicDictionary() {
-            var json = "{\"a\": 3, \"b\": 5}";
-            Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json).Count, Is.EqualTo(2));
-            Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["a"], Is.EqualTo(3));
-            Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["b"], Is.EqualTo(5));
+            const string json = "{\"a\": 3, \"b\": 5}";
+            Assert.Multiple(() =>
+            {
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Has.Count.EqualTo(2));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["a"], Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["b"], Is.EqualTo(5));
+            });
         }
 
         class ObjectWithReadOnlyProperties {
