@@ -251,5 +251,17 @@ namespace Voorhees.Tests {
 			var tokenizer = new JsonTokenizer("\"🚀\"");
 			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("🚀"));
 		}
+
+		[Test]
+		public void DoesNotReadPastEndOfString() {
+			var doc = new Internal.DocumentCursor("{\"test\": 3}");
+			var tokenizer = new JsonTokenizer(doc);
+			tokenizer.SkipToken(JsonToken.ObjectStart);
+			string str = tokenizer.ConsumeString();
+			Assert.Multiple(() => {
+				Assert.That(str, Is.EqualTo("test"));
+				Assert.That(doc.Cursor, Is.EqualTo(7));
+			});
+		}
 	}
 }
