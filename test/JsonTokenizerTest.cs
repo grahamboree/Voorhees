@@ -9,7 +9,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("[1,2,3]");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ArrayStart);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
@@ -17,7 +17,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("][1,2,3]");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ArrayEnd);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
@@ -25,7 +25,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("{\"test\": 123}");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ObjectStart);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
@@ -33,7 +33,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor(":123}");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.KeyValueSeparator);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
@@ -41,7 +41,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("}{\"test\": 123}");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.ObjectEnd);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
@@ -49,7 +49,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor(",{\"test\": 123}");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.Separator);
-			Assert.That(doc.Cursor, Is.EqualTo(1));
+			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -57,7 +57,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("true, true");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.True);
-			Assert.That(doc.Cursor, Is.EqualTo(4));
+			Assert.That(doc.Index, Is.EqualTo(4));
 		}
 		
 		[Test]
@@ -65,7 +65,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("false, false");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.False);
-			Assert.That(doc.Cursor, Is.EqualTo(5));
+			Assert.That(doc.Index, Is.EqualTo(5));
 		}
 		
 		[Test]
@@ -73,7 +73,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("null, null");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.Null);
-			Assert.That(doc.Cursor, Is.EqualTo(4));
+			Assert.That(doc.Index, Is.EqualTo(4));
 		}
 
 		
@@ -82,7 +82,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("\"test\", 123");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.String);
-			Assert.That(doc.Cursor, Is.EqualTo(6));
+			Assert.That(doc.Index, Is.EqualTo(6));
 		}
 		
 		[Test]
@@ -90,7 +90,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("-123.456e7, 123");
 			var tokenizer = new JsonTokenizer(doc);
             tokenizer.SkipToken(JsonToken.Number);
-			Assert.That(doc.Cursor, Is.EqualTo(10));
+			Assert.That(doc.Index, Is.EqualTo(10));
 		}
 
 		[Test]
@@ -98,7 +98,7 @@ namespace Voorhees.Tests {
 			var doc = new Internal.DocumentCursor("true    , false");
 			var tokenizer = new JsonTokenizer(doc);
 			tokenizer.SkipToken(JsonToken.True);
-			Assert.That(doc.Cursor, Is.EqualTo(8));
+			Assert.That(doc.Index, Is.EqualTo(8));
 		}
 		
 		[Test]
@@ -300,7 +300,7 @@ namespace Voorhees.Tests {
 			string str = tokenizer.ConsumeString();
 			Assert.Multiple(() => {
 				Assert.That(str, Is.EqualTo("test"));
-				Assert.That(doc.Cursor, Is.EqualTo(7));
+				Assert.That(doc.Index, Is.EqualTo(7));
 			});
 		}
 	}

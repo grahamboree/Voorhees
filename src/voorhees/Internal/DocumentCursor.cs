@@ -7,38 +7,68 @@ namespace Voorhees.Internal {
     public class DocumentCursor {
         public readonly string Document;
 
-        /// Index of the current character in the entire json document. 0-indexed
-        public int Cursor;
-        /// Index of the current line in the json document. 1-indexed
+        /// Index of the current character in the entire json document.
+        public int Index;
+        /// Current line number in the json document. 1-indexed
         public int Line;
-        /// Index of the current character on the current line in the json document.  1-indexed
+        /// Current column number in the json document.  1-indexed
         public int Column;
 
-        public int CharsLeft => Document.Length - Cursor;
+        public int NumCharsLeft => Document.Length - Index;
+        public bool AtEOF => Index >= Document.Length;
+        public char CurrentChar => Document[Index];
 
         /////////////////////////////////////////////////
 
+        /// <summary>
+        /// Create a document cursor at the start of the given document
+        /// </summary>
+        /// <param name="document">The document to read</param>
         public DocumentCursor(string document) {
             Document = document;
-            Cursor = 0;
+            Index = 0;
             Line = 1;
             Column = 1;
         }
-
+        
+        /// Advances to the next non-whitespace character.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AdvanceToNextNonWhitespaceChar() {
-            while (Cursor < Document.Length && char.IsWhiteSpace(Document[Cursor])) {
-                StepCursor();
+            while (Index < Document.Length && char.IsWhiteSpace(Document[Index])) {
+                Advance();
             }
         }
 
+        /// <summary>
+        /// Advances the read position forward  by a specified number of characters
+        /// </summary>
+        /// <param name="numChars">Characters to advance by</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AdvanceCursorBy(int numChars) {
+        public void AdvanceBy(int numChars) {
             for (int i = 0; i < numChars; ++i) {
-                StepCursor();
+                Advance();
             }
         }
 
+        /// Advances the read position forward one character.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Advance() {
+            if (Index >= Document.Length) {
+                return;
+            }
+            if (Document[Index] == '\n') {
+                Line++;
+                Column = 0;
+            }
+            Index++;
+            Column++;
+        }
+
+        /// <summary>
+        /// Create a new cursor in the same document at the same position.
+        /// Useful for look-ahead parsing.
+        /// </summary>
+        /// <returns>A new cursor identical to this one</returns>
         public DocumentCursor Clone() {
             return (DocumentCursor)MemberwiseClone();
         }
@@ -50,20 +80,6 @@ namespace Voorhees.Internal {
         /// <returns>string containing line and column info for the current cursor position</returns>
         public override string ToString() {
             return $"line: {Line} col: {Column}";
-        }
-
-        /////////////////////////////////////////////////
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void StepCursor() {
-            if (Cursor < Document.Length) {
-                if (Document[Cursor] == '\n') {
-                    Line++;
-                    Column = 0;
-                }
-                Cursor++;
-                Column++;
-            }
         }
     }
 }

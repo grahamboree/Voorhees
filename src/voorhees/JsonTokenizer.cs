@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-
 namespace Voorhees {
     /// Thrown when trying to read invalid JSON data.
     public class InvalidJsonException : Exception {
@@ -31,8 +30,7 @@ namespace Voorhees {
     
     public class JsonTokenizer {
         public JsonToken NextToken = JsonToken.None;
-        Internal.DocumentCursor Doc;
-        
+
         /////////////////////////////////////////////////
 
         /// <summary>
@@ -40,7 +38,7 @@ namespace Voorhees {
         /// </summary>
         /// <param name="cursor">DocumentCursor into a JSON document string</param>
         public JsonTokenizer(Internal.DocumentCursor cursor) {
-            Doc = cursor;
+            this.cursor = cursor;
             AdvanceToNextToken();
         }
         
@@ -50,7 +48,7 @@ namespace Voorhees {
         /// </summary>
         /// <param name="json">The JSON document</param>
         public JsonTokenizer(string json) {
-            Doc = new Internal.DocumentCursor(json);
+            cursor = new Internal.DocumentCursor(json);
             AdvanceToNextToken();
         }
 
@@ -65,10 +63,10 @@ namespace Voorhees {
                 case JsonToken.ObjectStart:
                 case JsonToken.ObjectEnd:
                 case JsonToken.KeyValueSeparator:
-                case JsonToken.Separator: Doc.AdvanceCursorBy(1); break;
+                case JsonToken.Separator: cursor.Advance(); break;
                 case JsonToken.True:
-                case JsonToken.Null: Doc.AdvanceCursorBy(4); break;
-                case JsonToken.False: Doc.AdvanceCursorBy(5); break;
+                case JsonToken.Null: cursor.AdvanceBy(4); break;
+                case JsonToken.False: cursor.AdvanceBy(5); break;
                 case JsonToken.String: SkipString(); break;
                 case JsonToken.Number: ConsumeNumber(); break; // OK to consume here because it only just computes the bounds of the token
                 case JsonToken.None:
@@ -85,59 +83,56 @@ namespace Voorhees {
         /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
         public ReadOnlySpan<char> ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
-                throw new InvalidOperationException($"{Doc} Trying to consume a number, but the next JSON token is not a number");
+                throw new InvalidOperationException($"{cursor} Trying to consume a number, but the next JSON token is not a number");
             }
             
-            int start = Doc.Cursor;
-            int end = start;
-            
+            int start = cursor.Index;
+
             // optional leading -
-            if (end < Doc.Document.Length && Doc.Document[end] == '-') {
-                end++;
+            if (!cursor.AtEOF && cursor.CurrentChar == '-') {
+                cursor.Advance();
             }
 
             // a leading zero needs to be followed by a decimal or exponent marker
-            if (end < Doc.Document.Length && Doc.Document[end] == '0') {
-                if (end + 1 >= Doc.Document.Length || (Doc.Document[end + 1] != '.' && Doc.Document[end + 1] != 'e' && Doc.Document[end + 1] != 'E')) {
-                    throw new InvalidJsonException($"{Doc} Leading zero in a number must be immediately followed by a decimal point or exponent");
+            if (!cursor.AtEOF && cursor.CurrentChar == '0') {
+                cursor.Advance();
+                if (cursor.AtEOF || (cursor.CurrentChar != '.' && cursor.CurrentChar != 'e' && cursor.CurrentChar != 'E')) {
+                    throw new InvalidJsonException($"{cursor} Leading zero in a number must be immediately followed by a decimal point or exponent");
                 }
             }
 
             // whole part digits
-            while (end < Doc.Document.Length && (Doc.Document[end] >= '0' && Doc.Document[end] <= '9')) {
-                end++;
+            while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                cursor.Advance();
             }
             
             // decimal
-            if (end < Doc.Document.Length && Doc.Document[end] == '.') {
-                end++;
-                
+            if (!cursor.AtEOF && cursor.CurrentChar == '.') {
+                cursor.Advance();
+
                 // fractional part digits
-                while (end < Doc.Document.Length && (Doc.Document[end] >= '0' && Doc.Document[end] <= '9')) {
-                    end++;
+                while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                    cursor.Advance();
                 }
             }
 
             // Optional exponent
-            if (end < Doc.Document.Length && (Doc.Document[end] == 'e' || Doc.Document[end] == 'E')) {
-                end++;
+            if (!cursor.AtEOF && (cursor.CurrentChar == 'e' || cursor.CurrentChar == 'E')) {
+                cursor.Advance();
                 
                 // optional + or -
-                if (end < Doc.Document.Length && (Doc.Document[end] == '+' || Doc.Document[end] == '-')) {
-                    end++;
+                if (!cursor.AtEOF && (cursor.CurrentChar == '+' || cursor.CurrentChar == '-')) {
+                    cursor.Advance();
                 }
 
                 // exponent digits
-                while (end < Doc.Document.Length && (Doc.Document[end] >= '0' && Doc.Document[end] <= '9')) {
-                    end++;
+                while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                    cursor.Advance();
                 }
             }
-            int length = end - start;
-
-            Doc.AdvanceCursorBy(length);
+            int length = cursor.Index - start;
             AdvanceToNextToken();
-            
-            return Doc.Document.AsSpan(start, length);
+            return cursor.Document.AsSpan(start, length);
         }
 
         /// <summary>
@@ -151,13 +146,13 @@ namespace Voorhees {
         /// </exception>
         [return: NotNull]
         public string ConsumeString() {
-            Doc.AdvanceCursorBy(1); // Skip the "
+            cursor.Advance(); // Skip the "
             int resultLength = 0; // Number of characters in the resulting string.
             bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed 
-            var lookahead = Doc.Clone(); // We read ahead and determine the string length
+            var lookahead = cursor.Clone(); // We read ahead and determine the string length
             
-            while (lookahead.CharsLeft > 0) {
-                char readAheadChar = lookahead.Document[lookahead.Cursor];
+            while (lookahead.NumCharsLeft > 0) {
+                char readAheadChar = lookahead.CurrentChar;
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
                     throw new InvalidJsonException($"{lookahead} Disallowed control character in string");
                 }
@@ -165,23 +160,23 @@ namespace Voorhees {
                 if (readAheadChar == '\\') {
                     // This string isn't trivial, so use the normal slower parsing.
                     hasEscapeChars = true;
-                    lookahead.AdvanceCursorBy(1);
-                    if (lookahead.Document[lookahead.Cursor] == 'u') {
-                        lookahead.AdvanceCursorBy(4);
+                    lookahead.Advance();
+                    if (lookahead.CurrentChar == 'u') {
+                        lookahead.AdvanceBy(4);
                     }
                 } else if (readAheadChar == '"') {
                     break;
                 }
                 resultLength++;
-                lookahead.AdvanceCursorBy(1);
+                lookahead.Advance();
             }
             
             if (!hasEscapeChars) {
                 // TODO Use string.Create
                 Span<char> s = stackalloc char[resultLength];
-                Doc.Document.AsSpan().Slice(Doc.Cursor, resultLength).CopyTo(s);
+                cursor.Document.AsSpan().Slice(cursor.Index, resultLength).CopyTo(s);
                 
-                Doc.AdvanceCursorBy(1 + resultLength); // skip to after the closing "
+                cursor.AdvanceBy(1 + resultLength); // skip to after the closing "
                 AdvanceToNextToken();
                 
                 return new string(s); // TODO to string.Create
@@ -190,11 +185,11 @@ namespace Voorhees {
             Span<char> result = stackalloc char[resultLength];
             int resultIndex = 0;
 
-            while (Doc.Cursor < lookahead.Cursor) {
-                switch (Doc.Document[Doc.Cursor]) {
+            while (cursor.Index < lookahead.Index) {
+                switch (cursor.CurrentChar) {
                     case '\\': {
-                        Doc.AdvanceCursorBy(1);
-                        switch (Doc.Document[Doc.Cursor]) {
+                        cursor.Advance();
+                        switch (cursor.CurrentChar) {
                             case '\\': result[resultIndex++] = '\\'; break;
                             case '"':  result[resultIndex++] = '"';  break;
                             case '/':  result[resultIndex++] = '/';  break;
@@ -205,18 +200,18 @@ namespace Voorhees {
                             case 't':  result[resultIndex++] = '\t'; break;
                             case 'u': {
                                 // Read 4 hex digits
-                                result[resultIndex++] = (char)Convert.ToInt16(Doc.Document.Substring(Doc.Cursor + 1, 4), 16);
-                                Doc.AdvanceCursorBy(4);
+                                result[resultIndex++] = (char)Convert.ToInt16(cursor.Document.Substring(cursor.Index + 1, 4), 16);
+                                cursor.AdvanceBy(4);
                             } break;
-                            default: throw new InvalidJsonException($"{Doc} Unknown escape character sequence");
+                            default: throw new InvalidJsonException($"{cursor} Unknown escape character sequence");
                         }
                     }
                         break;
                     default:
-                        result[resultIndex++] = Doc.Document[Doc.Cursor];
+                        result[resultIndex++] = cursor.CurrentChar;
                         break;
                 }
-                Doc.AdvanceCursorBy(1);
+                cursor.Advance();
             }
             AdvanceToNextToken();
             return new string(result); // TODO To String.Create
@@ -227,10 +222,14 @@ namespace Voorhees {
         /// prepending to error messages and exceptions.
         /// </summary>
         /// <returns>string containing line and column info for the current cursor position</returns>
-        public string LineColString => Doc.ToString();
+        public string LineColString => cursor.ToString();
 
         /////////////////////////////////////////////////
         
+        readonly Internal.DocumentCursor cursor;
+        
+        /////////////////////////////////////////////////
+
         /// <summary>
         /// Moves to the next non-whitespace token.
         /// Identifies the type of token that starts at the cursor position and sets <see cref="NextToken"/>.
@@ -240,16 +239,16 @@ namespace Voorhees {
         /// </exception>
         void AdvanceToNextToken() {
             // Skip whitespace
-            Doc.AdvanceToNextNonWhitespaceChar();
+            cursor.AdvanceToNextNonWhitespaceChar();
             
             // Detect next token type
             
-            if (Doc.CharsLeft <= 0) {
+            if (cursor.NumCharsLeft <= 0) {
                 NextToken = JsonToken.EOF;
                 return;
             }
 
-            switch (Doc.Document[Doc.Cursor]) {
+            switch (cursor.CurrentChar) {
                 case '[': NextToken = JsonToken.ArrayStart; return;
                 case ']': NextToken = JsonToken.ArrayEnd; return;
                 case '{': NextToken = JsonToken.ObjectStart; return;
@@ -260,59 +259,54 @@ namespace Voorhees {
             }
 
             // number
-            if (Doc.Document[Doc.Cursor] == '-' || (Doc.Document[Doc.Cursor] >= '0' && Doc.Document[Doc.Cursor] <= '9')) {
+            if (cursor.CurrentChar == '-' || (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
                 NextToken = JsonToken.Number;
                 return;
             }
             
             // true
             const string TOKEN_TRUE = "true";
-            if (Doc.CharsLeft >= 4 && string.CompareOrdinal(Doc.Document, Doc.Cursor, TOKEN_TRUE, 0, TOKEN_TRUE.Length) == 0) {
+            if (cursor.NumCharsLeft >= 4 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_TRUE, 0, TOKEN_TRUE.Length) == 0) {
                 NextToken = JsonToken.True;
                 return;
             }
 
             // false
             const string TOKEN_FALSE = "false";
-            if (Doc.CharsLeft >= 5 && string.CompareOrdinal(Doc.Document, Doc.Cursor, TOKEN_FALSE, 0, TOKEN_FALSE.Length) == 0) {
+            if (cursor.NumCharsLeft >= 5 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_FALSE, 0, TOKEN_FALSE.Length) == 0) {
                 NextToken = JsonToken.False;
                 return;
             }
 
             // null
             const string TOKEN_NULL = "null";
-            if (Doc.CharsLeft >= 4 && string.CompareOrdinal(Doc.Document, Doc.Cursor, TOKEN_NULL, 0, TOKEN_NULL.Length) == 0) {
+            if (cursor.NumCharsLeft >= 4 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_NULL, 0, TOKEN_NULL.Length) == 0) {
                 NextToken = JsonToken.Null;
                 return;
             }
 
-            throw new InvalidJsonException($"{Doc} Unexpected character '{Doc.Document[Doc.Cursor]}'");
+            throw new InvalidJsonException($"{cursor} Unexpected character '{cursor.CurrentChar}'");
         }
 
         /// Same as ConsumeString but doesn't bother parsing the result.
         void SkipString() {
-            int start = Doc.Cursor + 1; // Skip the '"'
-            int end; // Where the ending " is
-
-            // Read the string length
-            for (end = start; end < Doc.Document.Length; ++end) {
-                char readAheadChar = Doc.Document[end];
-                if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    // TODO: This should indicate the line and column number for the offending character, not the start of the string.
-                    throw new InvalidJsonException($"{Doc} Disallowed control character in string");
+            // Skip the leading '"', then continue skipping until we hit EOF or the closing "
+            for (cursor.Advance(); !cursor.AtEOF; cursor.Advance()) {
+                if (cursor.CurrentChar <= 0x1F || cursor.CurrentChar == 0x7F || (cursor.CurrentChar >= 0x80 && cursor.CurrentChar <= 0x9F)) {
+                    throw new InvalidJsonException($"{cursor} Disallowed control character in string");
                 }
-                
-                if (readAheadChar == '\\') {
-                    end++;
-                    if (Doc.Document[end] == 'u') {
-                        end += 4;
+
+                if (cursor.CurrentChar == '\\') {
+                    cursor.Advance();
+                    if (cursor.CurrentChar == 'u') {
+                        cursor.AdvanceBy(4);
                     }
-                } else if (readAheadChar == '"') {
+                } else if (cursor.CurrentChar == '"') {
+                    cursor.Advance();
                     break;
                 }
             }
-
-            Doc.AdvanceCursorBy(2 + (end - start)); // skip to after the closing "
+            
             AdvanceToNextToken();
         }
     }

@@ -6,9 +6,9 @@ namespace Voorhees.Tests {
         [Test]
         public void TracksSeenNewlines() {
             var doc = new Internal.DocumentCursor(" \n \n");
-            doc.AdvanceCursorBy(2);
+            doc.AdvanceBy(2);
             Assert.Multiple(() => {
-                Assert.That(doc.Cursor, Is.EqualTo(2));
+                Assert.That(doc.Index, Is.EqualTo(2));
                 Assert.That(doc.Line, Is.EqualTo(2));
                 Assert.That(doc.Column, Is.EqualTo(1));
             });
@@ -17,9 +17,9 @@ namespace Voorhees.Tests {
         [Test]
         public void UpdatesColumnValue() {
             var doc = new Internal.DocumentCursor("    ");
-            doc.AdvanceCursorBy(2);
+            doc.AdvanceBy(2);
             Assert.Multiple(() => {
-                Assert.That(doc.Cursor, Is.EqualTo(2));
+                Assert.That(doc.Index, Is.EqualTo(2));
                 Assert.That(doc.Line, Is.EqualTo(1));
                 Assert.That(doc.Column, Is.EqualTo(3));
             });
@@ -28,9 +28,9 @@ namespace Voorhees.Tests {
         [Test]
         public void DoesNotReadPastEndOfDocument() {
             var doc = new Internal.DocumentCursor("  ");
-            doc.AdvanceCursorBy(5);
+            doc.AdvanceBy(5);
             Assert.Multiple(() => {
-                Assert.That(doc.Cursor, Is.EqualTo(2));
+                Assert.That(doc.Index, Is.EqualTo(2));
                 Assert.That(doc.Line, Is.EqualTo(1));
                 Assert.That(doc.Column, Is.EqualTo(3));
             });
