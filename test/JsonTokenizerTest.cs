@@ -133,14 +133,20 @@ namespace Voorhees.Tests {
 		public void SkippingStringsDisallowsControlCharacters() {
 			for (int i = 0; i < 0x20; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+				Assert.Throws<InvalidJsonException>(() => {
+					new JsonTokenizer($"\"{controlChar}\"").SkipToken(JsonToken.String);
+				});
 			}
 
-			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{char.ConvertFromUtf32(0x7F)}\""); });
+			Assert.Throws<InvalidJsonException>(() => {
+				new JsonTokenizer($"\"{char.ConvertFromUtf32(0x7F)}\"").SkipToken(JsonToken.String);
+			});
 
 			for (int i = 0x80; i <= 0x9F; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+				Assert.Throws<InvalidJsonException>(() => {
+					new JsonTokenizer($"\"{controlChar}\"").SkipToken(JsonToken.String);
+				});
 			}
 		}
     }
