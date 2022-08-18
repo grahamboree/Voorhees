@@ -106,6 +106,43 @@ namespace Voorhees.Tests {
 			var tokenizer = new JsonTokenizer("true, false");
 			Assert.Throws<InvalidOperationException>(() => tokenizer.SkipToken(JsonToken.ArrayStart));
 		}
+		
+		[Test]
+		public void SkippingEOFThrows() {
+			var tokenizer = new JsonTokenizer("");
+			Assert.Throws<InvalidOperationException>(() => tokenizer.SkipToken(JsonToken.EOF));
+		}
+
+		[Test]
+		public void SkippingStringWithEscapedCharacter() {
+			var doc = new Internal.DocumentCursor("\"test\\\"\", false");
+			var tokenizer = new JsonTokenizer(doc);
+			tokenizer.SkipToken(JsonToken.String);
+			Assert.That(doc.Index, Is.EqualTo(8));
+		}
+
+		[Test]
+		public void SkippingStringContainingEscapedUnicodeCharacter() {
+			var doc = new Internal.DocumentCursor("\"\\u597D\", false");
+			var tokenizer = new JsonTokenizer(doc);
+			tokenizer.SkipToken(JsonToken.String);
+			Assert.That(doc.Index, Is.EqualTo(8));
+		}
+
+		[Test]
+		public void SkippingStringsDisallowsControlCharacters() {
+			for (int i = 0; i < 0x20; i++) {
+				string controlChar = char.ConvertFromUtf32(i);
+				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+			}
+
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{char.ConvertFromUtf32(0x7F)}\""); });
+
+			for (int i = 0x80; i <= 0x9F; i++) {
+				string controlChar = char.ConvertFromUtf32(i);
+				Assert.Throws<InvalidJsonException>(() => { JsonReader.Read($"\"{controlChar}\""); });
+			}
+		}
     }
 
 	[TestFixture]
