@@ -121,19 +121,59 @@ namespace Voorhees.Tests {
 			var tokenizer = new JsonTokenizer("0123");
 			Assert.Throws<InvalidJsonException>(() => tokenizer.ConsumeNumber());
 		}
+
+		[Test]
+		public void PositiveInteger() {
+			TestString("123");
+		}
 		
 		[Test]
-		public void ValidNumberFormats() {
-			TestString("123");
+		public void NegativeInteger() {
 			TestString("-123");
+		}
+		
+		[Test]
+		public void PositiveDecimal() {
 			TestString("1.234");
+		}
+
+		[Test]
+		public void NegativeDecimal() {
 			TestString("-1.234");
+		}
+
+		[Test]
+		public void PositiveLeadingZeroDecimal() {
 			TestString("0.123");
+		}
+		
+		[Test]
+		public void NegativeLeadingZeroDecimal() {
 			TestString("-0.123");
+		}
+		
+		[Test]
+		public void PositiveExponent() {
 			TestString("0e3");
+		}
+		
+		[Test]
+		public void ExplicitlyPositiveExponent() {
 			TestString("0e+3");
+		}
+		
+		[Test]
+		public void NegativeExponent() {
 			TestString("0e-3");
+		}
+		
+		[Test]
+		public void NegativeNumberWithNegativeExponent() {
 			TestString("-0e-3");
+		}
+		
+		[Test]
+		public void FractionalNumberWithExponentWithLeadingZeros() {
 			TestString("123.456E+007");
 		}
 
