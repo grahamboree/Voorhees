@@ -33,6 +33,7 @@ namespace Voorhees {
                 case JsonType.Float:   Write((float) val); break;
                 case JsonType.Boolean: Write((bool) val); break;
                 case JsonType.String:  Write((string) val); break;
+                case JsonType.Null:    WriteNull(); break;
                 case JsonType.Array: {
                     WriteArrayStart();
 
@@ -70,8 +71,9 @@ namespace Voorhees {
 
                     WriteObjectEnd();
                 } break;
-                case JsonType.Null:
-                default: WriteNull(); break;
+                case JsonType.Unspecified: 
+                default:
+                    throw new InvalidOperationException("Can't write JsonValue instance because it is of unspecified type");
             }
         }
 
@@ -100,7 +102,7 @@ namespace Voorhees {
 
         #region Json String
         public void Write(string val) { WriteIndent(); WriteString(val); } 
-        public void Write(char val) { WriteIndent(); WriteString(val.ToString()); }
+        public void Write(char val)   { WriteIndent(); WriteString(val.ToString()); }
         #endregion
 
         #region Json Array
@@ -172,7 +174,7 @@ namespace Voorhees {
                             if (c < 32) {
                                 buffer[bufferIndex++] = '\\';
                                 buffer[bufferIndex++] = 'u';
-                                // TODO: This might be faster if we avoided the ToString() ?
+                                // TODO: This might be faster if it avoided the ToString()?
                                 string hex = ((int)c).ToString("X4");
                                 hex.CopyTo(buffer.Slice(bufferIndex, 4));
                                 bufferIndex += 4;

@@ -1,7 +1,5 @@
-﻿using System;
-
-namespace Voorhees {
-   /// Static class that handles reading and parsing JSON
+﻿namespace Voorhees {
+   /// Reads JSON into JsonValue's
    public static class JsonReader {
       /// <summary>
       /// Reads a JSON string and generates a matching JsonValue structure
@@ -10,19 +8,15 @@ namespace Voorhees {
       /// <returns>A JsonValue object that matches the json data</returns>
       /// <exception cref="InvalidJsonException">If the input JSON has invalid JSON syntax or characters.</exception>
       public static JsonValue Read(string json) {
-         try {
-            var tokenizer = new JsonTokenizer(json);
-            var result = ReadJsonValue(tokenizer);
+         var tokenizer = new JsonTokenizer(json);
+         var result = ReadJsonValue(tokenizer);
 
-            // Make sure there's no additional json in the buffer.
-            if (tokenizer.NextToken != JsonToken.EOF) {
-               throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
-            }
-            
-            return result;
-         } catch (IndexOutOfRangeException) {
-            throw new InvalidJsonException("Unexpected end of file!");
+         // Make sure there's no additional json in the buffer.
+         if (tokenizer.NextToken != JsonToken.EOF) {
+            throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
          }
+         
+         return result;
       }
       
       /////////////////////////////////////////////////
@@ -49,13 +43,12 @@ namespace Voorhees {
             case JsonToken.Null:
                tokenizer.SkipToken(JsonToken.Null);
                return new JsonValue(null);
-            case JsonToken.None:
             case JsonToken.EOF:
                throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected end of file");
-            default:
-               throw new ArgumentOutOfRangeException($"Unknown json token {tokenizer.NextToken}");
+            case JsonToken.KeyValueSeparator:
+            case JsonToken.None:
+            default: break;
          }
-
          throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected token {tokenizer.NextToken}");
       }
 

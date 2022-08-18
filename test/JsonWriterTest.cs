@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using NUnit.Framework;
 
@@ -6,8 +7,15 @@ namespace Voorhees.Tests {
 	[TestFixture]
 	public class JsonWriterTest {
 		[Test]
+		public void WriteUnspecifiedThrows() {
+			Assert.Throws<InvalidOperationException>(() => {
+				JsonWriter.ToJson(new JsonValue());
+			});
+		}
+		
+		[Test]
 		public void WriteNull() {
-			Assert.That(JsonWriter.ToJson(new JsonValue()), Is.EqualTo("null"));
+			Assert.That(JsonWriter.ToJson(new JsonValue(null)), Is.EqualTo("null"));
 			Assert.That(JsonWriter.ToJson(null), Is.EqualTo("null"));
 		}
 
