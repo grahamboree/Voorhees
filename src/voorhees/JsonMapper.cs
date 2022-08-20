@@ -150,6 +150,13 @@ namespace Voorhees {
             }
 
             writer.WriteObjectStart();
+
+            if (referenceType != valueType) {
+                writer.Write("$t");
+                writer.WriteObjectKeyValueSeparator();
+                writer.Write(valueType.AssemblyQualifiedName);
+                writer.WriteArraySeparator();
+            }
             
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
             
@@ -382,16 +389,45 @@ namespace Voorhees {
         }
 
         static object MapObject(JsonTokenizer tokenizer, Type destinationType) {
-            var objectMetadata = TypeInfo.GetObjectMetadata(destinationType);
+            var valueType = destinationType;
             tokenizer.SkipToken(JsonToken.ObjectStart);
 
-            var instance = Activator.CreateInstance(destinationType);
+            string firstKey = null;
+            if (tokenizer.NextToken == JsonToken.String) {
+                firstKey = tokenizer.ConsumeString();
+                if (firstKey == "$t") { // Type specifier
+                    firstKey = null;
+                    
+                    tokenizer.SkipToken(JsonToken.KeyValueSeparator);
+                    
+                    string valueAssemblyQualifiedName = tokenizer.ConsumeString();
+                    valueType = Type.GetType(valueAssemblyQualifiedName);
+                    if (valueType == null) {
+                        throw new InvalidJsonException($"Can't deserialize value of type {valueAssemblyQualifiedName} because a type with that " +
+                                                       $"assembly qualified name name cannot be found.");
+                    }
+                    
+                    if (tokenizer.NextToken == JsonToken.Separator) {
+                        tokenizer.SkipToken(JsonToken.Separator);
+                    }
+                }
+            }
+
+            var objectMetadata = TypeInfo.GetObjectMetadata(valueType);
+            object instance = Activator.CreateInstance(valueType);
 
             bool expectingValue = false;
 
             while (tokenizer.NextToken != JsonToken.ObjectEnd) {
                 expectingValue = false;
-                string propertyName = tokenizer.ConsumeString();
+                string propertyName;
+                if (firstKey != null) {
+                    propertyName = firstKey;
+                    firstKey = null;
+                } else {
+                    propertyName = tokenizer.ConsumeString();
+                }
+                    
                 tokenizer.SkipToken(JsonToken.KeyValueSeparator);
                 
                 if (objectMetadata.Properties.TryGetValue(propertyName, out var propertyMetadata)) {

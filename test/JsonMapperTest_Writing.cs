@@ -638,5 +638,12 @@ namespace Voorhees.Tests {
             string json = "{\"derivedClassValue\":false,\"baseClassValue\":2}";
             Assert.That(JsonMapper.ToJson(value), Is.EqualTo(json));
         }
+        
+        [Test]
+        public void DerivedValueInBaseReference() {
+            BaseClass value = new DerivedClass {baseClassValue = 2, derivedClassValue = false};
+            string json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
+            Assert.That(JsonMapper.ToJson(value), Is.EqualTo(json));
+        }
     }
 }
