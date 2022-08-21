@@ -182,7 +182,7 @@ namespace Voorhees {
                     object value = fieldInfo.GetValue(obj);
                     writer.Write(fieldInfo.Name);
                     writer.WriteObjectKeyValueSeparator();
-                    WriteValueAsJson(value, fieldInfo.FieldType, value.GetType(), writer);
+                    WriteValueAsJson(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, writer);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
                     object value = propertyInfo.GetValue(obj);
@@ -404,7 +404,7 @@ namespace Voorhees {
                     valueType = Type.GetType(valueAssemblyQualifiedName);
                     if (valueType == null) {
                         throw new InvalidJsonException($"Can't deserialize value of type {valueAssemblyQualifiedName} because a type with that " +
-                                                       $"assembly qualified name name cannot be found.");
+                                                       "assembly qualified name name cannot be found.");
                     }
                     
                     if (tokenizer.NextToken == JsonToken.Separator) {
