@@ -148,27 +148,27 @@ namespace Voorhees {
         public string ConsumeString() {
             cursor.Advance(); // Skip the "
             int resultLength = 0; // Number of characters in the resulting string.
-            bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed 
-            var lookahead = cursor.Clone(); // We read ahead and determine the string length
-            
-            while (lookahead.NumCharsLeft > 0) {
-                char readAheadChar = lookahead.CurrentChar;
+            bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed
+
+            int lookaheadIndex = cursor.Index;
+            for (; lookaheadIndex < cursor.Document.Length; ++lookaheadIndex) {
+                char readAheadChar = cursor.Document[lookaheadIndex];
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    throw new InvalidJsonException($"{lookahead} Disallowed control character in string");
+                    cursor.AdvanceBy(lookaheadIndex - cursor.Index);
+                    throw new InvalidJsonException($"{cursor} Disallowed control character in string");
                 }
                 
                 if (readAheadChar == '\\') {
                     // This string isn't trivial, so use the normal slower parsing.
                     hasEscapeChars = true;
-                    lookahead.Advance();
-                    if (lookahead.CurrentChar == 'u') {
-                        lookahead.AdvanceBy(4);
+                    lookaheadIndex++;
+                    if (cursor.Document[lookaheadIndex] == 'u') {
+                        lookaheadIndex += 4;
                     }
                 } else if (readAheadChar == '"') {
                     break;
                 }
                 resultLength++;
-                lookahead.Advance();
             }
             
             if (!hasEscapeChars) {
@@ -181,7 +181,7 @@ namespace Voorhees {
 
             return string.Create(resultLength, cursor.Document, (chars, doc) => {
                 int resultIndex = 0;
-                while (cursor.Index < lookahead.Index) {
+                while (cursor.Index < lookaheadIndex) {
                     switch (cursor.CurrentChar) {
                         case '\\': {
                             cursor.Advance();

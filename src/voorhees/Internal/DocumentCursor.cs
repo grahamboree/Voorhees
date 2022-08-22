@@ -65,15 +65,6 @@ namespace Voorhees.Internal {
         }
 
         /// <summary>
-        /// Create a new cursor in the same document at the same position.
-        /// Useful for look-ahead parsing.
-        /// </summary>
-        /// <returns>A new cursor identical to this one</returns>
-        public DocumentCursor Clone() {
-            return (DocumentCursor)MemberwiseClone();
-        }
-
-        /// <summary>
         /// Generates a string containing info about the current line and column numbers that's useful for
         /// prepending to error messages and exceptions.
         /// </summary>
