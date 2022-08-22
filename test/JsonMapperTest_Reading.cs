@@ -316,10 +316,12 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicFields() {
-            var json = "{\"publicField\": 3, \"publicField2\": 5}";
-            Assert.That(JsonMapper.FromJson<ObjectWithFields>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField, Is.EqualTo(3));
-            Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField2, Is.EqualTo(5));
+            const string JSON = "{\"publicField\": 3, \"publicField2\": 5}";
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON).publicField, Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON).publicField2, Is.EqualTo(5));
+            });
         }
 
         class ObjectWithProperties {
@@ -329,21 +331,22 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicProperties() {
-            var json = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
-            Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty, Is.EqualTo(3));
-            Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty2, Is.EqualTo(5));
+            const string JSON = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>(JSON), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>(JSON).publicProperty, Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>(JSON).publicProperty2, Is.EqualTo(5));
+            });
         }
 
         [Test]
         public void PublicDictionary() {
-            const string json = "{\"a\": 3, \"b\": 5}";
-            Assert.Multiple(() =>
-            {
-                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Is.Not.Null);
-                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Has.Count.EqualTo(2));
-                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["a"], Is.EqualTo(3));
-                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["b"], Is.EqualTo(5));
+            const string JSON = "{\"a\": 3, \"b\": 5}";
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(JSON), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(JSON), Has.Count.EqualTo(2));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(JSON)["a"], Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(JSON)["b"], Is.EqualTo(5));
             });
         }
 
@@ -354,8 +357,8 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicReadOnlyProperties() {
-            var json = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(json));
+            const string JSON = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(JSON));
         }
     }
 
@@ -376,11 +379,13 @@ namespace Voorhees.Tests {
         [Test]
         public void PolymorphicTypeReference() {
             const string JSON = "{\"derivedClassValue\":false,\"baseClassValue\":2}";
-            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).derivedClassValue, Is.False);
-            Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).baseClassValue, Is.EqualTo(2));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<DerivedClass>(JSON), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).derivedClassValue, Is.False);
+                Assert.That(JsonMapper.FromJson<DerivedClass>(JSON).baseClassValue, Is.EqualTo(2));
+            });
         }
-        
+
         [Test]
         public void DerivedValueInBaseReference() {
             string json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
