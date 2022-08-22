@@ -159,19 +159,6 @@ namespace Voorhees {
             }
             
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
-            
-            // TODO This should be instead done in TypeInfo.GetTypePropertyMetadata
-            // Remove any non-readable properties from the list
-            for (int fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
-                var propertyMetadata = fieldsAndProperties[fieldIndex];
-                if (!propertyMetadata.IsField) {
-                    var propertyInfo = propertyMetadata.Info as PropertyInfo;
-                    if (propertyInfo != null && !propertyInfo.CanRead) {
-                        fieldsAndProperties.RemoveAt(fieldIndex);
-                        fieldIndex--;                        
-                    }
-                }
-            }
 
             // Write the object's field and property values
             for (int fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {

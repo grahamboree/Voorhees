@@ -179,7 +179,6 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ReadCharTooLong() {
-            // TODO include line number in the exception.
             Assert.Throws<FormatException>(() => JsonMapper.FromJson<char>("\"test\""));
         }
 

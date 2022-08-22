@@ -12,7 +12,11 @@ namespace Voorhees.Internal {
                 var props = new List<PropertyMetadata>();
 
                 foreach (var propertyInfo in type.GetProperties()) {
-                    if (propertyInfo.Name != "Item" && !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute))) {
+                    bool serializableProperty =
+                        propertyInfo.CanRead && 
+                        propertyInfo.Name != "Item" && // Indexer
+                        !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute)); // Ignored
+                    if (serializableProperty) {
                         props.Add(new PropertyMetadata {
                             Info = propertyInfo,
                             IsField = false
