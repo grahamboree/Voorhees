@@ -176,7 +176,7 @@ namespace Voorhees {
                                 buffer[bufferIndex++] = 'u';
                                 // TODO: This might be faster if it avoided the ToString()?
                                 string hex = ((int)c).ToString("X4");
-                                hex.CopyTo(buffer.Slice(bufferIndex, 4));
+                                hex.AsSpan().CopyTo(buffer.Slice(bufferIndex, 4));
                                 bufferIndex += 4;
                             } else {
                                 buffer[bufferIndex++] = c;
