@@ -155,12 +155,12 @@ namespace Voorhees.Internal {
             public Dictionary<string, PropertyMetadata> Properties;
 
             public Type ElementType {
-                get => element_type ?? typeof(JsonValue);
-                set => element_type = value;
+                get => elementType ?? typeof(JsonValue);
+                set => elementType = value;
             }
-            Type element_type;
+            Type elementType;
         }
-        static readonly Dictionary<Type, ObjectMetadata> cachedObjectMetadata = new Dictionary<Type, ObjectMetadata>();
+        static readonly Dictionary<Type, ObjectMetadata> cachedObjectMetadata = new();
         
         internal struct PropertyMetadata {
             public MemberInfo Info;
@@ -168,7 +168,7 @@ namespace Voorhees.Internal {
             public Type Type;
             public bool Ignored;
         }
-        static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new Dictionary<Type, List<PropertyMetadata>>();
+        static readonly Dictionary<Type, List<PropertyMetadata>> typeProperties = new();
 
         internal struct ArrayMetadata {
             public bool IsArray;
@@ -176,13 +176,13 @@ namespace Voorhees.Internal {
             public bool IsList;
 
             public Type ElementType {
-                get => element_type ?? typeof(JsonValue);
-                set => element_type = value;
+                get => elementType ?? typeof(JsonValue);
+                set => elementType = value;
             }
-            Type element_type;
+            Type elementType;
         }
-        static readonly Dictionary<Type, ArrayMetadata> cachedArrayMetadata = new Dictionary<Type, ArrayMetadata>();
+        static readonly Dictionary<Type, ArrayMetadata> cachedArrayMetadata = new();
 
-        static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
+        static readonly Dictionary<Type, Dictionary<Type, MethodInfo>> implicitConversionOperatorCache = new();
     }
 }
