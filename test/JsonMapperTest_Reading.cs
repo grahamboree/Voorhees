@@ -397,4 +397,34 @@ namespace Voorhees.Tests {
             });
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Read_ReadOrWriteOnlyProperties {
+        class ObjectWithFields {
+            public int ComputedProperty => ReadOnlyProperty + WriteOnlyProperty;
+            public int ReadOnlyProperty { get; private set; } = 1;
+            public int WriteOnlyProperty { private get; set; } = 1;
+
+            public int GetWriteOnlyValue() {
+                return WriteOnlyProperty;
+            }
+        }
+        
+        [Test]
+        public void JsonContainsReadOnlyAndWriteOnlyProperties() {
+            const string JSON = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}";
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON).ReadOnlyProperty, Is.EqualTo(5));
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON).GetWriteOnlyValue(), Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(JSON).ComputedProperty, Is.EqualTo(8));
+            });
+        }
+        
+        [Test]
+        public void JsonContainsReadOnlyWriteOnlyAndComputedProperties() {
+            const string JSON = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3, \"ComputedProperty\": 8}";
+            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
+        }
+    }
 }
