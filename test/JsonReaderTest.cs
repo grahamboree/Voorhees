@@ -53,6 +53,7 @@ namespace Voorhees.Tests {
 		}
 	}
 	
+	[TestFixture]
 	public class JsonReaderTest_Arrays {
 		[Test]
 		public void EmptyArray() {
@@ -185,6 +186,7 @@ namespace Voorhees.Tests {
 		}
 	}
 	
+	[TestFixture]
 	public class JsonReaderTest_Objects {
 		[Test]
 		public void EmptyObject() {

@@ -346,5 +346,15 @@ namespace Voorhees.Tests {
 				Assert.That(doc.Index, Is.EqualTo(7));
 			});
 		}
-	}
+
+		[Test]
+		public void DoubleQuotedString()  {
+			var doc = new Internal.DocumentCursor("\"\\\"test\\\"\",");
+            var tokenizer = new JsonTokenizer(doc);
+            Assert.Multiple(() => {
+                Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\"test\""));
+                Assert.That(tokenizer.NextToken, Is.EqualTo(JsonToken.Separator));
+            });
+        }
+    }
 }

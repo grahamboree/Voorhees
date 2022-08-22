@@ -209,6 +209,7 @@ namespace Voorhees {
                     }
                     cursor.Advance();
                 }
+                cursor.Advance();
                 AdvanceToNextToken();
             });
         }
