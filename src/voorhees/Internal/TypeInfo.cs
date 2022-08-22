@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Voorhees.Internal {
     public static class TypeInfo {
@@ -8,14 +9,29 @@ namespace Voorhees.Internal {
         /// Cache it so we don't have to get this info every
         /// time we come across an instance of this type
         internal static List<PropertyMetadata> GetTypePropertyMetadata(Type type) {
+            bool HasBackingField(PropertyInfo property) {
+                // Auto-property backing field
+                string backingFieldName = $"<{property.Name}>k__BackingField";
+                var backingField = property.DeclaringType?.GetField(backingFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (backingField != null) {
+                    return true;
+                }
+                
+                // Backing field for anonymous object declarations
+                backingFieldName = $"<{property.Name}>i__Field";
+                backingField = property.DeclaringType?.GetField(backingFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+                return backingField != null;
+            }
+
             if (!typeProperties.ContainsKey(type)) {
                 var props = new List<PropertyMetadata>();
 
                 foreach (var propertyInfo in type.GetProperties()) {
                     bool serializableProperty =
-                        propertyInfo.CanRead && 
+                        propertyInfo.CanRead &&
                         propertyInfo.Name != "Item" && // Indexer
-                        !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute)); // Ignored
+                        !Attribute.IsDefined(propertyInfo, typeof(JsonIgnoreAttribute)) &&  // Ignored
+                        HasBackingField(propertyInfo); // Don't write computed properties.
                     if (serializableProperty) {
                         props.Add(new PropertyMetadata {
                             Info = propertyInfo,
