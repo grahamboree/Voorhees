@@ -646,4 +646,23 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.ToJson(value), Is.EqualTo(json));
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Write_ReadOrWriteOnlyProperties {
+        class ObjectWithFields {
+            public int ComputedProperty => ReadOnlyProperty + WriteOnlyProperty;
+            public int ReadOnlyProperty { get; private set; } = 5;
+            public int WriteOnlyProperty { private get; set; } = 3;
+
+            public int GetWriteOnlyValue() {
+                return WriteOnlyProperty;
+            }
+        }
+        
+        [Test]
+        public void JsonDoesNotContainComputedProperty() {
+            const string JSON = "{\"ReadOnlyProperty\":5,\"WriteOnlyProperty\":3}";
+            Assert.That(JsonMapper.ToJson(new ObjectWithFields()), Is.EqualTo(JSON));
+        }
+    }
 }
