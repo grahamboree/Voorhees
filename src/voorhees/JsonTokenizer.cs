@@ -172,49 +172,45 @@ namespace Voorhees {
             }
             
             if (!hasEscapeChars) {
-                // TODO Use string.Create
-                Span<char> s = stackalloc char[resultLength];
-                cursor.Document.AsSpan().Slice(cursor.Index, resultLength).CopyTo(s);
-                
-                cursor.AdvanceBy(1 + resultLength); // skip to after the closing "
-                AdvanceToNextToken();
-                
-                return new string(s); // TODO to string.Create
+                return string.Create(resultLength, cursor.Document, (chars, doc) => {
+                    doc.AsSpan().Slice(cursor.Index, resultLength).CopyTo(chars);
+                    cursor.AdvanceBy(1 + resultLength); // skip to after the closing "
+                    AdvanceToNextToken();
+                });
             }
-            
-            Span<char> result = stackalloc char[resultLength];
-            int resultIndex = 0;
 
-            while (cursor.Index < lookahead.Index) {
-                switch (cursor.CurrentChar) {
-                    case '\\': {
-                        cursor.Advance();
-                        switch (cursor.CurrentChar) {
-                            case '\\': result[resultIndex++] = '\\'; break;
-                            case '"':  result[resultIndex++] = '"';  break;
-                            case '/':  result[resultIndex++] = '/';  break;
-                            case 'b':  result[resultIndex++] = '\b'; break;
-                            case 'f':  result[resultIndex++] = '\f'; break;
-                            case 'n':  result[resultIndex++] = '\n'; break;
-                            case 'r':  result[resultIndex++] = '\r'; break;
-                            case 't':  result[resultIndex++] = '\t'; break;
-                            case 'u': {
-                                // Read 4 hex digits
-                                result[resultIndex++] = (char)Convert.ToInt16(cursor.Document.Substring(cursor.Index + 1, 4), 16);
-                                cursor.AdvanceBy(4);
-                            } break;
-                            default: throw new InvalidJsonException($"{cursor} Unknown escape character sequence");
+            return string.Create(resultLength, cursor.Document, (chars, doc) => {
+                int resultIndex = 0;
+                while (cursor.Index < lookahead.Index) {
+                    switch (cursor.CurrentChar) {
+                        case '\\': {
+                            cursor.Advance();
+                            switch (cursor.CurrentChar) {
+                                case '\\': chars[resultIndex++] = '\\'; break;
+                                case '"':  chars[resultIndex++] = '"';  break;
+                                case '/':  chars[resultIndex++] = '/';  break;
+                                case 'b':  chars[resultIndex++] = '\b'; break;
+                                case 'f':  chars[resultIndex++] = '\f'; break;
+                                case 'n':  chars[resultIndex++] = '\n'; break;
+                                case 'r':  chars[resultIndex++] = '\r'; break;
+                                case 't':  chars[resultIndex++] = '\t'; break;
+                                case 'u': {
+                                    // Read 4 hex digits
+                                    chars[resultIndex++] = (char)Convert.ToInt16(cursor.Document.Substring(cursor.Index + 1, 4), 16);
+                                    cursor.AdvanceBy(4);
+                                } break;
+                                default: throw new InvalidJsonException($"{cursor} Unknown escape character sequence");
+                            }
                         }
+                            break;
+                        default:
+                            chars[resultIndex++] = cursor.CurrentChar;
+                            break;
                     }
-                        break;
-                    default:
-                        result[resultIndex++] = cursor.CurrentChar;
-                        break;
+                    cursor.Advance();
                 }
-                cursor.Advance();
-            }
-            AdvanceToNextToken();
-            return new string(result); // TODO To String.Create
+                AdvanceToNextToken();
+            });
         }
 
         /// <summary>
