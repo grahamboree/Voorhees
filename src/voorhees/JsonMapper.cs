@@ -12,10 +12,15 @@ namespace Voorhees {
     public static partial class JsonMapper {
         public static string ToJson<T>(T obj, bool prettyPrint = false) {
             var stringBuilder = new StringBuilder();
-            using (var writer = new StringWriter(stringBuilder)) {
-                WriteValueAsJson(obj, typeof(T), obj?.GetType(), new JsonWriter(writer, prettyPrint));
+            using (var stringWriter = new StringWriter(stringBuilder)) {
+                var jsonWriter = new JsonWriter(stringWriter, prettyPrint);
+                ToJson(obj, jsonWriter);
             }
             return stringBuilder.ToString();
+        }
+
+        public static void ToJson<T>(T obj, JsonWriter writer) {
+            WriteValueAsJson(obj, typeof(T), obj?.GetType(), writer);
         }
 
         /////////////////////////////////////////////////
