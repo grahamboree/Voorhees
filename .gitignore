@@ -6,6 +6,9 @@ packages
 *.userprefs*
 voorhees.sln.DotSettings.user
 
+# reports
+bench/BenchmarkDotNet.Artifacts
+
 # editors
 .vscode
 .idea
