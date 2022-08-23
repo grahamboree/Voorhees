@@ -15,7 +15,6 @@
          if (tokenizer.NextToken != JsonToken.EOF) {
             throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
          }
-         
          return result;
       }
       
@@ -35,7 +34,8 @@
                   return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
                      : new JsonValue(float.Parse(numberString));
                } catch (System.FormatException) {
-                  throw new InvalidJsonException($"Can't parse text \"{new string(numberString)}\" as a number.");
+                  // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
+                  throw new InvalidJsonException($"{tokenizer.LineColString} Can't parse text \"{new string(numberString)}\" as a number.");
                }
             }
             case JsonToken.True:
