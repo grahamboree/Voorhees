@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Voorhees {
    /// JSON data type
-   public enum JsonType {
+   public enum JsonType : byte {
       Unspecified,
       
       Null,
@@ -23,73 +23,60 @@ namespace Voorhees {
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
       #region Fields
-      JsonType type = JsonType.Unspecified;
-
       List<JsonValue> arrayValue;
       Dictionary<string, JsonValue> objectValue;
 
-      string stringValue;
-      bool boolValue;
-      float floatValue;
-      int intValue;
+      readonly string stringValue;
+      readonly bool boolValue;
+      readonly float floatValue;
+      readonly int intValue;
       #endregion
 
       #region Type Properties
-      public bool IsObject => type == JsonType.Object;
-      public bool IsArray => type == JsonType.Array;
-      public bool IsString => type == JsonType.String;
-      public bool IsBoolean => type == JsonType.Boolean;
-      public bool IsInt => type == JsonType.Int;
-      public bool IsFloat => type == JsonType.Float;
+      public JsonType Type { get; private set; }
+      public bool IsObject => Type == JsonType.Object;
+      public bool IsArray => Type == JsonType.Array;
+      public bool IsString => Type == JsonType.String;
+      public bool IsBoolean => Type == JsonType.Boolean;
+      public bool IsInt => Type == JsonType.Int;
+      public bool IsFloat => Type == JsonType.Float;
       public bool IsNull => Type == JsonType.Null;
-
-      public JsonType Type {
-         get => type;
-         set {
-            if (type == value) {
-               return;
-            }
-            type = value;
-
-            objectValue = null;
-            arrayValue = null;
-            floatValue = 0;
-            intValue = 0;
-            boolValue = false;
-            stringValue = "";
-            if (type == JsonType.Object) {
-               objectValue = new Dictionary<string, JsonValue>();
-            } else if (type == JsonType.Array) {
-               arrayValue = new List<JsonValue>();
-            }
-         }
-      }
       #endregion
 
       #region Constructors
-      public JsonValue() { }
-
       public JsonValue(bool boolean) {
-         type = JsonType.Boolean;
+         Type = JsonType.Boolean;
          boolValue = boolean;
       }
 
       public JsonValue(float number) {
-         type = JsonType.Float;
+         Type = JsonType.Float;
          floatValue = number;
       }
 
       public JsonValue(int number) {
-         type = JsonType.Int;
+         Type = JsonType.Int;
          intValue = number;
       }
 
       public JsonValue(string str) {
          if (str == null) {
-            type = JsonType.Null;
+            Type = JsonType.Null;
          } else {
-            type = JsonType.String;
+            Type = JsonType.String;
             stringValue = str;
+         }
+      }
+
+      public JsonValue(JsonType type = JsonType.Unspecified) {
+         Type = type;
+         switch (type) {
+            case JsonType.Object:
+               objectValue = new Dictionary<string, JsonValue>();
+               break;
+            case JsonType.Array:
+               arrayValue = new List<JsonValue>();
+               break;
          }
       }
       #endregion
@@ -145,16 +132,20 @@ namespace Voorhees {
       public bool IsReadOnly => EnsureArray().IsReadOnly;
 
       public void Clear() {
-         if (type == JsonType.Object) { objectValue.Clear(); return; }
-         if (type == JsonType.Array) { arrayValue.Clear(); return; }
-         throw new InvalidOperationException("Instance of JsonValue is not an array or object");
+         switch (Type) {
+            case JsonType.Object: objectValue.Clear(); break;
+            case JsonType.Array: arrayValue.Clear(); break;
+            default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
+         }
       }
 
       public int Count {
          get {
-            if (type == JsonType.Object) { return objectValue.Count; }
-            if (type == JsonType.Array) { return arrayValue.Count; }
-            throw new InvalidOperationException("Instance of JsonValue is not an array or object");
+            switch (Type) {
+               case JsonType.Object: return objectValue.Count;
+               case JsonType.Array: return arrayValue.Count;
+               default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
+            }
          }
       }
       #endregion
@@ -172,20 +163,20 @@ namespace Voorhees {
       #region IEquatable<JsonValue>
       public bool Equals(JsonValue other) {
          if (other == null) {
-            return type == JsonType.Null;
+            return Type == JsonType.Null;
          }
 
-         if (type != other.type) {
+         if (Type != other.Type) {
             return false;
          }
 
-         switch (type) {
+         switch (Type) {
             case JsonType.Null: return true;
             case JsonType.String: return stringValue == other.stringValue;
             case JsonType.Boolean: return boolValue == other.boolValue;
             case JsonType.Int: return intValue == other.intValue;
             case JsonType.Float: return floatValue == other.floatValue;
-            case JsonType.Object:
+            case JsonType.Object: {
                if (objectValue.Count != other.objectValue.Count) {
                   return false;
                }
@@ -201,7 +192,8 @@ namespace Voorhees {
                }
 
                return true;
-            case JsonType.Array:
+            }
+            case JsonType.Array: {
                if (arrayValue.Count != other.arrayValue.Count) {
                   return false;
                }
@@ -211,8 +203,8 @@ namespace Voorhees {
                      return false;
                   }
                }
-
                return true;
+            }
          }
          return false;
       }
@@ -241,12 +233,12 @@ namespace Voorhees {
       /////////////////////////////////////////////////
 
       IDictionary<string, JsonValue> EnsureObject() {
-         if (type == JsonType.Unspecified) {
-            type = JsonType.Object;
+         if (Type == JsonType.Unspecified) {
+            Type = JsonType.Object;
             objectValue = new Dictionary<string, JsonValue>();
          }
 
-         if (type == JsonType.Object) {
+         if (Type == JsonType.Object) {
             return objectValue;
          }
 
@@ -254,12 +246,12 @@ namespace Voorhees {
       }
 
       IList<JsonValue> EnsureArray() {
-         if (type == JsonType.Unspecified) {
-            type = JsonType.Array;
+         if (Type == JsonType.Unspecified) {
+            Type = JsonType.Array;
             arrayValue = new List<JsonValue>();
          }
 
-         if (type == JsonType.Array) {
+         if (Type == JsonType.Array) {
             return arrayValue;
          }
 

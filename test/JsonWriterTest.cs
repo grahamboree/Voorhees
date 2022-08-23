@@ -59,7 +59,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void WriteEmptyArray() {
-			var test = new JsonValue {Type = JsonType.Array};
+			var test = new JsonValue(JsonType.Array);
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("[]"));
 		}
 
@@ -77,7 +77,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void WriteEmptyObject() {
-			var test = new JsonValue {Type = JsonType.Object};
+			var test = new JsonValue(JsonType.Object);
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{}"));
 		}
 
@@ -86,7 +86,6 @@ namespace Voorhees.Tests {
 			var test = new JsonValue {
 				{"test", 1}
 			};
-			test.Type = JsonType.Object;
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\":1}"));
 		}
 
@@ -100,7 +99,6 @@ namespace Voorhees.Tests {
 					}
 				}
 			};
-			test.Type = JsonType.Object;
 			Assert.That(JsonWriter.ToJson(test), Is.EqualTo("{\"test\":{\"test2\":2}}"));
 		}
 
@@ -313,11 +311,11 @@ namespace Voorhees.Tests {
 		[Test]
 		public void PrettyPrintDeeplyNestedArray() {
 			// Tests that exceeding the tab cache will correctly generate the right number of tabs.
-			var test = new JsonValue { Type = JsonType.Array };
+			var test = new JsonValue(JsonType.Array);
 
 			var current = test;
 			for (int i = 0; i < 21; ++i) {
-				var newVal = new JsonValue { Type = JsonType.Array };
+				var newVal = new JsonValue(JsonType.Array);
 				current.Add(newVal);
 				current = newVal;
 			}

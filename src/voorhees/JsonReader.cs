@@ -53,7 +53,7 @@
       }
 
       static JsonValue ReadArray(JsonTokenizer tokenizer) {
-         var arrayValue = new JsonValue {Type = JsonType.Array};
+         var arrayValue = new JsonValue(JsonType.Array);
          
          tokenizer.SkipToken(JsonToken.ArrayStart);
 
@@ -80,7 +80,7 @@
       }
 
       static JsonValue ReadObject(JsonTokenizer tokenizer) {
-         var result = new JsonValue { Type = JsonType.Object };
+         var result = new JsonValue(JsonType.Object);
          
          tokenizer.SkipToken(JsonToken.ObjectStart);
 
