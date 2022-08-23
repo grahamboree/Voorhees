@@ -5,18 +5,8 @@ using System.IO;
 using System.Text;
 
 namespace Voorhees {
+    // Writes JSON text to a TextWriter
     public class JsonWriter {
-        public static string ToJson(JsonValue json, bool prettyPrint = false) {
-            var sb = new StringBuilder();
-            using (var sw = new StringWriter(sb)) {
-                var jsonWriter = new JsonWriter(sw, prettyPrint);
-                jsonWriter.Write(json);
-            }
-            return sb.ToString();
-        }
-
-        /////////////////////////////////////////////////
-
         public JsonWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
             writer = textWriter;
