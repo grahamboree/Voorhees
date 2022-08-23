@@ -260,5 +260,15 @@ namespace Voorhees.Tests {
 		public void LeadingObjectClosingBrace() {
 			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("}\"test\": 1}"); });
 		}
+
+		[Test]
+		public void ObjectWithDuplicateKeysPrefersTheLastOccurenceOfTheKey() {
+			var test = JsonReader.Read("{\"a\":\"b\",\"a\":\"c\"}");
+			Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+			Assert.That(test.Count, Is.EqualTo(1));
+			Assert.That(test.ContainsKey("a"), Is.True);
+			Assert.That(test["a"].Type, Is.EqualTo(JsonType.String));
+			Assert.That((string)test["a"], Is.EqualTo("c")); // c since it's the last value for the key "a" appearing in the json
+		}
 	}
 }

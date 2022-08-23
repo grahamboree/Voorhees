@@ -92,7 +92,14 @@
          while (tokenizer.NextToken != JsonToken.ObjectEnd) {
             expectingValue = false;
             string key = tokenizer.ConsumeString();
-            
+
+            // Edge case: If the dictionary already contains the key, for example in the case where
+            // the json we're reading has duplicate keys in an object, arbitrarily prefer the later 
+            // key value pair that appears in the file.
+            if (result.ContainsKey(key)) {
+               result.Remove(key);
+            }
+
             if (tokenizer.NextToken != JsonToken.KeyValueSeparator) {
                throw new InvalidJsonException($"{tokenizer.LineColString} Expected ':'");
             }
