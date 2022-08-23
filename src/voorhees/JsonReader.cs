@@ -31,8 +31,12 @@
             case JsonToken.String: return new JsonValue(tokenizer.ConsumeString());
             case JsonToken.Number: {
                var numberString = tokenizer.ConsumeNumber();
-               return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
-                  : new JsonValue(float.Parse(numberString));
+               try {
+                  return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
+                     : new JsonValue(float.Parse(numberString));
+               } catch (System.FormatException) {
+                  throw new InvalidJsonException($"Can't parse text \"{new string(numberString)}\" as a number.");
+               }
             }
             case JsonToken.True:
                tokenizer.SkipToken(JsonToken.True);
