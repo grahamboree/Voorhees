@@ -148,6 +148,16 @@ namespace Voorhees.Tests {
 			Assert.That(test[6].Type, Is.EqualTo(JsonType.Array));
 			Assert.That(test[6].Count, Is.EqualTo(0));
 		}
+		
+		[Test]
+		public void JustArrayComma() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[,]"); });
+		}
+		
+		[Test]
+		public void JustMinusArray() {
+			Assert.Throws<InvalidJsonException>(() => { JsonReader.Read("[-]"); });
+		}
 
 		[Test]
 		public void MissingArrayComma() {
