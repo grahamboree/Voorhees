@@ -215,6 +215,10 @@ namespace Voorhees {
             return (T) FromJson(new JsonTokenizer(jsonString), typeof(T));
         }
 
+        public static T FromJson<T>(JsonTokenizer tokenizer) {
+            return (T) FromJson(tokenizer, typeof(T));
+        }
+
         /////////////////////////////////////////////////
 
         static object FromJson(JsonTokenizer tokenizer, Type destinationType) {
