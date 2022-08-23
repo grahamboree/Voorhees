@@ -32,16 +32,7 @@ namespace Voorhees {
       readonly int intValue;
       #endregion
 
-      #region Type Properties
       public JsonType Type { get; private set; }
-      public bool IsObject => Type == JsonType.Object;
-      public bool IsArray => Type == JsonType.Array;
-      public bool IsString => Type == JsonType.String;
-      public bool IsBoolean => Type == JsonType.Boolean;
-      public bool IsInt => Type == JsonType.Int;
-      public bool IsFloat => Type == JsonType.Float;
-      public bool IsNull => Type == JsonType.Null;
-      #endregion
 
       #region Constructors
       public JsonValue(bool boolean) {
@@ -90,28 +81,28 @@ namespace Voorhees {
 
       #region Explicit Conversions from JsonData to other types
       public static explicit operator bool(JsonValue data) {
-         if (!data.IsBoolean) {
+         if (data.Type != JsonType.Boolean) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
          }
          return data.boolValue;
       }
 
       public static explicit operator float(JsonValue data) {
-         if (!data.IsFloat) {
+         if (data.Type != JsonType.Float) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a float");
          }
          return data.floatValue;
       }
 
       public static explicit operator int(JsonValue data) {
-         if (!data.IsInt) {
+         if (data.Type != JsonType.Int) {
             throw new InvalidCastException("Instance of JsonData doesn't hold an int");
          }
          return data.intValue;
       }
 
       public static explicit operator string(JsonValue data) {
-         if (!data.IsString) {
+         if (data.Type != JsonType.String) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a string");
          }
          return data.stringValue;

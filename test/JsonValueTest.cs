@@ -126,62 +126,32 @@ namespace Voorhees.Tests {
 		[Test]
 		public void TypeProperties() {
 			// object
-			JsonValue test = new JsonValue() {
+			var test = new JsonValue {
 				{"one", 1},
 				{"two", 2},
 				{"three", 3}
 			};
-			Assert.That(test.IsObject, Is.True);
-			Assert.That(test.IsArray, Is.False);
-			Assert.That(test.IsString, Is.False);
-			Assert.That(test.IsBoolean, Is.False);
-			Assert.That(test.IsInt, Is.False);
-			Assert.That(test.IsFloat, Is.False);
-
+			Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+			
 			// array
-			test = new JsonValue() {1, 2, 3};
-			Assert.That(test.IsObject, Is.False);
-			Assert.That(test.IsArray, Is.True);
-			Assert.That(test.IsString, Is.False);
-			Assert.That(test.IsBoolean, Is.False);
-			Assert.That(test.IsInt, Is.False);
-			Assert.That(test.IsFloat, Is.False);
+			test = new JsonValue {1, 2, 3};
+			Assert.That(test.Type, Is.EqualTo(JsonType.Array));
 
 			// string
-			test = "test";
-			Assert.That(test.IsObject, Is.False);
-			Assert.That(test.IsArray, Is.False);
-			Assert.That(test.IsString, Is.True);
-			Assert.That(test.IsBoolean, Is.False);
-			Assert.That(test.IsInt, Is.False);
-			Assert.That(test.IsFloat, Is.False);
+			test = new JsonValue("test");
+			Assert.That(test.Type, Is.EqualTo(JsonType.String));
 
 			// boolean
-			test = false;
-			Assert.That(test.IsObject, Is.False);
-			Assert.That(test.IsArray, Is.False);
-			Assert.That(test.IsString, Is.False);
-			Assert.That(test.IsBoolean, Is.True);
-			Assert.That(test.IsInt, Is.False);
-			Assert.That(test.IsFloat, Is.False);
-
+			test = new JsonValue(false);
+			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
+			
 			// int
-			test = 1;
-			Assert.That(test.IsObject, Is.False);
-			Assert.That(test.IsArray, Is.False);
-			Assert.That(test.IsString, Is.False);
-			Assert.That(test.IsBoolean, Is.False);
-			Assert.That(test.IsInt, Is.True);
-			Assert.That(test.IsFloat, Is.False);
+			test = new JsonValue(1);
+			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
 
 			// float
-			test = 1f;
-			Assert.That(test.IsObject, Is.False);
-			Assert.That(test.IsArray, Is.False);
-			Assert.That(test.IsString, Is.False);
-			Assert.That(test.IsBoolean, Is.False);
-			Assert.That(test.IsInt, Is.False);
-			Assert.That(test.IsFloat, Is.True);
+			test = new JsonValue(1f);
+			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
 		}
 
 		[Test]

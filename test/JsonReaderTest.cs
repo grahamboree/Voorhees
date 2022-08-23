@@ -49,7 +49,6 @@ namespace Voorhees.Tests {
 		public void Null() {
 			var test = JsonReader.Read("null");
 			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
-			Assert.That(test.IsNull);
 		}
 	}
 	
