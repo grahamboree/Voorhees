@@ -9,6 +9,10 @@
       /// <exception cref="InvalidJsonException">If the input JSON has invalid JSON syntax or characters.</exception>
       public static JsonValue Read(string json) {
          var tokenizer = new JsonTokenizer(json);
+         return Read(tokenizer);
+      }
+
+      public static JsonValue Read(JsonTokenizer tokenizer) {
          var result = ReadJsonValue(tokenizer);
 
          // Make sure there's no additional json in the buffer.
