@@ -93,16 +93,16 @@ namespace Voorhees {
                 cursor.Advance();
             }
 
-            // a leading zero needs to be followed by a decimal or exponent marker
-            if (!cursor.AtEOF && cursor.CurrentChar == '0') {
+            bool leadingZero = !cursor.AtEOF && cursor.CurrentChar == '0';
+            if (leadingZero) {
                 cursor.Advance();
-                if (cursor.AtEOF || (cursor.CurrentChar != '.' && cursor.CurrentChar != 'e' && cursor.CurrentChar != 'E')) {
-                    throw new InvalidJsonException($"{cursor} Leading zero in a number must be immediately followed by a decimal point or exponent");
-                }
             }
 
             // whole part digits
             while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                if (leadingZero) {
+                    throw new InvalidJsonException($"{cursor} Leading zero in a number must be immediately followed by a decimal point or exponent");
+                }
                 cursor.Advance();
             }
             

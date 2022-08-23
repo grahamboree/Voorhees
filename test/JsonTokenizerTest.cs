@@ -166,6 +166,16 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
+		public void Zero() {
+			TestString("0");
+		}
+
+		[Test]
+		public void NegativeZero() {
+			TestString("-0");
+		}
+		
+		[Test]
 		public void PositiveInteger() {
 			TestString("123");
 		}
