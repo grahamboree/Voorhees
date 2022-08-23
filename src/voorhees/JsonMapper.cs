@@ -234,11 +234,8 @@ namespace Voorhees {
 
             // If there's a custom importer that fits, use it
             var config = Voorhees.Instance;
-            if (config.LowLevelCustomImporters.TryGetValue(destinationType, out var lowLevelImporter)) {
-                return lowLevelImporter(tokenizer);
-            }
             if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
-                return customImporter(JsonReader.ReadJsonValue(tokenizer));
+                return customImporter(tokenizer);
             }
             
             // Maybe there's a base importer that works
