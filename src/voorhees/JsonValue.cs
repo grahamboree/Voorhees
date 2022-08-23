@@ -22,16 +22,6 @@ namespace Voorhees {
    /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
-      #region Fields
-      List<JsonValue> arrayValue;
-      Dictionary<string, JsonValue> objectValue;
-
-      readonly string stringValue;
-      readonly bool boolValue;
-      readonly float floatValue;
-      readonly int intValue;
-      #endregion
-
       public JsonType Type { get; private set; }
 
       #region Constructors
@@ -220,6 +210,15 @@ namespace Voorhees {
       public bool Remove(string key) => EnsureObject().Remove(key);
       public bool ContainsKey(string key) => EnsureObject().ContainsKey(key);
       #endregion
+      
+      /////////////////////////////////////////////////
+      
+      readonly bool boolValue;
+      readonly int intValue;
+      readonly float floatValue;
+      readonly string stringValue;
+      List<JsonValue> arrayValue;
+      Dictionary<string, JsonValue> objectValue;
       
       /////////////////////////////////////////////////
 
