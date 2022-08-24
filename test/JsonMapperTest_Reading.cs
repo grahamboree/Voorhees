@@ -31,15 +31,6 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.FromJson<int>("3"), Is.EqualTo(3));
         }
 
-        enum SampleEnum {
-            Three = 3
-        }
-
-        [Test]
-        public void EnumBackedByInt() {
-            Assert.That(JsonMapper.FromJson<SampleEnum>("3"), Is.EqualTo(SampleEnum.Three));
-        }
-
         class ClassWithImplicitConversionOperator {
             public int intVal;
 
