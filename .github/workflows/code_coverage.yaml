@@ -21,4 +21,4 @@ jobs:
       - name: Generate Coverage Report
         run: dotnet test --collect:"XPlat Code Coverage" -r . -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - name: Upload to coveralls
-        run: Get-ChildItem -Path . -Recurse coverage.opencover.xml | % {dotnet tool run csmacnz.Coveralls --opencover -i $_.FullName --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ github.sha }} --commitBranch ${{ github.ref_name }} --commitAuthor "${{ env.GIT_COMMIT_AUTHOR_NAME }}" --commitEmail "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}" --commitMessage "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}" --jobId ${{ github.run_number }}}
+        run: Get-ChildItem -Path . -Recurse coverage.opencover.xml | % {dotnet tool run csmacnz.Coveralls --opencover -i $_.FullName --repoToken ${{ secrets.COVERALLS_TOKEN }} --useRelativePaths --commitId ${{ github.sha }} --commitBranch ${{ github.ref_name }} --commitAuthor "${{ env.GIT_COMMIT_AUTHOR_NAME }}" --commitEmail "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}" --commitMessage `printf "%q" "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }}"` --jobId ${{ github.run_number }}}
