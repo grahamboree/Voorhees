@@ -665,4 +665,56 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.ToJson(new ObjectWithFields()), Is.EqualTo(JSON));
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Write_Enums {
+        enum ByteEnum : byte { FirstVal, SecondVal }
+        enum SByteEnum : sbyte { FirstVal, SecondVal }
+        enum ShortEnum : short { FirstVal, SecondVal }
+        enum UShortEnum : ushort { FirstVal, SecondVal }
+        enum IntEnum : int { FirstVal, SecondVal }
+        enum UIntEnum : uint { FirstVal, SecondVal }
+        enum LongEnum : long { FirstVal, SecondVal }
+        enum ULongEnum : ulong { FirstVal, SecondVal }
+
+        [Test]
+        public void WriteByteEnum() {
+            Assert.That(JsonMapper.ToJson(ByteEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteSByteEnum() {
+            Assert.That(JsonMapper.ToJson(SByteEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteShortEnum() {
+            Assert.That(JsonMapper.ToJson(ShortEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteUShortEnum() {
+            Assert.That(JsonMapper.ToJson(UShortEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteIntEnum() {
+            Assert.That(JsonMapper.ToJson(IntEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteUIntEnum() {
+            Assert.That(JsonMapper.ToJson(UIntEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteLongEnum() {
+            Assert.That(JsonMapper.ToJson(LongEnum.SecondVal), Is.EqualTo("1"));
+        }
+        
+        [Test]
+        public void WriteULongEnum() {
+            Assert.That(JsonMapper.ToJson(ULongEnum.SecondVal), Is.EqualTo("1"));
+        }
+    }
 }

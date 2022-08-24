@@ -137,21 +137,19 @@ namespace Voorhees {
                 // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(byte)) { writer.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { writer.Write((sbyte) obj);  return; }
+                if (enumType == typeof(sbyte)) { writer.Write((sbyte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { writer.Write((short) obj);  return; }
+                if (enumType == typeof(short)) { writer.Write((short) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { writer.Write((ushort) obj);  return; }
+                if (enumType == typeof(ushort)) { writer.Write((ushort) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { writer.Write((int) obj);  return; }
+                if (enumType == typeof(int)) { writer.Write((int) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { writer.Write((uint) obj);  return; }
+                if (enumType == typeof(uint)) { writer.Write((uint) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { writer.Write((long) obj);  return; }
+                if (enumType == typeof(long)) { writer.Write((long) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { writer.Write((ulong) obj);  return; }
-
-                throw new InvalidOperationException("Unknown underlying enum type: " + enumType);
+                if (enumType == typeof(ulong)) { writer.Write((ulong) obj); return; }
             }
 
             writer.WriteObjectStart();
