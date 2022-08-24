@@ -431,4 +431,14 @@ namespace Voorhees.Tests {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
         }
     }
+
+    [TestFixture]
+    public class JsonMapper_Read_FromJsonOverloads {
+        [Test]
+        public void ReadingWithAProvidedTokenizerIsEquivalentToTheGeneratedOne() {
+            const string JSON = "\"test\"";
+            var tokenizer = new JsonTokenizer(JSON);
+            Assert.That(JsonMapper.FromJson<string>(tokenizer), Is.EqualTo(JsonMapper.FromJson<string>(JSON)));
+        }
+    }
 }
