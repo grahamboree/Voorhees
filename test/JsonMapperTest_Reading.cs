@@ -107,6 +107,19 @@ namespace Voorhees.Tests {
     }
 
     [TestFixture]
+    public class JsonMapper_Read_Bool {
+        [Test]
+        public void True() {
+            Assert.That(JsonMapper.FromJson<bool>("true"), Is.True);
+        }
+        
+        [Test]
+        public void False() {
+            Assert.That(JsonMapper.FromJson<bool>("false"), Is.False);
+        }
+    }
+    
+    [TestFixture]
     public class JsonMapper_Read_Float {
         [Test]
         public void ReadFloat() {
