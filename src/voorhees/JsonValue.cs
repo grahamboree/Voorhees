@@ -103,9 +103,14 @@ namespace Voorhees {
       #endregion
 
       #region IEnumerable
-      public IEnumerator<JsonValue> GetEnumerator() => EnsureArray().GetEnumerator();
-      IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+      IEnumerator<JsonValue> IEnumerable<JsonValue>.GetEnumerator() => EnsureArray().GetEnumerator();
       IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator() => EnsureObject().GetEnumerator();
+      public IEnumerator GetEnumerator() {
+         if (Type == JsonType.Array) {
+            return ((IEnumerable<JsonValue>)this).GetEnumerator();
+         }
+         return ((IEnumerable<KeyValuePair<string, JsonValue>>)this).GetEnumerator();
+      }
       #endregion
 
       #region ICollection<JsonValue>

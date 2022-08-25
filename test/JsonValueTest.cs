@@ -357,7 +357,7 @@ namespace Voorhees.Tests {
 		[Test]
 		public void GetEnumeratorAllowsIteratingThroughTheArray() {
 			var test = new JsonValue {1, 2, 3};
-			IEnumerator<JsonValue> iterator = test.GetEnumerator();
+			IEnumerator<JsonValue> iterator = ((IEnumerable<JsonValue>)test).GetEnumerator();
 			Assert.Multiple(() => {
 				Assert.That(iterator, Is.Not.Null);
 				
@@ -383,7 +383,7 @@ namespace Voorhees.Tests {
 		[Test]
 		public void UntypedGetEnumeratorAllowsIteratingThroughTheArray() {
 			var test = new JsonValue {1, 2, 3};
-			IEnumerator iterator = ((IEnumerable)test).GetEnumerator();
+			IEnumerator iterator = test.GetEnumerator();
 			Assert.Multiple(() => {
 				Assert.That(iterator, Is.Not.Null);
 				
@@ -658,6 +658,36 @@ namespace Voorhees.Tests {
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current.Key, Is.EqualTo("three"));
 				Assert.That(iterator.Current.Value.Equals(3), Is.True);
+				
+				Assert.That(iterator.MoveNext(), Is.False);
+			});
+		}
+
+		[Test]
+		public void UntypedGetEnumeratorAllowsIteratingThroughTheArray() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			IEnumerator iterator = ((IEnumerable)test).GetEnumerator();
+			Assert.Multiple(() => {
+				Assert.That(iterator, Is.Not.Null);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Key, Is.EqualTo("one"));
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Value.Equals(1), Is.True);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Key, Is.EqualTo("two"));
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Value.Equals(2), Is.True);
+
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Key, Is.EqualTo("three"));
+				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Value.Equals(3), Is.True);
 				
 				Assert.That(iterator.MoveNext(), Is.False);
 			});
