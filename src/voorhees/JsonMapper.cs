@@ -94,7 +94,7 @@ namespace Voorhees {
                             if (i < length - 1) {
                                 writer.WriteArraySeparator();
                             } else {
-                                writer.WriteArrayListTerminator();
+                                writer.WriteArrayOrObjectBodyTerminator();
                             }
                         }
 
@@ -122,7 +122,7 @@ namespace Voorhees {
                         if (entryIndex < length - 1) {
                             writer.WriteArraySeparator();
                         } else {
-                            writer.WriteArrayListTerminator();
+                            writer.WriteArrayOrObjectBodyTerminator();
                         }
                         entryIndex++;
                     }
@@ -184,7 +184,7 @@ namespace Voorhees {
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
                     writer.WriteArraySeparator();
                 } else {
-                    writer.WriteArrayListTerminator();
+                    writer.WriteArrayOrObjectBodyTerminator();
                 }
             }
 
@@ -200,7 +200,7 @@ namespace Voorhees {
                 if (i < list.Count - 1) {
                     writer.WriteArraySeparator();
                 } else {
-                    writer.WriteArrayListTerminator();
+                    writer.WriteArrayOrObjectBodyTerminator();
                 }
             }
             writer.WriteArrayEnd();

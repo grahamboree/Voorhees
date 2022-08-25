@@ -32,7 +32,7 @@ namespace Voorhees {
                         if (i < val.Count - 1) {
                             WriteArraySeparator();
                         } else {
-                            WriteArrayListTerminator();
+                            WriteArrayOrObjectBodyTerminator();
                         }
                     }
 
@@ -55,7 +55,7 @@ namespace Voorhees {
                     }
 
                     if (val.Count > 0) {
-                        WriteArrayListTerminator();
+                        WriteArrayOrObjectBodyTerminator();
                     }
 
                     WriteObjectEnd();
@@ -97,7 +97,6 @@ namespace Voorhees {
         #region Json Array
         public void WriteArrayStart() { WriteIndent(); writer.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
         public void WriteArraySeparator() { writer.Write(prettyPrint ? ",\n" : ","); }
-        public void WriteArrayListTerminator() { if (prettyPrint) { writer.Write("\n"); } }
         public void WriteArrayEnd() { indentLevel--; WriteIndent(); writer.Write("]"); }
         #endregion
 
@@ -106,6 +105,8 @@ namespace Voorhees {
         public void WriteObjectKeyValueSeparator() { writer.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
         public void WriteObjectEnd() { indentLevel--; WriteIndent(); writer.Write("}"); }
         #endregion
+        
+        public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { writer.Write("\n"); } }
         
         /////////////////////////////////////////////////
         
