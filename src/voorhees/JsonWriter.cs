@@ -1,69 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
 namespace Voorhees {
-    // Writes JSON text to a TextWriter
+    // Writes JSON tokens to a TextWriter
     public class JsonWriter {
         public JsonWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
             writer = textWriter;
-        }
-        
-        public void Write(JsonValue val) {
-            if (val == null) {
-                WriteNull();
-                return;
-            }
-
-            switch (val.Type) {
-                case JsonType.Int:     Write((int) val); break;
-                case JsonType.Float:   Write((float) val); break;
-                case JsonType.Boolean: Write((bool) val); break;
-                case JsonType.String:  Write((string) val); break;
-                case JsonType.Null:    WriteNull(); break;
-                case JsonType.Array: {
-                    WriteArrayStart();
-
-                    for (int i = 0; i < val.Count; ++i) {
-                        Write(val[i]);
-
-                        if (i < val.Count - 1) {
-                            WriteArraySeparator();
-                        } else {
-                            WriteArrayOrObjectBodyTerminator();
-                        }
-                    }
-
-                    WriteArrayEnd();
-                } break;
-                case JsonType.Object: {
-                    WriteObjectStart();
-
-                    bool first = true;
-                    foreach (var objectPair in val as IEnumerable<KeyValuePair<string, JsonValue>>) {
-                        if (!first) {
-                            WriteArraySeparator();
-                        }
-                        first = false;
-
-                        Write(objectPair.Key);
-                        WriteObjectKeyValueSeparator();
-                        skipNextTabs = true;
-                        Write(objectPair.Value);
-                    }
-
-                    if (val.Count > 0) {
-                        WriteArrayOrObjectBodyTerminator();
-                    }
-
-                    WriteObjectEnd();
-                } break;
-                case JsonType.Unspecified: 
-                default:
-                    throw new InvalidOperationException("Can't write JsonValue instance because it is of unspecified type");
-            }
         }
 
         public void WriteNull() { WriteIndent(); writer.Write("null"); }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
@@ -25,7 +26,7 @@ namespace Voorhees {
             }
             
             switch (obj) { 
-                case JsonValue jsonValue: writer.Write(jsonValue); return;
+                case JsonValue jsonValue: WriteJsonValueAsJson(jsonValue, writer); return;
 
                 // JSON String
                 case string stringVal: writer.Write(stringVal); return;
@@ -185,6 +186,60 @@ namespace Voorhees {
                 }
             }
             writer.WriteArrayEnd();
+        }
+
+        static void WriteJsonValueAsJson(JsonValue val, JsonWriter writer) {
+            if (val == null) {
+                writer.WriteNull();
+                return;
+            }
+
+            switch (val.Type) {
+                case JsonType.Int:     writer.Write((int) val); break;
+                case JsonType.Float:   writer.Write((float) val); break;
+                case JsonType.Boolean: writer.Write((bool) val); break;
+                case JsonType.String:  writer.Write((string) val); break;
+                case JsonType.Null:    writer.WriteNull(); break;
+                case JsonType.Array: {
+                    writer.WriteArrayStart();
+
+                    for (int i = 0; i < val.Count; ++i) {
+                        WriteJsonValueAsJson(val[i], writer);
+
+                        if (i < val.Count - 1) {
+                            writer.WriteArraySeparator();
+                        } else {
+                            writer.WriteArrayOrObjectBodyTerminator();
+                        }
+                    }
+
+                    writer.WriteArrayEnd();
+                } break;
+                case JsonType.Object: {
+                    writer.WriteObjectStart();
+
+                    bool first = true;
+                    foreach (var objectPair in val as IEnumerable<KeyValuePair<string, JsonValue>>) {
+                        if (!first) {
+                            writer.WriteArraySeparator();
+                        }
+                        first = false;
+
+                        writer.Write(objectPair.Key);
+                        writer.WriteObjectKeyValueSeparator();
+                        WriteJsonValueAsJson(objectPair.Value, writer);
+                    }
+
+                    if (val.Count > 0) {
+                        writer.WriteArrayOrObjectBodyTerminator();
+                    }
+
+                    writer.WriteObjectEnd();
+                } break;
+                case JsonType.Unspecified: 
+                default:
+                    throw new InvalidOperationException("Can't write JsonValue instance because it is of unspecified type");
+            }
         }
     }
 }

@@ -13,8 +13,21 @@ namespace Voorhees {
             return stringBuilder.ToString();
         }
 
+        public static string ToJson(JsonValue val, bool prettyPrint = false) {
+            var stringBuilder = new StringBuilder();
+            using (var stringWriter = new StringWriter(stringBuilder)) {
+                var jsonWriter = new JsonWriter(stringWriter, prettyPrint);
+                ToJson(val, jsonWriter);
+            }
+            return stringBuilder.ToString();
+        }
+
         public static void ToJson<T>(T obj, JsonWriter writer) {
             WriteValueAsJson(obj, typeof(T), obj?.GetType(), writer);
+        }
+
+        public static void ToJson(JsonValue val, JsonWriter writer) {
+            WriteJsonValueAsJson(val, writer);
         }
         #endregion
         
