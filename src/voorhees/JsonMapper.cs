@@ -261,7 +261,13 @@ namespace Voorhees {
                 } break;
                 case JsonToken.True: jsonType = typeof(bool); jsonValue = true; tokenizer.SkipToken(JsonToken.True); break;
                 case JsonToken.False: jsonType = typeof(bool); jsonValue = false; tokenizer.SkipToken(JsonToken.False); break;
-                default: throw new ArgumentOutOfRangeException();
+                case JsonToken.EOF:
+                case JsonToken.None:
+                case JsonToken.ArrayEnd:
+                case JsonToken.KeyValueSeparator:
+                case JsonToken.ObjectEnd:
+                case JsonToken.Separator:
+                default: throw new InvalidJsonException($"{tokenizer.LineColString} Unexpected token {tokenizer.NextToken}");
             }
 
             return MapValueToType(jsonValue, jsonType, valueType, destinationType);
