@@ -465,10 +465,10 @@ namespace Voorhees.Tests {
     [TestFixture]
     public class JsonMapper_Read_FromJsonOverloads {
         [Test]
-        public void ReadingWithAProvidedTokenizerIsEquivalentToTheGeneratedOne() {
+        public void ReadingWithAProvidedTokenReaderIsEquivalentToTheGeneratedOne() {
             const string JSON = "\"test\"";
-            var tokenizer = new JsonTokenizer(JSON);
-            Assert.That(JsonMapper.FromJson<string>(tokenizer), Is.EqualTo(JsonMapper.FromJson<string>(JSON)));
+            var tokenReader = new JsonTokenReader(JSON);
+            Assert.That(JsonMapper.FromJson<string>(tokenReader), Is.EqualTo(JsonMapper.FromJson<string>(JSON)));
         }
     }
 

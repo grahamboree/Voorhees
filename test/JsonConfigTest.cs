@@ -102,7 +102,7 @@ namespace Voorhees.Tests {
 
         [SetUp]
         public void SetUp() {
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
         }
 
         [TearDown]
@@ -133,7 +133,7 @@ namespace Voorhees.Tests {
         public void UnRegisterImporter() {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
             
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -157,7 +157,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnregistersSingleImporter() {
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -170,8 +170,8 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnregistersMultipleImporters() {
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType2 {PubString = tokenizer.ConsumeString()});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
 
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -196,7 +196,7 @@ namespace Voorhees.Tests {
 
         [SetUp]
         public void SetUp() {
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
         }
 
         [TearDown]
@@ -227,7 +227,7 @@ namespace Voorhees.Tests {
         public void UnRegisterImporter() {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
             
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -251,7 +251,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void UnregistersSingleImporter() {
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
@@ -267,8 +267,8 @@ namespace Voorhees.Tests {
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
             
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType {PubIntVal = int.Parse(tokenizer.ConsumeNumber())});
-            Voorhees.Instance.RegisterImporter(tokenizer => new TestType2 {PubString = tokenizer.ConsumeString()});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            Voorhees.Instance.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
 
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
             Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());

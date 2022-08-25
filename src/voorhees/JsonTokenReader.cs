@@ -28,26 +28,26 @@ namespace Voorhees {
         EOF
     }
     
-    public class JsonTokenizer {
+    public class JsonTokenReader {
         public JsonToken NextToken = JsonToken.None;
 
         /////////////////////////////////////////////////
 
         /// <summary>
-        /// Construct a new tokenizer from the start of the json document
+        /// Construct a new token reader from the start of the json document
         /// </summary>
         /// <param name="cursor">DocumentCursor into a JSON document string</param>
-        public JsonTokenizer(Internal.DocumentCursor cursor) {
+        public JsonTokenReader(Internal.DocumentCursor cursor) {
             this.cursor = cursor;
             AdvanceToNextToken();
         }
         
         /// <summary>
-        /// Construct a new tokenizer from the start of the json document.
+        /// Construct a new token reader from the start of the json document.
         /// Constructs a DocumentCursor from the given json string
         /// </summary>
         /// <param name="json">The JSON document</param>
-        public JsonTokenizer(string json) {
+        public JsonTokenReader(string json) {
             cursor = new Internal.DocumentCursor(json);
             AdvanceToNextToken();
         }

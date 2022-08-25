@@ -33,29 +33,29 @@ namespace Voorhees {
         
         #region Reading
         public static T FromJson<T>(string jsonString) {
-            return (T) FromJson(new JsonTokenizer(jsonString), typeof(T));
+            return (T) FromJson(new JsonTokenReader(jsonString), typeof(T));
         }
 
         public static JsonValue FromJson(string jsonString) {
-            return FromJson(new JsonTokenizer(jsonString));
+            return FromJson(new JsonTokenReader(jsonString));
         }
 
-        public static T FromJson<T>(JsonTokenizer tokenizer) {
-            var result = (T)FromJson(tokenizer, typeof(T));
+        public static T FromJson<T>(JsonTokenReader tokenReader) {
+            var result = (T)FromJson(tokenReader, typeof(T));
             
             // Make sure there's no additional json in the buffer.
-            if (tokenizer.NextToken != JsonToken.EOF) {
-                throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
+            if (tokenReader.NextToken != JsonToken.EOF) {
+                throw new InvalidJsonException($"{tokenReader.LineColString} Expected end of file");
             }
             return result;
         }
 
-        public static JsonValue FromJson(JsonTokenizer tokenizer) {
-            var result = ReadJsonValue(tokenizer);
+        public static JsonValue FromJson(JsonTokenReader tokenReader) {
+            var result = ReadJsonValue(tokenReader);
 
             // Make sure there's no additional json in the buffer.
-            if (tokenizer.NextToken != JsonToken.EOF) {
-                throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
+            if (tokenReader.NextToken != JsonToken.EOF) {
+                throw new InvalidJsonException($"{tokenReader.LineColString} Expected end of file");
             }
             return result;
         }

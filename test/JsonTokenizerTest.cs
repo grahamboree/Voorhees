@@ -3,76 +3,76 @@ using NUnit.Framework;
 
 namespace Voorhees.Tests {
 	[TestFixture]
-	public class JsonTokenizer_SkipToken {
+	public class JsonTokenReader_SkipToken {
 		[Test]
 		public void ArrayStart() {
 			var doc = new Internal.DocumentCursor("[1,2,3]");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.ArrayStart);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.ArrayStart);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ArrayEnd() {
 			var doc = new Internal.DocumentCursor("][1,2,3]");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.ArrayEnd);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.ArrayEnd);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ObjectStart() {
 			var doc = new Internal.DocumentCursor("{\"test\": 123}");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.ObjectStart);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.ObjectStart);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void KeyValueSeparator() {
 			var doc = new Internal.DocumentCursor(":123}");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.KeyValueSeparator);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.KeyValueSeparator);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void ObjectEnd() {
 			var doc = new Internal.DocumentCursor("}{\"test\": 123}");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.ObjectEnd);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.ObjectEnd);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 		
 		[Test]
 		public void Separator() {
 			var doc = new Internal.DocumentCursor(",{\"test\": 123}");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.Separator);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.Separator);
 			Assert.That(doc.Index, Is.EqualTo(1));
 		}
 
 		[Test]
 		public void True() {
 			var doc = new Internal.DocumentCursor("true, true");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.True);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.True);
 			Assert.That(doc.Index, Is.EqualTo(4));
 		}
 		
 		[Test]
 		public void False() {
 			var doc = new Internal.DocumentCursor("false, false");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.False);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.False);
 			Assert.That(doc.Index, Is.EqualTo(5));
 		}
 		
 		[Test]
 		public void Null() {
 			var doc = new Internal.DocumentCursor("null, null");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.Null);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.Null);
 			Assert.That(doc.Index, Is.EqualTo(4));
 		}
 
@@ -80,52 +80,52 @@ namespace Voorhees.Tests {
 		[Test]
 		public void String() {
 			var doc = new Internal.DocumentCursor("\"test\", 123");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.String);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(6));
 		}
 		
 		[Test]
 		public void Number() {
 			var doc = new Internal.DocumentCursor("-123.456e7, 123");
-			var tokenizer = new JsonTokenizer(doc);
-            tokenizer.SkipToken(JsonToken.Number);
+			var tokenReader = new JsonTokenReader(doc);
+            tokenReader.SkipToken(JsonToken.Number);
 			Assert.That(doc.Index, Is.EqualTo(10));
 		}
 
 		[Test]
 		public void SkipsTrailingWhitespace() {
 			var doc = new Internal.DocumentCursor("true    , false");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.True);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.True);
 			Assert.That(doc.Index, Is.EqualTo(8));
 		}
 		
 		[Test]
 		public void SkippingTheWrongTokenThrows() {
-			var tokenizer = new JsonTokenizer("true, false");
-			Assert.Throws<InvalidOperationException>(() => tokenizer.SkipToken(JsonToken.ArrayStart));
+			var tokenReader = new JsonTokenReader("true, false");
+			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.ArrayStart));
 		}
 		
 		[Test]
 		public void SkippingEOFThrows() {
-			var tokenizer = new JsonTokenizer("");
-			Assert.Throws<InvalidOperationException>(() => tokenizer.SkipToken(JsonToken.EOF));
+			var tokenReader = new JsonTokenReader("");
+			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.EOF));
 		}
 
 		[Test]
 		public void SkippingStringWithEscapedCharacter() {
 			var doc = new Internal.DocumentCursor("\"test\\\"\", false");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.String);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(8));
 		}
 
 		[Test]
 		public void SkippingStringContainingEscapedUnicodeCharacter() {
 			var doc = new Internal.DocumentCursor("\"\\u597D\", false");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.String);
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(8));
 		}
 
@@ -134,35 +134,35 @@ namespace Voorhees.Tests {
 			for (int i = 0; i < 0x20; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
 				Assert.Throws<InvalidJsonException>(() => {
-					new JsonTokenizer($"\"{controlChar}\"").SkipToken(JsonToken.String);
+					new JsonTokenReader($"\"{controlChar}\"").SkipToken(JsonToken.String);
 				});
 			}
 
 			Assert.Throws<InvalidJsonException>(() => {
-				new JsonTokenizer($"\"{char.ConvertFromUtf32(0x7F)}\"").SkipToken(JsonToken.String);
+				new JsonTokenReader($"\"{char.ConvertFromUtf32(0x7F)}\"").SkipToken(JsonToken.String);
 			});
 
 			for (int i = 0x80; i <= 0x9F; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
 				Assert.Throws<InvalidJsonException>(() => {
-					new JsonTokenizer($"\"{controlChar}\"").SkipToken(JsonToken.String);
+					new JsonTokenReader($"\"{controlChar}\"").SkipToken(JsonToken.String);
 				});
 			}
 		}
     }
 
 	[TestFixture]
-	public class JsonTokenizer_ConsumeNumber {
+	public class JsonTokenReader_ConsumeNumber {
 		[Test]
 		public void NotANumberNext() {
-			var tokenizer = new JsonTokenizer("true");
-			Assert.Throws<InvalidOperationException>(() => tokenizer.ConsumeNumber());
+			var tokenReader = new JsonTokenReader("true");
+			Assert.Throws<InvalidOperationException>(() => tokenReader.ConsumeNumber());
 		}
 		
 		[Test]
 		public void LeadingZeroMustHaveDecimalOrExponent() {
-			var tokenizer = new JsonTokenizer("0123");
-			Assert.Throws<InvalidJsonException>(() => tokenizer.ConsumeNumber());
+			var tokenReader = new JsonTokenReader("0123");
+			Assert.Throws<InvalidJsonException>(() => tokenReader.ConsumeNumber());
 		}
 
 		[Test]
@@ -231,83 +231,83 @@ namespace Voorhees.Tests {
 		}
 
 		static void TestString(string json) {
-			string tokenString = new(new JsonTokenizer(json).ConsumeNumber());
+			string tokenString = new(new JsonTokenReader(json).ConsumeNumber());
 			Assert.That(tokenString, Is.EqualTo(json));
 		}
 	}
 
 	[TestFixture]
-	public class JsonTokenizer_ConsumeString {
+	public class JsonTokenReader_ConsumeString {
 		[Test]
 		public void BasicString() {
-			var tokenizer = new JsonTokenizer("\"test\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("test"));
+			var tokenReader = new JsonTokenReader("\"test\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("test"));
 		}
 
 		[Test]
 		public void EscapedQuotes() {
-			var tokenizer = new JsonTokenizer("\"\\\"\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\""));
+			var tokenReader = new JsonTokenReader("\"\\\"\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\""));
 		}
 		
 		[Test]
 		public void EscapedBackslash() {
-			var tokenizer = new JsonTokenizer("\"\\\\\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\\"));
+			var tokenReader = new JsonTokenReader("\"\\\\\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\\"));
 		}
 		
 		[Test]
 		public void EscapedForwardSlash() {
-			var tokenizer = new JsonTokenizer("\"\\/\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("/"));
+			var tokenReader = new JsonTokenReader("\"\\/\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("/"));
 		}
 		
 		[Test]
 		public void EscapedBackspace() {
-			var tokenizer = new JsonTokenizer("\"\\b\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\b"));
+			var tokenReader = new JsonTokenReader("\"\\b\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\b"));
 		}
 		
 		[Test]
 		public void EscapedFormFeed() {
-			var tokenizer = new JsonTokenizer("\"\\f\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\f"));
+			var tokenReader = new JsonTokenReader("\"\\f\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\f"));
 		}
 		
 		[Test]
 		public void EscapedLineFeed() {
-			var tokenizer = new JsonTokenizer("\"\\n\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\n"));
+			var tokenReader = new JsonTokenReader("\"\\n\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\n"));
 		}
 		
 		[Test]
 		public void EscapedCarriageReturn() {
-			var tokenizer = new JsonTokenizer("\"\\r\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\r"));
+			var tokenReader = new JsonTokenReader("\"\\r\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\r"));
 		}
 		
 		[Test]
 		public void EscapedHorizontalTab() {
-			var tokenizer = new JsonTokenizer("\"\\t\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\t"));
+			var tokenReader = new JsonTokenReader("\"\\t\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\t"));
 		}
 		
 		[Test]
 		public void EscapedUnicode() {
-			var tokenizer = new JsonTokenizer("\"\\u597D\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("好"));
+			var tokenReader = new JsonTokenReader("\"\\u597D\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("好"));
 		}
 
 		[Test]
 		public void InvalidEscapeCode() {
-			var tokenizer = new JsonTokenizer("\"\\g\"");
-			Assert.Throws<InvalidJsonException>(() => tokenizer.ConsumeString());
+			var tokenReader = new JsonTokenReader("\"\\g\"");
+			Assert.Throws<InvalidJsonException>(() => tokenReader.ConsumeString());
 		}
 
 		[Test]
 		public void MixedRegularAndEscapedChars() {
-			var tokenizer = new JsonTokenizer("\"¿ni\\u597Dma?\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("¿ni好ma?"));
+			var tokenReader = new JsonTokenReader("\"¿ni\\u597Dma?\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("¿ni好ma?"));
 		}
 
 		[Test]
@@ -329,28 +329,28 @@ namespace Voorhees.Tests {
 		public void AdvancingToRandomCharactersThrows() {
 			Assert.Throws<InvalidJsonException>(() => {
 				// ReSharper disable once ObjectCreationAsStatement
-				new JsonTokenizer("fail");
+				new JsonTokenReader("fail");
 			});
 		}
 		
 		[Test]
 		public void ParsesUnicodeSurrogatePairsCorrectly() {
-			var tokenizer = new JsonTokenizer("\"\\ud83d\\ude80\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("🚀"));
+			var tokenReader = new JsonTokenReader("\"\\ud83d\\ude80\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("🚀"));
 		}
 		
 		[Test]
 		public void ParsesEmojiCorrectly() {
-			var tokenizer = new JsonTokenizer("\"🚀\"");
-			Assert.That(tokenizer.ConsumeString(), Is.EqualTo("🚀"));
+			var tokenReader = new JsonTokenReader("\"🚀\"");
+			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("🚀"));
 		}
 
 		[Test]
 		public void DoesNotReadPastEndOfString() {
 			var doc = new Internal.DocumentCursor("{\"test\": 3}");
-			var tokenizer = new JsonTokenizer(doc);
-			tokenizer.SkipToken(JsonToken.ObjectStart);
-			string str = tokenizer.ConsumeString();
+			var tokenReader = new JsonTokenReader(doc);
+			tokenReader.SkipToken(JsonToken.ObjectStart);
+			string str = tokenReader.ConsumeString();
 			Assert.Multiple(() => {
 				Assert.That(str, Is.EqualTo("test"));
 				Assert.That(doc.Index, Is.EqualTo(7));
@@ -360,10 +360,10 @@ namespace Voorhees.Tests {
 		[Test]
 		public void DoubleQuotedString()  {
 			var doc = new Internal.DocumentCursor("\"\\\"test\\\"\",");
-            var tokenizer = new JsonTokenizer(doc);
+            var tokenReader = new JsonTokenReader(doc);
             Assert.Multiple(() => {
-                Assert.That(tokenizer.ConsumeString(), Is.EqualTo("\"test\""));
-                Assert.That(tokenizer.NextToken, Is.EqualTo(JsonToken.Separator));
+                Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\"test\""));
+                Assert.That(tokenReader.NextToken, Is.EqualTo(JsonToken.Separator));
             });
         }
     }

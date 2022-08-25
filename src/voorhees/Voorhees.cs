@@ -9,7 +9,7 @@ namespace Voorhees {
         /////////////////////////////////////////////////
         
         public delegate void ExporterFunc<in T>(T objectToSerialize, JsonTokenWriter tokenWriter);
-        public delegate T ImporterFunc<out T>(JsonTokenizer tokenizer);
+        public delegate T ImporterFunc<out T>(JsonTokenReader tokenReader);
 
         /////////////////////////////////////////////////
 
@@ -43,7 +43,7 @@ namespace Voorhees {
         internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new();
         internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new();
         
-        internal delegate object ImporterFunc(JsonTokenizer tokenizer);
+        internal delegate object ImporterFunc(JsonTokenReader tokenReader);
         internal static readonly Dictionary<Type, ImporterFunc> BuiltInImporters = new();
         
         internal readonly Dictionary<Type, ImporterFunc> CustomImporters = new();
