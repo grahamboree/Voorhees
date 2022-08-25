@@ -7,7 +7,7 @@ namespace Voorhees {
         public static string ToJson<T>(T obj, bool prettyPrint = false) {
             var stringBuilder = new StringBuilder();
             using (var stringWriter = new StringWriter(stringBuilder)) {
-                var jsonWriter = new JsonWriter(stringWriter, prettyPrint);
+                var jsonWriter = new JsonTokenWriter(stringWriter, prettyPrint);
                 ToJson(obj, jsonWriter);
             }
             return stringBuilder.ToString();
@@ -16,18 +16,18 @@ namespace Voorhees {
         public static string ToJson(JsonValue val, bool prettyPrint = false) {
             var stringBuilder = new StringBuilder();
             using (var stringWriter = new StringWriter(stringBuilder)) {
-                var jsonWriter = new JsonWriter(stringWriter, prettyPrint);
+                var jsonWriter = new JsonTokenWriter(stringWriter, prettyPrint);
                 ToJson(val, jsonWriter);
             }
             return stringBuilder.ToString();
         }
 
-        public static void ToJson<T>(T obj, JsonWriter writer) {
-            WriteValueAsJson(obj, typeof(T), obj?.GetType(), writer);
+        public static void ToJson<T>(T obj, JsonTokenWriter tokenWriter) {
+            WriteValueAsJson(obj, typeof(T), obj?.GetType(), tokenWriter);
         }
 
-        public static void ToJson(JsonValue val, JsonWriter writer) {
-            WriteJsonValueAsJson(val, writer);
+        public static void ToJson(JsonValue val, JsonTokenWriter tokenWriter) {
+            WriteJsonValueAsJson(val, tokenWriter);
         }
         #endregion
         

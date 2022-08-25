@@ -4,8 +4,8 @@ using System.IO;
 
 namespace Voorhees {
     // Writes JSON tokens to a TextWriter
-    public class JsonWriter {
-        public JsonWriter(TextWriter textWriter, bool prettyPrint) {
+    public class JsonTokenWriter {
+        public JsonTokenWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
             writer = textWriter;
         }

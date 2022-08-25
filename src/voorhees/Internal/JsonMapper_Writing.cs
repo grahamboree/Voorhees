@@ -7,52 +7,52 @@ using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
     public static partial class JsonMapper {
-        static void WriteValueAsJson(object obj, Type referenceType, Type valueType, JsonWriter writer) {
+        static void WriteValueAsJson(object obj, Type referenceType, Type valueType, JsonTokenWriter tokenWriter) {
             if (obj == null) {
-                writer.WriteNull();
+                tokenWriter.WriteNull();
                 return;
             }
 
             // See if there's a custom exporter for the object
             if (Voorhees.Instance.CustomExporters.TryGetValue(referenceType, out var customExporter)) {
-                customExporter(obj, writer);
+                customExporter(obj, tokenWriter);
                 return;
             }
 
             // If not, maybe there's a built-in serializer
             if (Voorhees.BuiltInExporters.TryGetValue(referenceType, out var builtInExporter)) {
-                builtInExporter(obj, writer);
+                builtInExporter(obj, tokenWriter);
                 return;
             }
             
             switch (obj) { 
-                case JsonValue jsonValue: WriteJsonValueAsJson(jsonValue, writer); return;
+                case JsonValue jsonValue: WriteJsonValueAsJson(jsonValue, tokenWriter); return;
 
                 // JSON String
-                case string stringVal: writer.Write(stringVal); return;
-                case char charVal: writer.Write(charVal); return;
+                case string stringVal: tokenWriter.Write(stringVal); return;
+                case char charVal: tokenWriter.Write(charVal); return;
 
                 // JSON Number
-                case byte byteVal: writer.Write(byteVal); return;
-                case sbyte sbyteVal: writer.Write(sbyteVal); return;
-                case short shortVal: writer.Write(shortVal); return;
-                case ushort ushortVal: writer.Write(ushortVal); return;
-                case int intVal: writer.Write(intVal); return;
-                case uint uintVal: writer.Write(uintVal); return;
-                case long longVal: writer.Write(longVal); return;
-                case ulong ulongVal: writer.Write(ulongVal); return;
-                case float floatVal: writer.Write(floatVal); return;
-                case double doubleVal: writer.Write(doubleVal); return;
-                case decimal decimalVal: writer.Write(decimalVal); return;
+                case byte byteVal: tokenWriter.Write(byteVal); return;
+                case sbyte sbyteVal: tokenWriter.Write(sbyteVal); return;
+                case short shortVal: tokenWriter.Write(shortVal); return;
+                case ushort ushortVal: tokenWriter.Write(ushortVal); return;
+                case int intVal: tokenWriter.Write(intVal); return;
+                case uint uintVal: tokenWriter.Write(uintVal); return;
+                case long longVal: tokenWriter.Write(longVal); return;
+                case ulong ulongVal: tokenWriter.Write(ulongVal); return;
+                case float floatVal: tokenWriter.Write(floatVal); return;
+                case double doubleVal: tokenWriter.Write(doubleVal); return;
+                case decimal decimalVal: tokenWriter.Write(decimalVal); return;
 
                 // JSON Boolean
-                case bool boolVal: writer.Write(boolVal); return;
+                case bool boolVal: tokenWriter.Write(boolVal); return;
 
                 // JSON Array
                 case Array arrayVal: {
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        Write1DArrayAsJson(arrayVal, writer);
+                        Write1DArrayAsJson(arrayVal, tokenWriter);
                         return;
                     }
                     
@@ -60,7 +60,7 @@ namespace Voorhees {
                     int[] index = new int[arrayVal.Rank];
 
                     void JsonifyArray(Array arr, int currentDimension) {
-                        writer.WriteArrayStart();
+                        tokenWriter.WriteArrayStart();
 
                         int length = arr.GetLength(currentDimension);
                         for (int i = 0; i < length; ++i) {
@@ -68,48 +68,48 @@ namespace Voorhees {
 
                             if (currentDimension == arr.Rank - 1) {
                                 object arrayObject = arr.GetValue(index);
-                                WriteValueAsJson(arrayObject, arr.GetType().GetElementType(), arrayObject.GetType(), writer);
+                                WriteValueAsJson(arrayObject, arr.GetType().GetElementType(), arrayObject.GetType(), tokenWriter);
                             } else {
                                 JsonifyArray(arr, currentDimension + 1);
                             }
                             
                             if (i < length - 1) {
-                                writer.WriteArraySeparator();
+                                tokenWriter.WriteArraySeparator();
                             } else {
-                                writer.WriteArrayOrObjectBodyTerminator();
+                                tokenWriter.WriteArrayOrObjectBodyTerminator();
                             }
                         }
 
-                        writer.WriteArrayEnd();
+                        tokenWriter.WriteArrayEnd();
                     }
                     JsonifyArray(arrayVal, 0);
                     return;
                 }
-                case IList listVal: Write1DArrayAsJson(listVal, writer); return;
+                case IList listVal: Write1DArrayAsJson(listVal, tokenWriter); return;
 
                 // JSON Object
                 case IDictionary dictionary: {
-                    writer.WriteObjectStart();
+                    tokenWriter.WriteObjectStart();
 
                     int entryIndex = 0;
                     int length = dictionary.Count;
                     
                     foreach (DictionaryEntry entry in dictionary) {
                         string propertyName = entry.Key as string ?? Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                        writer.Write(propertyName);
-                        writer.WriteObjectKeyValueSeparator();
+                        tokenWriter.Write(propertyName);
+                        tokenWriter.WriteObjectKeyValueSeparator();
                         object value = entry.Value;
-                        WriteValueAsJson(value, value.GetType(), value.GetType(), writer);
+                        WriteValueAsJson(value, value.GetType(), value.GetType(), tokenWriter);
                         
                         if (entryIndex < length - 1) {
-                            writer.WriteArraySeparator();
+                            tokenWriter.WriteArraySeparator();
                         } else {
-                            writer.WriteArrayOrObjectBodyTerminator();
+                            tokenWriter.WriteArrayOrObjectBodyTerminator();
                         }
                         entryIndex++;
                     }
 
-                    writer.WriteObjectEnd();
+                    tokenWriter.WriteObjectEnd();
                     return;
                 }
             }
@@ -117,30 +117,30 @@ namespace Voorhees {
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(valueType);
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(byte)) { writer.Write((byte) obj); return; }
+                if (enumType == typeof(byte)) { tokenWriter.Write((byte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { writer.Write((sbyte) obj); return; }
+                if (enumType == typeof(sbyte)) { tokenWriter.Write((sbyte) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { writer.Write((short) obj); return; }
+                if (enumType == typeof(short)) { tokenWriter.Write((short) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { writer.Write((ushort) obj); return; }
+                if (enumType == typeof(ushort)) { tokenWriter.Write((ushort) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { writer.Write((int) obj); return; }
+                if (enumType == typeof(int)) { tokenWriter.Write((int) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { writer.Write((uint) obj); return; }
+                if (enumType == typeof(uint)) { tokenWriter.Write((uint) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { writer.Write((long) obj); return; }
+                if (enumType == typeof(long)) { tokenWriter.Write((long) obj); return; }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { writer.Write((ulong) obj); return; }
+                if (enumType == typeof(ulong)) { tokenWriter.Write((ulong) obj); return; }
             }
 
-            writer.WriteObjectStart();
+            tokenWriter.WriteObjectStart();
 
             if (referenceType != valueType) {
-                writer.Write("$t");
-                writer.WriteObjectKeyValueSeparator();
-                writer.Write(valueType.AssemblyQualifiedName);
-                writer.WriteArraySeparator();
+                tokenWriter.Write("$t");
+                tokenWriter.WriteObjectKeyValueSeparator();
+                tokenWriter.Write(valueType.AssemblyQualifiedName);
+                tokenWriter.WriteArraySeparator();
             }
             
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
@@ -152,89 +152,89 @@ namespace Voorhees {
                 if (propertyMetadata.IsField) {
                     var fieldInfo = (FieldInfo) propertyMetadata.Info;
                     object value = fieldInfo.GetValue(obj);
-                    writer.Write(fieldInfo.Name);
-                    writer.WriteObjectKeyValueSeparator();
-                    WriteValueAsJson(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, writer);
+                    tokenWriter.Write(fieldInfo.Name);
+                    tokenWriter.WriteObjectKeyValueSeparator();
+                    WriteValueAsJson(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, tokenWriter);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
                     object value = propertyInfo.GetValue(obj);
-                    writer.Write(propertyInfo.Name);
-                    writer.WriteObjectKeyValueSeparator();
-                    WriteValueAsJson(value, propertyInfo.PropertyType, value.GetType(), writer);
+                    tokenWriter.Write(propertyInfo.Name);
+                    tokenWriter.WriteObjectKeyValueSeparator();
+                    WriteValueAsJson(value, propertyInfo.PropertyType, value.GetType(), tokenWriter);
                 }
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
-                    writer.WriteArraySeparator();
+                    tokenWriter.WriteArraySeparator();
                 } else {
-                    writer.WriteArrayOrObjectBodyTerminator();
+                    tokenWriter.WriteArrayOrObjectBodyTerminator();
                 }
             }
 
-            writer.WriteObjectEnd();
+            tokenWriter.WriteObjectEnd();
         }
 
-        static void Write1DArrayAsJson(IList list, JsonWriter writer) {
-            writer.WriteArrayStart();
+        static void Write1DArrayAsJson(IList list, JsonTokenWriter tokenWriter) {
+            tokenWriter.WriteArrayStart();
             for (int i = 0; i < list.Count; i++) {
                 object listVal = list[i];
-                WriteValueAsJson(listVal, listVal.GetType(), listVal.GetType(), writer);
+                WriteValueAsJson(listVal, listVal.GetType(), listVal.GetType(), tokenWriter);
 
                 if (i < list.Count - 1) {
-                    writer.WriteArraySeparator();
+                    tokenWriter.WriteArraySeparator();
                 } else {
-                    writer.WriteArrayOrObjectBodyTerminator();
+                    tokenWriter.WriteArrayOrObjectBodyTerminator();
                 }
             }
-            writer.WriteArrayEnd();
+            tokenWriter.WriteArrayEnd();
         }
 
-        static void WriteJsonValueAsJson(JsonValue val, JsonWriter writer) {
+        static void WriteJsonValueAsJson(JsonValue val, JsonTokenWriter tokenWriter) {
             if (val == null) {
-                writer.WriteNull();
+                tokenWriter.WriteNull();
                 return;
             }
 
             switch (val.Type) {
-                case JsonType.Int:     writer.Write((int) val); break;
-                case JsonType.Float:   writer.Write((float) val); break;
-                case JsonType.Boolean: writer.Write((bool) val); break;
-                case JsonType.String:  writer.Write((string) val); break;
-                case JsonType.Null:    writer.WriteNull(); break;
+                case JsonType.Int:     tokenWriter.Write((int) val); break;
+                case JsonType.Float:   tokenWriter.Write((float) val); break;
+                case JsonType.Boolean: tokenWriter.Write((bool) val); break;
+                case JsonType.String:  tokenWriter.Write((string) val); break;
+                case JsonType.Null:    tokenWriter.WriteNull(); break;
                 case JsonType.Array: {
-                    writer.WriteArrayStart();
+                    tokenWriter.WriteArrayStart();
 
                     for (int i = 0; i < val.Count; ++i) {
-                        WriteJsonValueAsJson(val[i], writer);
+                        WriteJsonValueAsJson(val[i], tokenWriter);
 
                         if (i < val.Count - 1) {
-                            writer.WriteArraySeparator();
+                            tokenWriter.WriteArraySeparator();
                         } else {
-                            writer.WriteArrayOrObjectBodyTerminator();
+                            tokenWriter.WriteArrayOrObjectBodyTerminator();
                         }
                     }
 
-                    writer.WriteArrayEnd();
+                    tokenWriter.WriteArrayEnd();
                 } break;
                 case JsonType.Object: {
-                    writer.WriteObjectStart();
+                    tokenWriter.WriteObjectStart();
 
                     bool first = true;
                     foreach (var objectPair in val as IEnumerable<KeyValuePair<string, JsonValue>>) {
                         if (!first) {
-                            writer.WriteArraySeparator();
+                            tokenWriter.WriteArraySeparator();
                         }
                         first = false;
 
-                        writer.Write(objectPair.Key);
-                        writer.WriteObjectKeyValueSeparator();
-                        WriteJsonValueAsJson(objectPair.Value, writer);
+                        tokenWriter.Write(objectPair.Key);
+                        tokenWriter.WriteObjectKeyValueSeparator();
+                        WriteJsonValueAsJson(objectPair.Value, tokenWriter);
                     }
 
                     if (val.Count > 0) {
-                        writer.WriteArrayOrObjectBodyTerminator();
+                        tokenWriter.WriteArrayOrObjectBodyTerminator();
                     }
 
-                    writer.WriteObjectEnd();
+                    tokenWriter.WriteObjectEnd();
                 } break;
                 case JsonType.Unspecified: 
                 default:

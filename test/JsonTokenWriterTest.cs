@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Voorhees.Tests {
 	[TestFixture]
-	public class JsonWriterTest {
+	public class JsonTokenWriterTest {
 		[Test]
 		public void WriteUnspecifiedThrows() {
 			Assert.Throws<InvalidOperationException>(() => {
@@ -122,13 +122,13 @@ namespace Voorhees.Tests {
 	}
 
 	[TestFixture]
-	public class JsonWriterPrettyPrint {
+	public class JsonTokenWriterPrettyPrint {
 		[Test]
 		public void WriteNullWritesNull() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.WriteNull();
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.WriteNull();
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("null"));
 		}
@@ -137,8 +137,8 @@ namespace Voorhees.Tests {
 		public void WriteBoolWritesJsonTrueOrFalse() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(true);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(true);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("true"));
 		}
@@ -147,8 +147,8 @@ namespace Voorhees.Tests {
 		public void WriteByte() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write((byte)1);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write((byte)1);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -157,8 +157,8 @@ namespace Voorhees.Tests {
 		public void WriteSByte() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write((sbyte)1);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write((sbyte)1);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -167,8 +167,8 @@ namespace Voorhees.Tests {
 		public void WriteShort() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write((short)1);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write((short)1);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -177,8 +177,8 @@ namespace Voorhees.Tests {
 		public void WriteUShort() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write((ushort)1);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write((ushort)1);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -187,8 +187,8 @@ namespace Voorhees.Tests {
 		public void WriteInt() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -197,8 +197,8 @@ namespace Voorhees.Tests {
 		public void WriteUInt() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1u);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1u);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -207,8 +207,8 @@ namespace Voorhees.Tests {
 		public void WriteLong() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1L);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1L);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -217,8 +217,8 @@ namespace Voorhees.Tests {
 		public void WriteULong() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1UL);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1UL);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1"));
 		}
@@ -227,8 +227,8 @@ namespace Voorhees.Tests {
 		public void WriteFloat() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1.5f);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1.5f);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
@@ -237,8 +237,8 @@ namespace Voorhees.Tests {
 		public void WriteDouble() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1.5);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1.5);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
@@ -247,8 +247,8 @@ namespace Voorhees.Tests {
 		public void WriteDecimal() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write(1.5m);
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write(1.5m);
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("1.5"));
 		}
@@ -257,8 +257,8 @@ namespace Voorhees.Tests {
 		public void WriteChar() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write('c');
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write('c');
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("\"c\""));
 		}
@@ -267,8 +267,8 @@ namespace Voorhees.Tests {
 		public void WriteString() {
 			var sb = new StringBuilder();
 			using (var sw = new StringWriter(sb)) {
-				var writer = new JsonWriter(sw, true);
-				writer.Write("test");
+				var tokenWriter = new JsonTokenWriter(sw, true);
+				tokenWriter.Write("test");
 			}
 			Assert.That(sb.ToString(), Is.EqualTo("\"test\""));
 		}
@@ -276,7 +276,6 @@ namespace Voorhees.Tests {
 		[Test]
 		public void WriteArrayWritesPrettyPrintedArray() {
 			var test = new JsonValue { 1, 2, 3, 4 };
-			
 			Assert.That(JsonMapper.ToJson(test, true), Is.EqualTo("[\n\t1,\n\t2,\n\t3,\n\t4\n]"));
 		}
 

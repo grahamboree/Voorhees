@@ -8,7 +8,7 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
         
-        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonWriter writer);
+        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonTokenWriter tokenWriter);
         public delegate T ImporterFunc<out T>(JsonTokenizer tokenizer);
 
         /////////////////////////////////////////////////
@@ -39,7 +39,7 @@ namespace Voorhees {
 
         /////////////////////////////////////////////////
 
-        internal delegate void ExporterFunc(object obj, JsonWriter os);
+        internal delegate void ExporterFunc(object obj, JsonTokenWriter os);
         internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new();
         internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new();
         
@@ -51,10 +51,10 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         static Voorhees() {
-            BuiltInExporters[typeof(DateTime)] = (obj, writer) =>
-                writer.Write(((DateTime) obj).ToString("o"));
-            BuiltInExporters[typeof(DateTimeOffset)] = (obj, writer) =>
-                writer.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
+            BuiltInExporters[typeof(DateTime)] = (obj, tokenWriter) =>
+                tokenWriter.Write(((DateTime) obj).ToString("o"));
+            BuiltInExporters[typeof(DateTimeOffset)] = (obj, tokenWriter) =>
+                tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
             
             // TODO: These all require boxing the parsed value.  They should be hard-coded to avoid the boxing allocations.
             BuiltInImporters[typeof(byte)] = json => byte.Parse(json.ConsumeNumber());
