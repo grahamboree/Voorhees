@@ -75,44 +75,6 @@ namespace Voorhees.Tests {
     }
 
     [TestFixture]
-    public class JsonMapper_Write_JsonValue {
-        [Test]
-        public void MapJsonValue() {
-            var val = new JsonValue {
-                {"one", 1},
-                {"two", 2},
-                {"three", new JsonValue {"tres", "san" }}
-            };
-
-            const string expected = "{\"one\":1,\"two\":2,\"three\":[\"tres\",\"san\"]}";
-            Assert.That(JsonMapper.ToJson(val), Is.EqualTo(expected));
-        }
-    }
-    
-    [TestFixture]
-    public class JsonMapper_Write_JsonValue_PrettyPrint {
-        [Test]
-        public void MapJsonValue() {
-            var val = new JsonValue {
-                {"one", 1},
-                {"two", 2},
-                {"three", new JsonValue {"tres", "san" }}
-            };
-
-            const string expected = 
-                "{\n" +
-                "\t\"one\": 1,\n" +
-                "\t\"two\": 2,\n" +
-                "\t\"three\": [\n" +
-                "\t\t\"tres\",\n" +
-                "\t\t\"san\"\n" +
-                "\t]\n" +
-                "}";
-            Assert.That(JsonMapper.ToJson(val, true), Is.EqualTo(expected));
-        }
-    }
-    
-    [TestFixture]
     public class JsonMapper_Write_BoolNull {
         [Test]
         public void Bool() {
