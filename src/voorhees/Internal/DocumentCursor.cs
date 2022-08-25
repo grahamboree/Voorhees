@@ -2,8 +2,8 @@ using System.Runtime.CompilerServices;
 
 namespace Voorhees.Internal {
     /// A cursor in a document string that tracks a position 
-    /// forward through the document as well as line and column 
-    /// number information
+    /// forward through the document as well as current line and column 
+    /// numbers.  Only moves forward through the document.
     public class DocumentCursor {
         public readonly string Document;
 
