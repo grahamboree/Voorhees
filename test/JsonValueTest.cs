@@ -10,6 +10,18 @@ namespace Voorhees.Tests {
 		public void ConstructingAnEmptyJsonValueSetsItsTypeToUnspecified() {
 			Assert.That(new JsonValue().Type, Is.EqualTo(JsonType.Unspecified));
 		}
+		
+		[Test]
+		public void EqualsIsAlwaysFalse() {
+			var one = new JsonValue();
+			var two = new JsonValue();
+			var three = new JsonValue(1);
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.False);
+				Assert.That(one.Equals(three), Is.False);
+				Assert.That(three.Equals(one), Is.False);
+			});
+		}
 	}
 	
 	[TestFixture]
