@@ -41,7 +41,13 @@ namespace Voorhees {
         }
 
         public static T FromJson<T>(JsonTokenizer tokenizer) {
-            return (T) FromJson(tokenizer, typeof(T));
+            var result = (T)FromJson(tokenizer, typeof(T));
+            
+            // Make sure there's no additional json in the buffer.
+            if (tokenizer.NextToken != JsonToken.EOF) {
+                throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
+            }
+            return result;
         }
 
         public static JsonValue FromJson(JsonTokenizer tokenizer) {
