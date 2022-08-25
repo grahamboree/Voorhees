@@ -69,6 +69,12 @@ namespace Voorhees.Tests {
 				Assert.That(one.Equals(three), Is.False);
 			});
 		}
+		
+		[Test]
+		public void TryingToCallClearThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidOperationException>(() => test.Clear());
+		}
 	}
 	
 	[TestFixture]
@@ -427,6 +433,16 @@ namespace Voorhees.Tests {
 				Assert.That(iterator.MoveNext(), Is.False);
 			});
 		}
+		
+		[Test]
+		public void ClearRemovesAllElements() {
+			var test = new JsonValue {1, 2, 3};
+			Assert.Multiple(() => {
+				Assert.That(test.Count, Is.EqualTo(3));
+				test.Clear();
+				Assert.That(test.Count, Is.EqualTo(0));
+			});
+		}
 	}
 
 	[TestFixture]
@@ -709,6 +725,20 @@ namespace Voorhees.Tests {
 				Assert.That(((KeyValuePair<string, JsonValue>)iterator.Current).Value.Equals(3), Is.True);
 				
 				Assert.That(iterator.MoveNext(), Is.False);
+			});
+		}
+
+		[Test]
+		public void ClearRemovesAllElements() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			Assert.Multiple(() => {
+				Assert.That(test.Count, Is.EqualTo(3));
+				test.Clear();
+				Assert.That(test.Count, Is.EqualTo(0));
 			});
 		}
 	}
