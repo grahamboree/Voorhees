@@ -145,6 +145,13 @@ namespace Voorhees.Tests {
 				Assert.That(one.Equals(three), Is.False);
 			});
 		}
+
+		[Test]
+		public void AttemptingToEnumerateThrows() {
+			Assert.Throws<InvalidOperationException>(() => {
+				var _ = new JsonValue(1).GetEnumerator();
+			});
+		}
 	}
 	
 	[TestFixture]
