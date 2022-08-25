@@ -635,5 +635,32 @@ namespace Voorhees.Tests {
 			Assert.That(test.Count, Is.EqualTo(2));
 			Assert.That(test.ContainsKey("two"), Is.False);
 		}
+
+		[Test]
+		public void GetEnumeratorAllowsIteratingThroughTheKeyValuePairs() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			IEnumerator<KeyValuePair<string, JsonValue>> iterator = ((IEnumerable<KeyValuePair<string, JsonValue>>)test).GetEnumerator();
+			Assert.Multiple(() => {
+				Assert.That(iterator, Is.Not.Null);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current.Key, Is.EqualTo("one"));
+				Assert.That(iterator.Current.Value.Equals(1), Is.True);
+
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current.Key, Is.EqualTo("two"));
+				Assert.That(iterator.Current.Value.Equals(2), Is.True);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current.Key, Is.EqualTo("three"));
+				Assert.That(iterator.Current.Value.Equals(3), Is.True);
+				
+				Assert.That(iterator.MoveNext(), Is.False);
+			});
+		}
 	}
 }
