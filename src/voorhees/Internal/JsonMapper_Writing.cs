@@ -7,7 +7,7 @@ using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
     public static partial class JsonMapper {
-        static void WriteValueAsJson(object obj, Type referenceType, Type valueType, JsonTokenWriter tokenWriter) {
+        static void WriteValue(object obj, Type referenceType, Type valueType, JsonTokenWriter tokenWriter) {
             if (obj == null) {
                 tokenWriter.WriteNull();
                 return;
@@ -26,7 +26,7 @@ namespace Voorhees {
             }
             
             switch (obj) { 
-                case JsonValue jsonValue: WriteJsonValueAsJson(jsonValue, tokenWriter); return;
+                case JsonValue jsonValue: WriteJsonValue(jsonValue, tokenWriter); return;
 
                 // JSON String
                 case string stringVal: tokenWriter.Write(stringVal); return;
@@ -52,7 +52,7 @@ namespace Voorhees {
                 case Array arrayVal: {
                     // Faster code for the common case.
                     if (arrayVal.Rank == 1) {
-                        Write1DArrayAsJson(arrayVal, tokenWriter);
+                        Write1DArray(arrayVal, tokenWriter);
                         return;
                     }
                     
@@ -68,7 +68,7 @@ namespace Voorhees {
 
                             if (currentDimension == arr.Rank - 1) {
                                 object arrayObject = arr.GetValue(index);
-                                WriteValueAsJson(arrayObject, arr.GetType().GetElementType(), arrayObject.GetType(), tokenWriter);
+                                WriteValue(arrayObject, arr.GetType().GetElementType(), arrayObject.GetType(), tokenWriter);
                             } else {
                                 JsonifyArray(arr, currentDimension + 1);
                             }
@@ -85,7 +85,7 @@ namespace Voorhees {
                     JsonifyArray(arrayVal, 0);
                     return;
                 }
-                case IList listVal: Write1DArrayAsJson(listVal, tokenWriter); return;
+                case IList listVal: Write1DArray(listVal, tokenWriter); return;
 
                 // JSON Object
                 case IDictionary dictionary: {
@@ -99,7 +99,7 @@ namespace Voorhees {
                         tokenWriter.Write(propertyName);
                         tokenWriter.WriteObjectKeyValueSeparator();
                         object value = entry.Value;
-                        WriteValueAsJson(value, value.GetType(), value.GetType(), tokenWriter);
+                        WriteValue(value, value.GetType(), value.GetType(), tokenWriter);
                         
                         if (entryIndex < length - 1) {
                             tokenWriter.WriteArraySeparator();
@@ -154,13 +154,13 @@ namespace Voorhees {
                     object value = fieldInfo.GetValue(obj);
                     tokenWriter.Write(fieldInfo.Name);
                     tokenWriter.WriteObjectKeyValueSeparator();
-                    WriteValueAsJson(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, tokenWriter);
+                    WriteValue(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, tokenWriter);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
                     object value = propertyInfo.GetValue(obj);
                     tokenWriter.Write(propertyInfo.Name);
                     tokenWriter.WriteObjectKeyValueSeparator();
-                    WriteValueAsJson(value, propertyInfo.PropertyType, value.GetType(), tokenWriter);
+                    WriteValue(value, propertyInfo.PropertyType, value.GetType(), tokenWriter);
                 }
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
@@ -173,11 +173,11 @@ namespace Voorhees {
             tokenWriter.WriteObjectEnd();
         }
 
-        static void Write1DArrayAsJson(IList list, JsonTokenWriter tokenWriter) {
+        static void Write1DArray(IList list, JsonTokenWriter tokenWriter) {
             tokenWriter.WriteArrayStart();
             for (int i = 0; i < list.Count; i++) {
                 object listVal = list[i];
-                WriteValueAsJson(listVal, listVal.GetType(), listVal.GetType(), tokenWriter);
+                WriteValue(listVal, listVal.GetType(), listVal.GetType(), tokenWriter);
 
                 if (i < list.Count - 1) {
                     tokenWriter.WriteArraySeparator();
@@ -188,7 +188,7 @@ namespace Voorhees {
             tokenWriter.WriteArrayEnd();
         }
 
-        static void WriteJsonValueAsJson(JsonValue val, JsonTokenWriter tokenWriter) {
+        static void WriteJsonValue(JsonValue val, JsonTokenWriter tokenWriter) {
             if (val == null) {
                 tokenWriter.WriteNull();
                 return;
@@ -204,7 +204,7 @@ namespace Voorhees {
                     tokenWriter.WriteArrayStart();
 
                     for (int i = 0; i < val.Count; ++i) {
-                        WriteJsonValueAsJson(val[i], tokenWriter);
+                        WriteJsonValue(val[i], tokenWriter);
 
                         if (i < val.Count - 1) {
                             tokenWriter.WriteArraySeparator();
@@ -227,7 +227,7 @@ namespace Voorhees {
 
                         tokenWriter.Write(objectPair.Key);
                         tokenWriter.WriteObjectKeyValueSeparator();
-                        WriteJsonValueAsJson(objectPair.Value, tokenWriter);
+                        WriteJsonValue(objectPair.Value, tokenWriter);
                     }
 
                     if (val.Count > 0) {

@@ -23,11 +23,11 @@ namespace Voorhees {
         }
 
         public static void ToJson<T>(T obj, JsonTokenWriter tokenWriter) {
-            WriteValueAsJson(obj, typeof(T), obj?.GetType(), tokenWriter);
+            WriteValue(obj, typeof(T), obj?.GetType(), tokenWriter);
         }
 
         public static void ToJson(JsonValue val, JsonTokenWriter tokenWriter) {
-            WriteJsonValueAsJson(val, tokenWriter);
+            WriteJsonValue(val, tokenWriter);
         }
         #endregion
         
