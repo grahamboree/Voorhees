@@ -510,10 +510,14 @@ namespace Voorhees.Tests {
 			var one = new JsonValue {{"one", 1}, {"two", 2}};
 			var two = new JsonValue {{"one", 1}, {"two", 2}};
 			var three = new JsonValue {{"one", "uno"}, {"two", 2}, {"three", 3}};
+			var four = new JsonValue {{ "one", 1 }};
+			var five = new JsonValue {{ "one", "uno" }};
 			Assert.Multiple(() => {
 				Assert.That(one.Equals(two), Is.True);
 				Assert.That(one.Equals(three), Is.False);
 				Assert.That(three.Equals(one), Is.False);
+				Assert.That(one.Equals(four), Is.False);
+				Assert.That(four.Equals(five), Is.False);
 			});
 		}
 
