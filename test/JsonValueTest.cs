@@ -75,6 +75,14 @@ namespace Voorhees.Tests {
 			JsonValue test = true;
 			Assert.Throws<InvalidOperationException>(() => test.Clear());
 		}
+		
+		[Test]
+		public void TryingToCallCountThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidOperationException>(() => {
+				int _ = test.Count;
+			});
+		}
 	}
 	
 	[TestFixture]
