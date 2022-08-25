@@ -292,109 +292,109 @@ namespace Voorhees {
             // No luck
             throw new Exception($"Can't assign value of type '{jsonType}' to value type {valueType} and destination type {destinationType}");
         }
-        
-      static JsonValue ReadJsonValue(JsonTokenReader tokenReader) {
-         switch (tokenReader.NextToken) {
-            case JsonToken.ArrayStart: return ReadJsonValueArray(tokenReader);
-            case JsonToken.ArrayEnd: break;
-            case JsonToken.ObjectStart: return ReadJsonValueObject(tokenReader);
-            case JsonToken.ObjectEnd: break;
-            case JsonToken.Separator: break;
-            case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
-            case JsonToken.Number: {
-               var numberString = tokenReader.ConsumeNumber();
-               try {
-                  return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
-                     : new JsonValue(float.Parse(numberString));
-               } catch (FormatException) {
-                  // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
-                  throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberString)}\" as a number.");
-               }
+
+        static JsonValue ReadJsonValue(JsonTokenReader tokenReader) {
+            switch (tokenReader.NextToken) {
+                case JsonToken.ArrayStart: return ReadJsonValueArray(tokenReader);
+                case JsonToken.ArrayEnd: break;
+                case JsonToken.ObjectStart: return ReadJsonValueObject(tokenReader);
+                case JsonToken.ObjectEnd: break;
+                case JsonToken.Separator: break;
+                case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
+                case JsonToken.Number: {
+                    var numberString = tokenReader.ConsumeNumber();
+                    try {
+                        return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
+                            : new JsonValue(float.Parse(numberString));
+                    } catch (FormatException) {
+                        // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
+                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberString)}\" as a number.");
+                    }
+                }
+                case JsonToken.True:
+                    tokenReader.SkipToken(JsonToken.True);
+                    return new JsonValue(true);
+                case JsonToken.False:
+                    tokenReader.SkipToken(JsonToken.False);
+                    return new JsonValue(false);
+                case JsonToken.Null:
+                    tokenReader.SkipToken(JsonToken.Null);
+                    return new JsonValue(null);
+                case JsonToken.EOF:
+                    throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected end of file");
+                case JsonToken.KeyValueSeparator:
+                case JsonToken.None:
+                default: break;
             }
-            case JsonToken.True:
-               tokenReader.SkipToken(JsonToken.True);
-               return new JsonValue(true);
-            case JsonToken.False:
-               tokenReader.SkipToken(JsonToken.False);
-               return new JsonValue(false);
-            case JsonToken.Null:
-               tokenReader.SkipToken(JsonToken.Null);
-               return new JsonValue(null);
-            case JsonToken.EOF:
-               throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected end of file");
-            case JsonToken.KeyValueSeparator:
-            case JsonToken.None:
-            default: break;
-         }
-         throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected token {tokenReader.NextToken}");
-      }
+            throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected token {tokenReader.NextToken}");
+        }
 
-      static JsonValue ReadJsonValueArray(JsonTokenReader tokenReader) {
-         var arrayValue = new JsonValue(JsonType.Array);
-         
-         tokenReader.SkipToken(JsonToken.ArrayStart);
+        static JsonValue ReadJsonValueArray(JsonTokenReader tokenReader) {
+            var arrayValue = new JsonValue(JsonType.Array);
 
-         bool expectingValue = false;
-         
-         while (tokenReader.NextToken != JsonToken.ArrayEnd) {
-            expectingValue = false;
-            arrayValue.Add(ReadJsonValue(tokenReader));
-            if (tokenReader.NextToken == JsonToken.Separator) {
-               expectingValue = true;
-               tokenReader.SkipToken(JsonToken.Separator);
-            } else if (tokenReader.NextToken != JsonToken.ArrayEnd) {
-               throw new InvalidJsonException($"{tokenReader.LineColString} Expected end array token or separator");
-            }
-         }
+            tokenReader.SkipToken(JsonToken.ArrayStart);
 
-         if (expectingValue) {
-            throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected end array token");
-         }
+            bool expectingValue = false;
 
-         tokenReader.SkipToken(JsonToken.ArrayEnd);
-
-         return arrayValue;
-      }
-
-      static JsonValue ReadJsonValueObject(JsonTokenReader tokenReader) {
-         var result = new JsonValue(JsonType.Object);
-         
-         tokenReader.SkipToken(JsonToken.ObjectStart);
-
-         bool expectingValue = false;
-         while (tokenReader.NextToken != JsonToken.ObjectEnd) {
-            expectingValue = false;
-            string key = tokenReader.ConsumeString();
-
-            // Edge case: If the dictionary already contains the key, for example in the case where
-            // the json we're reading has duplicate keys in an object, arbitrarily prefer the later 
-            // key value pair that appears in the file.
-            if (result.ContainsKey(key)) {
-               result.Remove(key);
+            while (tokenReader.NextToken != JsonToken.ArrayEnd) {
+                expectingValue = false;
+                arrayValue.Add(ReadJsonValue(tokenReader));
+                if (tokenReader.NextToken == JsonToken.Separator) {
+                    expectingValue = true;
+                    tokenReader.SkipToken(JsonToken.Separator);
+                } else if (tokenReader.NextToken != JsonToken.ArrayEnd) {
+                    throw new InvalidJsonException($"{tokenReader.LineColString} Expected end array token or separator");
+                }
             }
 
-            if (tokenReader.NextToken != JsonToken.KeyValueSeparator) {
-               throw new InvalidJsonException($"{tokenReader.LineColString} Expected ':'");
+            if (expectingValue) {
+                throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected end array token");
             }
-            tokenReader.SkipToken(JsonToken.KeyValueSeparator);
 
-            result.Add(key, ReadJsonValue(tokenReader));
+            tokenReader.SkipToken(JsonToken.ArrayEnd);
 
-            if (tokenReader.NextToken == JsonToken.Separator) {
-               expectingValue = true;
-               tokenReader.SkipToken(JsonToken.Separator);
-            } else if (tokenReader.NextToken != JsonToken.ObjectEnd) {
-               throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected token {tokenReader.NextToken}");
+            return arrayValue;
+        }
+
+        static JsonValue ReadJsonValueObject(JsonTokenReader tokenReader) {
+            var result = new JsonValue(JsonType.Object);
+
+            tokenReader.SkipToken(JsonToken.ObjectStart);
+
+            bool expectingValue = false;
+            while (tokenReader.NextToken != JsonToken.ObjectEnd) {
+                expectingValue = false;
+                string key = tokenReader.ConsumeString();
+
+                // Edge case: If the dictionary already contains the key, for example in the case where
+                // the json we're reading has duplicate keys in an object, arbitrarily prefer the later 
+                // key value pair that appears in the file.
+                if (result.ContainsKey(key)) {
+                    result.Remove(key);
+                }
+
+                if (tokenReader.NextToken != JsonToken.KeyValueSeparator) {
+                    throw new InvalidJsonException($"{tokenReader.LineColString} Expected ':'");
+                }
+                tokenReader.SkipToken(JsonToken.KeyValueSeparator);
+
+                result.Add(key, ReadJsonValue(tokenReader));
+
+                if (tokenReader.NextToken == JsonToken.Separator) {
+                    expectingValue = true;
+                    tokenReader.SkipToken(JsonToken.Separator);
+                } else if (tokenReader.NextToken != JsonToken.ObjectEnd) {
+                    throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected token {tokenReader.NextToken}");
+                }
             }
-         }
 
-         if (expectingValue) {
-            throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected object end token");
-         }
-         
-         tokenReader.SkipToken(JsonToken.ObjectEnd);
+            if (expectingValue) {
+                throw new InvalidJsonException($"{tokenReader.LineColString} Unexpected object end token");
+            }
 
-         return result;
-      }
+            tokenReader.SkipToken(JsonToken.ObjectEnd);
+
+            return result;
+        }
     }
 }
