@@ -514,19 +514,31 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void EqualsTestsEquality() {
+		public void EquivalentObjectsAreEqual() {
 			var one = new JsonValue {{"one", 1}, {"two", 2}};
 			var two = new JsonValue {{"one", 1}, {"two", 2}};
-			var three = new JsonValue {{"one", "uno"}, {"two", 2}, {"three", 3}};
-			var four = new JsonValue {{ "one", 1 }};
-			var five = new JsonValue {{ "one", "uno" }};
-			Assert.Multiple(() => {
-				Assert.That(one.Equals(two), Is.True);
-				Assert.That(one.Equals(three), Is.False);
-				Assert.That(three.Equals(one), Is.False);
-				Assert.That(one.Equals(four), Is.False);
-				Assert.That(four.Equals(five), Is.False);
-			});
+			Assert.That(one.Equals(two), Is.True);
+		}
+		
+		[Test]
+		public void ObjectsWithDifferentCountAreNotEqual() {
+			var one = new JsonValue {{"one", 1}, {"two", 2}};
+			var two = new JsonValue {{"one", 1}, {"two", 2}, {"three", 3}};
+			Assert.That(one.Equals(two), Is.False);
+		}
+		
+		[Test]
+		public void ObjectWithDifferentPropertyValuesAreNotEqual() {
+			var one = new JsonValue {{"one", 1}, {"two", 2}};
+			var two = new JsonValue {{"one", "uno"}, {"two", "dos"}};
+			Assert.That(one.Equals(two), Is.False);
+		}
+
+		[Test]
+		public void ObjectsWithDifferentPropertyNamesAreNotEqual() {
+			var one = new JsonValue {{"one", 1}, {"two", 2}};
+			var two = new JsonValue {{"one", 1}, {"three", 3}};
+			Assert.That(one.Equals(two), Is.False);
 		}
 
 		[Test]
