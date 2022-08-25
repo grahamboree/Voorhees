@@ -1,285 +1,492 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
 	[TestFixture]
-	class JsonValueTest {
+	class JsonValue_Undefined {
 		[Test]
-		public void Constructors() {
-			var test = new JsonValue();
-			Assert.That(test.Type, Is.EqualTo(JsonType.Unspecified));
-
-			test = new JsonValue(false);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
-
-			test = new JsonValue(1.0f);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-
-			test = new JsonValue(1);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-
-			test = new JsonValue("test");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			
-			test = new JsonValue(null);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Null));
+		public void ConstructingAnEmptyJsonValueSetsItsTypeToUnspecified() {
+			Assert.That(new JsonValue().Type, Is.EqualTo(JsonType.Unspecified));
+		}
+	}
+	
+	[TestFixture]
+	class JsonValue_Boolean {
+		[Test]
+		public void ConstructingWithBoolSetsTypeToBoolean() {
+			Assert.Multiple(() => {
+				Assert.That(new JsonValue(true).Type, Is.EqualTo(JsonType.Boolean));
+				Assert.That(new JsonValue(false).Type, Is.EqualTo(JsonType.Boolean));
+			});
 		}
 
 		[Test]
-		public void ImplicitConversions() {
+		public void ImplicitConversionCreatesBoolValue() {
 			JsonValue test = false;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
-
-			test = 1.0f;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-
-			test = 1;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-
-			test = "test";
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
+			});
 		}
 
 		[Test]
-		public void ExplicitConversions() {
+		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = false;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
-			Assert.That((bool) test, Is.False);
-			Assert.Throws<InvalidCastException>(() => {
-				test = 1.0f;
-				bool b = (bool)test;
-			});
-
-			test = 1.0f;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-			Assert.That((float) test, Is.EqualTo(1.0f));
-			Assert.Throws<InvalidCastException>(() => {
-				test = true;
-				float b = (float)test;
-			});
-
-			test = 1;
-			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-			Assert.That((int) test, Is.EqualTo(1));
-			Assert.Throws<InvalidCastException>(() => {
-				test = true;
-				int b = (int)test;
-			});
-
-			test = "test";
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-			Assert.That((string) test, Is.EqualTo("test"));
-			Assert.Throws<InvalidCastException>(() => {
-				test = true;
-				string b = (string)test;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
+				Assert.That((bool) test, Is.False);
 			});
 		}
 
 		[Test]
-		public void ArrayLiteral() {
-			JsonValue test = new JsonValue() {
+		public void ExplicitConversionForNonBoolTypeThrows() {
+			JsonValue test = 1.0f;
+			Assert.Throws<InvalidCastException>(() => {
+				bool _ = (bool)test;
+			});
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			JsonValue one = true;
+			JsonValue two = true;
+			JsonValue three = false;
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+			});
+		}
+	}
+	
+	[TestFixture]
+	class JsonValue_Float {
+		[Test]
+		public void ConstructingWithFloatSetsTypeToFloat() {
+			Assert.That(new JsonValue(1.0f).Type, Is.EqualTo(JsonType.Float));
+		}
+
+		[Test]
+		public void ImplicitConversionCreatesFloatValue() {
+			JsonValue test = 1.0f;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Float));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
+			JsonValue test = 1.0f;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Float));
+				Assert.That((float) test, Is.EqualTo(1.0f));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionForNonFloatTypeThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidCastException>(() => {
+				float _ = (float)test;
+			});
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			JsonValue one = 1f;
+			JsonValue two = 1f;
+			JsonValue three = 2f;
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+			});
+		}
+	}
+	
+	[TestFixture]
+	class JsonValue_Integer {
+		[Test]
+		public void ConstructingWithIntSetsTypeToInt() {
+			Assert.That(new JsonValue(1).Type, Is.EqualTo(JsonType.Int));
+		}
+
+		[Test]
+		public void ImplicitConversionCreatesIntValue() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((int) test, Is.EqualTo(1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionForNonIntTypeThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidCastException>(() => {
+				int _ = (int)test;
+			});
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			JsonValue one = 1;
+			JsonValue two = 1;
+			JsonValue three = 2;
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+			});
+		}
+	}
+	
+	[TestFixture]
+	class JsonValue_String {
+		[Test]
+		public void ConstructingWithStringSetsTypeToString() {
+			Assert.That(new JsonValue("test").Type, Is.EqualTo(JsonType.String));
+		}
+
+		[Test]
+		public void ImplicitConversionCreatesIntValue() {
+			JsonValue test = "test";
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.String));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
+			JsonValue test = "test";
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.String));
+				Assert.That((string) test, Is.EqualTo("test"));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionForNonStringTypeThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidCastException>(() => {
+				string _ = (string)test;
+			});
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			JsonValue one = "one";
+			JsonValue two = "one";
+			JsonValue three = "two";
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+			});
+		}
+	}
+	
+	[TestFixture]
+	class JsonValue_Null {
+		[Test]
+		public void ConstructingWithNullSetsItToNull() {
+			Assert.That(new JsonValue(null).Type, Is.EqualTo(JsonType.Null));
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			var one = new JsonValue(null);
+			var two = new JsonValue(null);
+			var three = new JsonValue(3);
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(null), Is.True);
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+			});
+		}
+	}
+
+	[TestFixture]
+	class JsonValue_Array {
+		[Test]
+		public void InitializingWithArraySetsTheTypeToArray() {
+			Assert.That(new JsonValue {1, 2, 3}.Type, Is.EqualTo(JsonType.Array));
+		}
+		
+		[Test]
+		public void ArrayLiteralCreatesArrayInstance() {
+			var test = new JsonValue {
 				3,
 				2,
 				1,
 				"blastoff!"
 			};
-			Assert.That(test.Type, Is.EqualTo(JsonType.Array));
-			Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test[1].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test[2].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test[3].Type, Is.EqualTo(JsonType.String));
-			Assert.That(test[3].Type, Is.EqualTo(JsonType.String));
-			Assert.That((int) test[0], Is.EqualTo(3));
-			Assert.That((int) test[1], Is.EqualTo(2));
-			Assert.That((int) test[2], Is.EqualTo(1));
-			Assert.That((string) test[3], Is.EqualTo("blastoff!"));
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Array));
+				Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test[1].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test[2].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test[3].Type, Is.EqualTo(JsonType.String));
+				Assert.That((int)test[0], Is.EqualTo(3));
+				Assert.That((int)test[1], Is.EqualTo(2));
+				Assert.That((int)test[2], Is.EqualTo(1));
+				Assert.That((string)test[3], Is.EqualTo("blastoff!"));
+			});
 		}
 
 		[Test]
-		public void DictionaryLiteral() {
-			JsonValue test = new JsonValue() {
+		public void SimilarArraysAreEqual() {
+			// array
+			var one = new JsonValue {1, 2, 3};
+			var two = new JsonValue {1, 2, 3};
+			var three = new JsonValue {3, 2, 1};
+			var four = new JsonValue {3, 2, 1, 5};
+			Assert.Multiple(() => {
+				Assert.That(one, Is.EqualTo(two));
+				Assert.That(one, Is.Not.EqualTo(three));
+				
+				// Same array but with one extra element
+				Assert.That(three, Is.Not.EqualTo(four));
+			});
+		}
+
+		[Test]
+		public void Contains() {
+			var test = new JsonValue {1, 2, 3};
+			Assert.Multiple(() => {
+				Assert.That(test.Count, Is.EqualTo(3));
+				Assert.That(test.Contains(1), Is.True);
+				Assert.That(test.Contains(4), Is.False);
+			});
+		}
+
+		[Test]
+		public void CopyToCopiesValues() {
+			var test = new JsonValue {1, 2, 3};
+			var values = new JsonValue[3];
+			test.CopyTo(values, 0);
+			Assert.Multiple(() => {
+				Assert.That((int) values[0], Is.EqualTo((int) test[0]));
+				Assert.That((int) values[1], Is.EqualTo((int) test[1]));
+				Assert.That((int) values[2], Is.EqualTo((int) test[2]));
+			});
+			
+		}
+
+		[Test]
+		public void RemoveDeletesElementFromArray() {
+			var test = new JsonValue {1, 2, 3};
+			test.Remove(2);
+			Assert.Multiple(() => {
+				Assert.That(test, Has.Count.EqualTo(2));
+				Assert.That((int) test[0], Is.EqualTo(1));
+				Assert.That((int) test[1], Is.EqualTo(3));
+			});
+		}
+
+		[Test]
+		public void ArraysAreNotReadOnly() {
+			Assert.That(new JsonValue {1, 2, 3}.IsReadOnly, Is.False);
+		}
+
+		[Test]
+		public void IndexOfReturnsTheIndexOfTheFirstMatchingElement() {
+			var test = new JsonValue {1, 2, 3, 1};
+			Assert.Multiple(() => {
+				Assert.That(test.IndexOf(2), Is.EqualTo(1));
+				Assert.That(test.IndexOf(1), Is.EqualTo(0));
+			});
+		}
+
+		[Test]
+		public void InsertAddsAnItemAtTheSpecifiedIndex() {
+			var test = new JsonValue {1, 3};
+			test.Insert(1, 2);
+			Assert.Multiple(() => {
+				Assert.That((int) test[1], Is.EqualTo(2));
+				Assert.That(test.Count, Is.EqualTo(3));
+			});
+		}
+
+		[Test]
+		public void RemoveAtErasesItemAtIndex() {
+			var test = new JsonValue {1, 2, 3};
+			test.RemoveAt(1);
+			Assert.Multiple(() => {
+				Assert.That(test, Has.Count.EqualTo(2));
+				Assert.That((int) test[0], Is.EqualTo(1));
+				Assert.That((int) test[1], Is.EqualTo(3));
+			});
+		}
+
+		[Test]
+		public void ClearRemovesAllItems() {
+			var test = new JsonValue {1, 2, 3};
+			test.Clear();
+			Assert.That(test.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void AddAppendsElements() {
+			var test = new JsonValue {1};
+			test.Add(5);
+			Assert.Multiple(() => {
+				Assert.That(test.Count, Is.EqualTo(2));
+				Assert.That((int) test[0], Is.EqualTo(1));
+				Assert.That((int) test[1], Is.EqualTo(5));
+			});
+		}
+
+		[Test]
+		public void IndexedEntriesAreAssignable() {
+			var test = new JsonValue {1, 2, 3};
+			test[0] = 10;
+			Assert.Multiple(() => {
+				Assert.That(test.Count, Is.EqualTo(3));
+				Assert.That((int) test[0], Is.EqualTo(10));
+				Assert.That((int) test[1], Is.EqualTo(2));
+				Assert.That((int) test[2], Is.EqualTo(3));
+			});
+		}
+	}
+
+	[TestFixture]
+	class JsonValue_Object {
+		[Test]
+		public void ConstructingWithDictionaryLiteralCreatesObject() {
+			var test = new JsonValue {
 				{"three", 3},
 				{"two", 2},
 				{"one", 1},
 				{"blast", "off!"}
 			};
 			Assert.That(test.Type, Is.EqualTo(JsonType.Object));
-
-			Assert.That(test.ContainsKey("three"), Is.True);
-			Assert.That(test.ContainsKey("two"), Is.True);
-			Assert.That(test.ContainsKey("one"), Is.True);
-			Assert.That(test.ContainsKey("blast"), Is.True);
-
-			Assert.That(test["three"].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test["two"].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test["one"].Type, Is.EqualTo(JsonType.Int));
-			Assert.That(test["blast"].Type, Is.EqualTo(JsonType.String));
-
-			Assert.That((int) test["three"], Is.EqualTo(3));
-			Assert.That((int) test["two"], Is.EqualTo(2));
-			Assert.That((int) test["one"], Is.EqualTo(1));
-			Assert.That((string) test["blast"], Is.EqualTo("off!"));
 		}
 
 		[Test]
-		public void TypeProperties() {
-			// object
+		public void ContainsKeyReturnsTrueIfObjectHasPropertyWithTheGivenKey() {
+			var test = new JsonValue {
+				{"three", 3},
+				{"two", 2},
+				{"one", 1},
+				{"blast", "off!"}
+			};
+			
+			Assert.Multiple(() => {
+				Assert.That(test.ContainsKey("three"), Is.True);
+				Assert.That(test.ContainsKey("two"), Is.True);
+				Assert.That(test.ContainsKey("one"), Is.True);
+				Assert.That(test.ContainsKey("blast"), Is.True);
+			});
+		}
+
+		[Test]
+		public void PropertyValuesAreProperlyConstructedFromDictionaryLiteral() {
+			var test = new JsonValue {
+				{ "three", 3 },
+				{ "two", 2 },
+				{ "one", 1 },
+				{ "blast", "off!" }
+			};
+
+			Assert.Multiple(() => {
+				Assert.That(test["three"].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test["two"].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test["one"].Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test["blast"].Type, Is.EqualTo(JsonType.String));
+
+				Assert.That((int)test["three"], Is.EqualTo(3));
+				Assert.That((int)test["two"], Is.EqualTo(2));
+				Assert.That((int)test["one"], Is.EqualTo(1));
+				Assert.That((string)test["blast"], Is.EqualTo("off!"));
+			});
+		}
+
+		[Test]
+		public void EqualsTestsEquality() {
+			var one = new JsonValue {{"one", 1}, {"two", 2}};
+			var two = new JsonValue {{"one", 1}, {"two", 2}};
+			var three = new JsonValue {{"one", "uno"}, {"two", 2}, {"three", 3}};
+			Assert.Multiple(() => {
+				Assert.That(one.Equals(two), Is.True);
+				Assert.That(one.Equals(three), Is.False);
+				Assert.That(three.Equals(one), Is.False);
+			});
+		}
+
+		[Test]
+		public void RemoveErasesThePropertyWithTheGivenKey() {
 			var test = new JsonValue {
 				{"one", 1},
 				{"two", 2},
 				{"three", 3}
 			};
-			Assert.That(test.Type, Is.EqualTo(JsonType.Object));
-			
-			// array
-			test = new JsonValue {1, 2, 3};
-			Assert.That(test.Type, Is.EqualTo(JsonType.Array));
-
-			// string
-			test = new JsonValue("test");
-			Assert.That(test.Type, Is.EqualTo(JsonType.String));
-
-			// boolean
-			test = new JsonValue(false);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
-			
-			// int
-			test = new JsonValue(1);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-
-			// float
-			test = new JsonValue(1f);
-			Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-		}
-
-		[Test]
-		public void ArrayOperations() {
-			JsonValue test = new JsonValue() {1, 2, 3};
-
-			Assert.That(test.Count, Is.EqualTo(3));
-			Assert.That(test.Contains(1), Is.True);
-			Assert.That(test.Contains(4), Is.False);
-
-			JsonValue[] values = new JsonValue[3];
-			test.CopyTo(values, 0);
-			for (int i = 0; i < 3; i++) {
-				Assert.That((int) values[i], Is.EqualTo((int) test[i]));
-			}
-
-			test.Remove(2);
-			Assert.That(test.Contains(1), Is.True);
-			Assert.That(test.Contains(2), Is.False);
-			Assert.That(test.Contains(3), Is.True);
-
-			Assert.That(test.IsReadOnly, Is.False);
-
-			Assert.That(test.IndexOf(1), Is.EqualTo(0));
-
-			test.Insert(1, 2);
-			Assert.That((int) test[1], Is.EqualTo(2));
-			Assert.That(test.Count, Is.EqualTo(3));
-
-			test.RemoveAt(1);
-			Assert.That((int) test[1], Is.EqualTo(3));
-			Assert.That(test.Count, Is.EqualTo(2));
-
-			test.Clear();
-			Assert.That(test.Count, Is.EqualTo(0));
-
-			test.Add(5);
-			Assert.That(test.Count, Is.EqualTo(1));
-			Assert.That((int) test[0], Is.EqualTo(5));
-
-			test[0] = 10;
-			Assert.That(test.Count, Is.EqualTo(1));
-			Assert.That((int) test[0], Is.EqualTo(10));
-		}
-
-		[Test]
-		public void Equality() {
-			// object
-			var one = new JsonValue {{"one", 1}, {"two", 2}};
-			var two = new JsonValue {{"one", 1}, {"two", 2}};
-			var three = new JsonValue {{"one", "uno"}, {"two", 2}, {"three", 3}};
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-			Assert.That(three.Equals(one), Is.False);
-
-			// array
-			one = new JsonValue {1, 2, 3};
-			two = new JsonValue {1, 2, 3};
-			three = new JsonValue {3, 2, 1};
-			var four = new JsonValue {3, 2, 1, 5};
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-			Assert.That(three.Equals(four), Is.False);
-
-			// string
-			one = "one";
-			two = "one";
-			three = "two";
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-
-			// bool
-			one = true;
-			two = true;
-			three = false;
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-
-			// int
-			one = 1;
-			two = 1;
-			three = 2;
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-
-			// float
-			one = 1f;
-			two = 1f;
-			three = 2f;
-			Assert.That(one.Equals(two), Is.True);
-			Assert.That(one.Equals(three), Is.False);
-			
-			// null
-			var nullValOne = new JsonValue(null);
-			var nullValTwo = new JsonValue(null);
-			Assert.That(nullValOne.Equals(nullValTwo), Is.True);
-			Assert.That(nullValOne.Equals(null), Is.True);
-			
-			// mismatched types
-			Assert.That(nullValOne.Equals(one), Is.False);
-		}
-
-		[Test]
-		public void KVPCollection() {
-			var test = new JsonValue() {
-				{"one", 1},
-				{"two", 2},
-				{"three", 3},
-			};
 
 			test.Remove(new KeyValuePair<string, JsonValue>("one", 1));
 			Assert.That(test.Count, Is.EqualTo(2));
 			Assert.Throws<KeyNotFoundException>(() => {
-				var s = test["one"].ToString();
+				string _ = test["one"].ToString();
 			});
+		}
 
+		[Test]
+		public void IndexingNonObjectsThrows() {
 			JsonValue intVal = 4;
 			Assert.Throws<InvalidOperationException>(() => {
-				var oneVal = intVal["one"];
+				JsonValue _ = intVal["one"];
 			});
+		}
 
-			KeyValuePair<string, JsonValue>[] dest = new KeyValuePair<string, JsonValue>[2];
+		[Test]
+		public void CopyToCopiesObjectPropertiesToAKeyValuePairArray() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+
+			var dest = new KeyValuePair<string, JsonValue>[3];
 			test.CopyTo(dest, 0);
-			for (int i = 0; i < 2; ++i) {
-				Assert.That(test[dest[i].Key].Equals(dest[i].Value));
-			}
+			Assert.Multiple(() => {
+				for (int i = 0; i < 3; ++i) {
+					Assert.That(test[dest[i].Key].Equals(dest[i].Value));
+				}
+			});
+		}
 
-			Assert.That(test.Contains(new KeyValuePair<string, JsonValue>("two", 2)));
+		[Test]
+		public void ContainsFindsKeyValuePairsInTheObject() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			Assert.That(test.Contains(new KeyValuePair<string, JsonValue>("two", 2)), Is.True);
+			Assert.That(test.Contains(new KeyValuePair<string, JsonValue>("two", 5)), Is.False);
+		}
+		
+		[Test]
+		public void ContainsKeyChecksForObjectPropertyNames() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			Assert.That(test.ContainsKey("two"), Is.True);
+			Assert.That(test.ContainsKey("five"), Is.False);
+		}
+
+		[Test]
+		public void AddInsertsANewKeyValuePairIntoTheObject() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
 
 			test.Add(new KeyValuePair<string, JsonValue>("four", 4));
 
@@ -288,8 +495,16 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void IDictionary() {
-			JsonValue test = new JsonValue() {
+		public void IndexingReturnsTheValueAssociatedWithAKey() {
+			var test = new JsonValue {
+				{"one", 1}
+			};
+			Assert.That((int) test["one"], Is.EqualTo(1));
+		}
+		
+		[Test]
+		public void IndexedValuesAreAssignable() {
+			var test = new JsonValue {
 				{"one", 1},
 				{"two", 2},
 				{"three", 3}
@@ -298,36 +513,71 @@ namespace Voorhees.Tests {
 			Assert.That((int) test["one"], Is.EqualTo(1));
 			test["one"] = 5;
 			Assert.That((int) test["one"], Is.EqualTo(5));
-			test["one"] = 1;
+		}
 
-			var keys = test.Keys;
+		[Test]
+		public void KeysReturnsACollectionOfPropertyNames() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+
+			ICollection<string> keys = test.Keys;
 			Assert.That(keys.Count, Is.EqualTo(3));
 			Assert.That(keys.Contains("one"), Is.True);
 			Assert.That(keys.Contains("two"), Is.True);
 			Assert.That(keys.Contains("three"), Is.True);
+		}
+		
+		[Test]
+		public void ValuesReturnsACollectionOfPropertyValues() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
 
-			var values = test.Values;
-			Assert.That(values.Count, Is.EqualTo(3));
-			var intvalues = values.Select(x => (int) x).ToArray();
-			Array.Sort(intvalues);
-			for (int i = 0; i < 3; i++) {
-				Assert.That(intvalues[i], Is.EqualTo(i + 1));
-			}
-
-			test.Add("four", 4);
-			Assert.That(test.Count, Is.EqualTo(4));
-			Assert.That((int) test["four"], Is.EqualTo(4));
-
-			JsonValue val;
-			Assert.That(test.TryGetValue("one", out val), Is.True);
+			ICollection<JsonValue> keys = test.Values;
+			Assert.That(keys.Count, Is.EqualTo(3));
+			Assert.That(keys.Contains(1), Is.True);
+			Assert.That(keys.Contains(2), Is.True);
+			Assert.That(keys.Contains(3), Is.True);
+		}
+		
+		[Test]
+		public void TryGetValueFindsKeyValuePairs() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			Assert.That(test.TryGetValue("one", out var val), Is.True);
 			Assert.That((int) val, Is.EqualTo(1));
-			Assert.That(test.TryGetValue("seven", out val), Is.False);
+		}
+		
+		[Test]
+		public void TryGetValueSetsOutVarToNullWhenKeyNotFound() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			Assert.That(test.TryGetValue("seven", out var val), Is.False);
 			Assert.That(val, Is.Null);
+		}
 
-			Assert.That(test.ContainsKey("four"), Is.True);
-			test.Remove("four");
-			Assert.That(test.Count, Is.EqualTo(3));
-			Assert.That(test.ContainsKey("four"), Is.False);
+		[Test]
+		public void RemoveErasesKeyValuePairsFromObject() {
+			var test = new JsonValue {
+				{"one", 1},
+				{"two", 2},
+				{"three", 3}
+			};
+			
+			test.Remove("two");
+			Assert.That(test.Count, Is.EqualTo(2));
+			Assert.That(test.ContainsKey("two"), Is.False);
 		}
 	}
 }

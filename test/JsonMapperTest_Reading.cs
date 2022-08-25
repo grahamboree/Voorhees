@@ -513,9 +513,5 @@ namespace Voorhees.Tests {
         public void ListWithoutClosingBracket() {
             Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>("[1,2,3"));
         }
-
-        class TestObject {
-            public int test = 0;
-        }
     }
 }
