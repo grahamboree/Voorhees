@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -354,12 +355,13 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void GetEnumeratorAllowsIteratingThroughTheArrray() {
+		public void GetEnumeratorAllowsIteratingThroughTheArray() {
 			var test = new JsonValue {1, 2, 3};
 			IEnumerator<JsonValue> iterator = test.GetEnumerator();
 			Assert.Multiple(() => {
-				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator, Is.Not.Null);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
 				Assert.That(iterator.Current.Type, Is.EqualTo(JsonType.Int));
 				Assert.That((int)iterator.Current, Is.EqualTo(1));
@@ -373,6 +375,35 @@ namespace Voorhees.Tests {
 				Assert.That(iterator.Current, Is.Not.Null);
 				Assert.That(iterator.Current.Type, Is.EqualTo(JsonType.Int));
 				Assert.That((int)iterator.Current, Is.EqualTo(3));
+				
+				Assert.That(iterator.MoveNext(), Is.False);
+			});
+		}
+
+		[Test]
+		public void UntypedGetEnumeratorAllowsIteratingThroughTheArray() {
+			var test = new JsonValue {1, 2, 3};
+			IEnumerator iterator = ((IEnumerable)test).GetEnumerator();
+			Assert.Multiple(() => {
+				Assert.That(iterator, Is.Not.Null);
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(1));
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(2));
+				
+				Assert.That(iterator.MoveNext(), Is.True);
+				Assert.That(iterator.Current, Is.Not.Null);
+				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(3));
 				
 				Assert.That(iterator.MoveNext(), Is.False);
 			});
