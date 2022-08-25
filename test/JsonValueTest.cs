@@ -451,6 +451,14 @@ namespace Voorhees.Tests {
 				Assert.That(test.Count, Is.EqualTo(0));
 			});
 		}
+
+		[Test]
+		public void AttemptingToCallArrayMethodsOnANonArrayValueThrows() {
+			JsonValue test = 1;
+			Assert.Throws<InvalidOperationException>(() => {
+				test.Remove(new JsonValue(1));
+			});
+		}
 	}
 
 	[TestFixture]
