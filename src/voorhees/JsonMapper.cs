@@ -36,8 +36,22 @@ namespace Voorhees {
             return (T) FromJson(new JsonTokenizer(jsonString), typeof(T));
         }
 
+        public static JsonValue FromJson(string jsonString) {
+            return FromJson(new JsonTokenizer(jsonString));
+        }
+
         public static T FromJson<T>(JsonTokenizer tokenizer) {
             return (T) FromJson(tokenizer, typeof(T));
+        }
+
+        public static JsonValue FromJson(JsonTokenizer tokenizer) {
+            var result = ReadJsonValue(tokenizer);
+
+            // Make sure there's no additional json in the buffer.
+            if (tokenizer.NextToken != JsonToken.EOF) {
+                throw new InvalidJsonException($"{tokenizer.LineColString} Expected end of file");
+            }
+            return result;
         }
         #endregion
     }
