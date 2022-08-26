@@ -14,6 +14,9 @@ namespace Voorhees {
         }
 
         public static string ToJson(JsonValue val, bool prettyPrint = false) {
+            // Because of C#'s function overloading rules, we need to explicitly specify the function body here even though it's identical to above.
+            // This forces it to use the ToJson overload that takes a JsonValue.  ToJson<T>(T, bool) will never call ToJson(JsonValue, JsonTokenWriter)
+            // because the type of the caller is unknown at compile-time when overload resolution happens.
             var stringBuilder = new StringBuilder();
             using (var stringWriter = new StringWriter(stringBuilder)) {
                 var jsonWriter = new JsonTokenWriter(stringWriter, prettyPrint);

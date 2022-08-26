@@ -43,21 +43,20 @@ namespace Voorhees {
                     var numberString = tokenReader.ConsumeNumber();
                     if (int.TryParse(numberString, out int intVal)) {
                         jsonType = typeof(int);
-                        jsonValue = intVal;
+                        jsonValue = intVal; // TODO Boxing
                     } else {
                         jsonType = typeof(float);
-                        jsonValue = float.Parse(numberString);
+                        jsonValue = float.Parse(numberString); // TODO Boxing
                     }
-                }
-                    break;
+                } break;
                 case JsonToken.True:
                     jsonType = typeof(bool);
-                    jsonValue = true;
+                    jsonValue = true; // TODO Boxing
                     tokenReader.SkipToken(JsonToken.True);
                     break;
                 case JsonToken.False:
                     jsonType = typeof(bool);
-                    jsonValue = false;
+                    jsonValue = false; // TODO Boxing
                     tokenReader.SkipToken(JsonToken.False);
                     break;
                 case JsonToken.EOF:
@@ -157,7 +156,7 @@ namespace Voorhees {
                     var list = ReadMultiList(tokenReader, elementType, rank);
 
                     // Compute rank
-                    var lengths = new int[rank];
+                    int[] lengths = new int[rank]; // TODO Temp alloc
                     var curList = list;
                     for (int i = 0; i < rank; ++i) {
                         if (curList == null) {
@@ -302,13 +301,13 @@ namespace Voorhees {
                 case JsonToken.Separator: break;
                 case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
                 case JsonToken.Number: {
-                    var numberString = tokenReader.ConsumeNumber();
+                    var numberSpan = tokenReader.ConsumeNumber();
                     try {
-                        return int.TryParse(numberString, out int intVal) ? new JsonValue(intVal)
-                            : new JsonValue(float.Parse(numberString));
+                        return int.TryParse(numberSpan, out int intVal) ? new JsonValue(intVal)
+                            : new JsonValue(float.Parse(numberSpan));
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
-                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberString)}\" as a number.");
+                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
                     }
                 }
                 case JsonToken.True:

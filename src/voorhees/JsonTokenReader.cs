@@ -68,7 +68,7 @@ namespace Voorhees {
                 case JsonToken.Null: cursor.AdvanceBy(4); break;
                 case JsonToken.False: cursor.AdvanceBy(5); break;
                 case JsonToken.String: SkipString(); break;
-                case JsonToken.Number: ConsumeNumber(); break; // OK to consume here because it only just computes the bounds of the token
+                case JsonToken.Number: ConsumeNumber(); break; // OK to consume here because it only really computes the bounds of the token and returns a span of that bounds
                 case JsonToken.None:
                 case JsonToken.EOF:
                 default: throw new InvalidOperationException($"Can't skip token of type {token}");
