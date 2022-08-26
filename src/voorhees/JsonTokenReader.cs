@@ -7,27 +7,6 @@ namespace Voorhees {
         public InvalidJsonException(string message) : base(message) { }
     }
     
-    public enum JsonToken {
-        None,
-        
-        ArrayStart,
-        ArrayEnd,
-        
-        ObjectStart,
-        KeyValueSeparator, // : 
-        ObjectEnd,
-        
-        Separator, // ,
-        
-        String,
-        Number,
-        True,
-        False,
-        Null,
-        
-        EOF
-    }
-    
     public class JsonTokenReader {
         public JsonToken NextToken = JsonToken.None;
 
