@@ -2,11 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Voorhees {
-    /// Thrown when trying to read invalid JSON data.
-    public class InvalidJsonException : Exception {
-        public InvalidJsonException(string message) : base(message) { }
-    }
-    
     public class JsonTokenReader {
         public JsonToken NextToken = JsonToken.None;
 
