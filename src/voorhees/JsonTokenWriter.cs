@@ -40,7 +40,6 @@ namespace Voorhees {
 
         #region Array
         public void WriteArrayStart() { WriteIndent(); textWriter.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
-        public void WriteArraySeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
         public void WriteArrayEnd() { indentLevel--; WriteIndent(); textWriter.Write("]"); }
         #endregion
 
@@ -50,6 +49,7 @@ namespace Voorhees {
         public void WriteObjectEnd() { indentLevel--; WriteIndent(); textWriter.Write("}"); }
         #endregion
         
+        public void WriteArrayOrObjectSeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
         public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
         
         /////////////////////////////////////////////////

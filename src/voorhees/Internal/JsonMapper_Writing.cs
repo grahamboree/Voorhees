@@ -74,7 +74,7 @@ namespace Voorhees {
                             }
                             
                             if (i < length - 1) {
-                                tokenWriter.WriteArraySeparator();
+                                tokenWriter.WriteArrayOrObjectSeparator();
                             } else {
                                 tokenWriter.WriteArrayOrObjectBodyTerminator();
                             }
@@ -102,7 +102,7 @@ namespace Voorhees {
                         WriteValue(value, value.GetType(), value.GetType(), tokenWriter);
                         
                         if (entryIndex < length - 1) {
-                            tokenWriter.WriteArraySeparator();
+                            tokenWriter.WriteArrayOrObjectSeparator();
                         } else {
                             tokenWriter.WriteArrayOrObjectBodyTerminator();
                         }
@@ -140,7 +140,7 @@ namespace Voorhees {
                 tokenWriter.Write("$t");
                 tokenWriter.WriteObjectKeyValueSeparator();
                 tokenWriter.Write(valueType.AssemblyQualifiedName);
-                tokenWriter.WriteArraySeparator();
+                tokenWriter.WriteArrayOrObjectSeparator();
             }
             
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
@@ -164,7 +164,7 @@ namespace Voorhees {
                 }
 
                 if (fieldIndex < fieldsAndProperties.Count - 1) {
-                    tokenWriter.WriteArraySeparator();
+                    tokenWriter.WriteArrayOrObjectSeparator();
                 } else {
                     tokenWriter.WriteArrayOrObjectBodyTerminator();
                 }
@@ -180,7 +180,7 @@ namespace Voorhees {
                 WriteValue(listVal, listVal.GetType(), listVal.GetType(), tokenWriter);
 
                 if (i < list.Count - 1) {
-                    tokenWriter.WriteArraySeparator();
+                    tokenWriter.WriteArrayOrObjectSeparator();
                 } else {
                     tokenWriter.WriteArrayOrObjectBodyTerminator();
                 }
@@ -207,7 +207,7 @@ namespace Voorhees {
                         WriteJsonValue(val[i], tokenWriter);
 
                         if (i < val.Count - 1) {
-                            tokenWriter.WriteArraySeparator();
+                            tokenWriter.WriteArrayOrObjectSeparator();
                         } else {
                             tokenWriter.WriteArrayOrObjectBodyTerminator();
                         }
@@ -221,7 +221,7 @@ namespace Voorhees {
                     bool first = true;
                     foreach (var objectPair in val as IEnumerable<KeyValuePair<string, JsonValue>>) {
                         if (!first) {
-                            tokenWriter.WriteArraySeparator();
+                            tokenWriter.WriteArrayOrObjectSeparator();
                         }
                         first = false;
 
