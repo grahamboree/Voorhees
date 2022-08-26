@@ -3,24 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace Voorhees {
-   /// JSON data type
-   public enum JsonType : byte {
-      Unspecified,
-      
-      Null,
-
-      Object,
-      Array,
-
-      String,
-      Boolean,
-      
-      // Json doesn't distinguish between number types, but it's often
-      // useful to represent them as either ints or floats
-      Int,
-      Float
-   }
-
    /// A union-type representing a value that can exist in a JSON document.
    /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
