@@ -24,6 +24,27 @@ namespace Voorhees {
             }
 
             // Maybe there's a base importer that works
+            if (destinationType == typeof(byte)) { return byte.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(sbyte)) { return sbyte.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(short)) { return short.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(ushort)) { return ushort.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(int)) { return int.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(uint)) { return uint.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(long)) { return long.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(ulong)) { return ulong.Parse(tokenReader.ConsumeNumber()); }
+            
+            if (destinationType == typeof(float)) { return float.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(double)) { return double.Parse(tokenReader.ConsumeNumber()); }
+            if (destinationType == typeof(decimal)) { return decimal.Parse(tokenReader.ConsumeNumber()); }
+
+            if (destinationType == typeof(char)) {
+                string stringVal = tokenReader.ConsumeString();
+                if (stringVal.Length != 1) {
+                    throw new FormatException($"{tokenReader.LineColString} Trying to map a string of length != 1 to a char: \"{stringVal}\"");
+                }
+                return stringVal[0];
+            }
+            
             if (Voorhees.BuiltInImporters.TryGetValue(destinationType, out var builtInImporter)) {
                 return builtInImporter(tokenReader);
             }

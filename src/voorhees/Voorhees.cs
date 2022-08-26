@@ -40,13 +40,13 @@ namespace Voorhees {
         /////////////////////////////////////////////////
 
         internal delegate void ExporterFunc(object obj, JsonTokenWriter os);
-        internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new();
-        internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new();
-        
         internal delegate object ImporterFunc(JsonTokenReader tokenReader);
+        
         internal static readonly Dictionary<Type, ImporterFunc> BuiltInImporters = new();
+        internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new();
         
         internal readonly Dictionary<Type, ImporterFunc> CustomImporters = new();
+        internal readonly Dictionary<Type, ExporterFunc> CustomExporters = new();
         
         /////////////////////////////////////////////////
 
@@ -56,27 +56,8 @@ namespace Voorhees {
             BuiltInExporters[typeof(DateTimeOffset)] = (obj, tokenWriter) =>
                 tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
             
-            // TODO: These all require boxing the parsed value.  They should be hard-coded to avoid the boxing allocations.
-            BuiltInImporters[typeof(byte)] = json => byte.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(sbyte)] = json => sbyte.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(short)] = json => short.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(ushort)] = json => ushort.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(int)] = json => int.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(uint)] = json => uint.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(long)] = json => long.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(ulong)] = json => ulong.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(float)] = json => float.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(double)] = json => double.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(decimal)] = json => decimal.Parse(json.ConsumeNumber());
-            BuiltInImporters[typeof(char)] = json => {
-                string stringVal = json.ConsumeString();
-                if (stringVal.Length > 1) {
-                    throw new FormatException($"Trying to map a string of length > 1 to a char: \"{stringVal}\"");
-                }
-                return stringVal[0];
-            };
-            BuiltInImporters[typeof(DateTime)] = json => DateTime.Parse(json.ConsumeString());
-            BuiltInImporters[typeof(DateTimeOffset)] = json => DateTimeOffset.Parse(json.ConsumeString());
+            BuiltInImporters[typeof(DateTime)] = tokenReader => DateTime.Parse(tokenReader.ConsumeString());
+            BuiltInImporters[typeof(DateTimeOffset)] = tokenReader => DateTimeOffset.Parse(tokenReader.ConsumeString());
         }
     }
 }
