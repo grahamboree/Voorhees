@@ -309,9 +309,14 @@ namespace Voorhees {
         /// <summary>
         /// Same as ConsumeString but doesn't bother parsing the result.
         /// </summary>
+        /// <exception cref="InvalidJsonException">If the string is never terminated or contains a disallowed control character</exception>
         void SkipString() {
-            // Skip the leading '"', then continue skipping until we hit EOF or the closing "
-            for (cursor.Advance(); !cursor.AtEOF; cursor.Advance()) {
+            // Skip the leading '"', then continue skipping until we hit the closing "
+            for (cursor.Advance(); ; cursor.Advance()) {
+                if (cursor.AtEOF) {
+                    throw new InvalidJsonException($"{cursor} Unexpected EOF while reading a string value");
+                }
+                
                 if (cursor.CurrentChar <= 0x1F || cursor.CurrentChar == 0x7F || (cursor.CurrentChar >= 0x80 && cursor.CurrentChar <= 0x9F)) {
                     throw new InvalidJsonException($"{cursor} Disallowed control character in string");
                 }
