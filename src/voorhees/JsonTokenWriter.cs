@@ -45,11 +45,13 @@ namespace Voorhees {
 
         #region Object
         public void WriteObjectStart() { WriteIndent(); textWriter.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
-        public void WriteObjectKeyValueSeparator() { textWriter.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
+        public void WriteObjectKey(string key) { Write(key); textWriter.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
         public void WriteObjectEnd() { indentLevel--; WriteIndent(); textWriter.Write("}"); }
         #endregion
         
+        /// Separator between elements of an array or key value pairs in an object.
         public void WriteArrayOrObjectSeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
+        /// Call this before writing the end token to indicate that the array or object body is complete.  Adds a newline in pretty printing mode. 
         public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
         
         /////////////////////////////////////////////////

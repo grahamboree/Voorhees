@@ -96,8 +96,7 @@ namespace Voorhees {
                     
                     foreach (DictionaryEntry entry in dictionary) {
                         string propertyName = entry.Key as string ?? Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
-                        tokenWriter.Write(propertyName);
-                        tokenWriter.WriteObjectKeyValueSeparator();
+                        tokenWriter.WriteObjectKey(propertyName);
                         object value = entry.Value;
                         WriteValue(value, value.GetType(), value.GetType(), tokenWriter);
                         
@@ -137,8 +136,7 @@ namespace Voorhees {
             tokenWriter.WriteObjectStart();
 
             if (referenceType != valueType) {
-                tokenWriter.Write("$t");
-                tokenWriter.WriteObjectKeyValueSeparator();
+                tokenWriter.WriteObjectKey("$t");
                 tokenWriter.Write(valueType.AssemblyQualifiedName);
                 tokenWriter.WriteArrayOrObjectSeparator();
             }
@@ -152,14 +150,12 @@ namespace Voorhees {
                 if (propertyMetadata.IsField) {
                     var fieldInfo = (FieldInfo) propertyMetadata.Info;
                     object value = fieldInfo.GetValue(obj);
-                    tokenWriter.Write(fieldInfo.Name);
-                    tokenWriter.WriteObjectKeyValueSeparator();
+                    tokenWriter.WriteObjectKey(fieldInfo.Name);
                     WriteValue(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, tokenWriter);
                 } else {
                     var propertyInfo = (PropertyInfo) propertyMetadata.Info;
                     object value = propertyInfo.GetValue(obj);
-                    tokenWriter.Write(propertyInfo.Name);
-                    tokenWriter.WriteObjectKeyValueSeparator();
+                    tokenWriter.WriteObjectKey(propertyInfo.Name);
                     WriteValue(value, propertyInfo.PropertyType, value.GetType(), tokenWriter);
                 }
 
@@ -225,8 +221,7 @@ namespace Voorhees {
                         }
                         first = false;
 
-                        tokenWriter.Write(objectPair.Key);
-                        tokenWriter.WriteObjectKeyValueSeparator();
+                        tokenWriter.WriteObjectKey(objectPair.Key);
                         WriteJsonValue(objectPair.Value, tokenWriter);
                     }
 
