@@ -147,30 +147,30 @@ namespace Voorhees {
 
             if (!hasEscapeChars) {
                 var data = new StringGeneratorContextData {
-                    cursor = cursor,
-                    endIndex = lookaheadIndex,
-                    numChars = resultLength
+                    Cursor = cursor,
+                    EndIndex = lookaheadIndex,
+                    NumChars = resultLength
                 };
                 string result = string.Create(resultLength, data, (chars, genData) => {
-                    genData.cursor.Document.AsSpan().Slice(genData.cursor.Index, genData.numChars).CopyTo(chars);
+                    genData.Cursor.Document.AsSpan().Slice(genData.Cursor.Index, genData.NumChars).CopyTo(chars);
                 });
                 cursor.AdvanceBy(1 + resultLength); // skip to after the closing "
                 AdvanceToNextToken();
                 return result;
             } else {
                 var data = new StringGeneratorContextData {
-                    cursor = cursor,
-                    endIndex = lookaheadIndex,
-                    numChars = resultLength
+                    Cursor = cursor,
+                    EndIndex = lookaheadIndex,
+                    NumChars = resultLength
                 };
 
                 string result = string.Create(resultLength, data, (chars, genData) => {
                     int resultIndex = 0;
-                    while (genData.cursor.Index < genData.endIndex) {
-                        switch (genData.cursor.CurrentChar) {
+                    while (genData.Cursor.Index < genData.EndIndex) {
+                        switch (genData.Cursor.CurrentChar) {
                             case '\\': {
-                                genData.cursor.Advance();
-                                switch (genData.cursor.CurrentChar) {
+                                genData.Cursor.Advance();
+                                switch (genData.Cursor.CurrentChar) {
                                     case '\\':
                                         chars[resultIndex++] = '\\';
                                         break;
@@ -197,21 +197,21 @@ namespace Voorhees {
                                         break;
                                     case 'u': {
                                         // Read 4 hex digits
-                                        chars[resultIndex++] = (char)Convert.ToInt16(genData.cursor.Document.Substring(genData.cursor.Index + 1, 4), 16);
-                                        genData.cursor.AdvanceBy(4);
+                                        chars[resultIndex++] = (char)Convert.ToInt16(genData.Cursor.Document.Substring(genData.Cursor.Index + 1, 4), 16);
+                                        genData.Cursor.AdvanceBy(4);
                                     }
                                         break;
-                                    default: throw new InvalidJsonException($"{genData.cursor} Unknown escape character sequence");
+                                    default: throw new InvalidJsonException($"{genData.Cursor} Unknown escape character sequence");
                                 }
                             }
                                 break;
                             default:
-                                chars[resultIndex++] = genData.cursor.CurrentChar;
+                                chars[resultIndex++] = genData.Cursor.CurrentChar;
                                 break;
                         }
-                        genData.cursor.Advance();
+                        genData.Cursor.Advance();
                     }
-                    genData.cursor.Advance();
+                    genData.Cursor.Advance();
                 });
 
                 AdvanceToNextToken();
@@ -231,9 +231,9 @@ namespace Voorhees {
         readonly Internal.DocumentCursor cursor;
 
         struct StringGeneratorContextData {
-            public Internal.DocumentCursor cursor;
-            public int endIndex;
-            public int numChars;
+            public Internal.DocumentCursor Cursor;
+            public int EndIndex;
+            public int NumChars;
         }
         
         /////////////////////////////////////////////////
