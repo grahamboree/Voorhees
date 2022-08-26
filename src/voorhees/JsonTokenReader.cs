@@ -3,35 +3,43 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Voorhees {
     public class JsonTokenReader {
+        /// The next Json token in the document.
         public JsonToken NextToken = JsonToken.None;
 
         /////////////////////////////////////////////////
 
         /// <summary>
-        /// Construct a new token reader from the start of the json document
+        /// Read tokens using the given document cursor position 
         /// </summary>
-        /// <param name="cursor">DocumentCursor into a JSON document string</param>
+        /// <param name="cursor">DocumentCursor into a JSON document</param>
         public JsonTokenReader(Internal.DocumentCursor cursor) {
             this.cursor = cursor;
             AdvanceToNextToken();
         }
         
         /// <summary>
-        /// Construct a new token reader from the start of the json document.
-        /// Constructs a DocumentCursor from the given json string
+        /// Read tokens from the start of the json string.
         /// </summary>
-        /// <param name="json">The JSON document</param>
+        /// <param name="json">The JSON document to read</param>
         public JsonTokenReader(string json) {
             cursor = new Internal.DocumentCursor(json);
             AdvanceToNextToken();
         }
 
-        public void SkipToken(JsonToken token) {
-            if (token != NextToken) {
-                throw new InvalidOperationException($"Attempting to skip a token of type {token} but the next token is {NextToken}");
+        /// <summary>
+        /// Skip over a token of the given type.  Ensures that a valid token of that type was actually skipped over.
+        /// </summary>
+        /// <param name="tokenType">The type of token to skip over</param>
+        /// <exception cref="InvalidOperationException">
+        /// If the next token in the document is not of type <paramref name="tokenType"/>
+        /// or if a token of type <paramref name="tokenType"/> is unskippable. e.g. EOF or None. 
+        /// </exception>
+        public void SkipToken(JsonToken tokenType) {
+            if (tokenType != NextToken) {
+                throw new InvalidOperationException($"Attempting to skip a token of type {tokenType} but the next token is {NextToken}");
             }
 
-            switch (token) {
+            switch (tokenType) {
                 case JsonToken.ArrayStart:
                 case JsonToken.ArrayEnd:
                 case JsonToken.ObjectStart:
@@ -42,10 +50,12 @@ namespace Voorhees {
                 case JsonToken.Null: cursor.AdvanceBy(4); break;
                 case JsonToken.False: cursor.AdvanceBy(5); break;
                 case JsonToken.String: SkipString(); break;
-                case JsonToken.Number: ConsumeNumber(); break; // OK to consume here because it only really computes the bounds of the token and returns a span of that bounds
+                case JsonToken.Number: ConsumeNumber(); break; // OK to consume because it just computes the bounds of the token and returns a ReadOnlySpan of the bounds
+                
+                // Can't skip these tokens
                 case JsonToken.None:
                 case JsonToken.EOF:
-                default: throw new InvalidOperationException($"Can't skip token of type {token}");
+                default: throw new InvalidOperationException($"Can't skip token of type {tokenType}");
             }
             AdvanceToNextToken();
         }
@@ -251,7 +261,7 @@ namespace Voorhees {
             
             // Detect next token type
             
-            if (cursor.NumCharsLeft <= 0) {
+            if (cursor.AtEOF) {
                 NextToken = JsonToken.EOF;
                 return;
             }
@@ -296,7 +306,9 @@ namespace Voorhees {
             throw new InvalidJsonException($"{cursor} Unexpected character '{cursor.CurrentChar}'");
         }
 
+        /// <summary>
         /// Same as ConsumeString but doesn't bother parsing the result.
+        /// </summary>
         void SkipString() {
             // Skip the leading '"', then continue skipping until we hit EOF or the closing "
             for (cursor.Advance(); !cursor.AtEOF; cursor.Advance()) {
