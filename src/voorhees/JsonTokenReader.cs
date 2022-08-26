@@ -128,8 +128,13 @@ namespace Voorhees {
         /// <a href="https://www.crockford.com/mckeeman.html">disallowed control character</a>
         /// or a malformed escape character sequence.
         /// </exception>
-        [return: NotNull]
+        /// <exception cref="InvalidOperationException">If the next token is not a string</exception>
+        [return: NotNull] // If we're consuming a string, it's always a valid string token, so it'll never be null.
         public string ConsumeString() {
+            if (NextToken != JsonToken.String) {
+                throw new InvalidOperationException($"{cursor} Trying to consume a string, but the next JSON token is not a string");
+            }
+            
             cursor.Advance(); // Skip the "
             int resultLength = 0; // Number of characters in the resulting string.
             bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed
