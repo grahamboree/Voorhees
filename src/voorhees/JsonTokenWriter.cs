@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 
 namespace Voorhees {
-    // Writes JSON tokens to a TextWriter
+    // Writes JSON tokens to a TextWriter.  Can optionally write tokens in pretty printing mode.
     public class JsonTokenWriter {
         public JsonTokenWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
@@ -40,7 +40,7 @@ namespace Voorhees {
 
         #region Array
         public void WriteArrayStart() { WriteIndent(); textWriter.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
-        public void WriteArrayEnd() { indentLevel--; WriteIndent(); textWriter.Write("]"); }
+        public void WriteArrayEnd()   { indentLevel--; WriteIndent(); textWriter.Write("]"); }
         #endregion
 
         #region Object
@@ -51,7 +51,7 @@ namespace Voorhees {
         
         /// Separator between elements of an array or key value pairs in an object.
         public void WriteArrayOrObjectSeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
-        /// Call this before writing the end token to indicate that the array or object body is complete.  Adds a newline in pretty printing mode. 
+        /// Call this before writing the end token for arrays and objects.  Adds a newline in pretty printing mode. 
         public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
         
         /////////////////////////////////////////////////
@@ -63,6 +63,10 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
         
+        /// <summary>
+        /// Writes string value with the proper special character sanitization required for JSON strings.
+        /// </summary>
+        /// <param name="val">The string value to write to the text writer</param>
         void WriteString(string val) {
             int extraLength = 0;
             foreach (char c in val) {
@@ -125,6 +129,7 @@ namespace Voorhees {
             }
         }
 
+        /// In pretty printing mode, writes tabs to indent to the correct level. 
         void WriteIndent() {
             if (!prettyPrint) {
                 return;
