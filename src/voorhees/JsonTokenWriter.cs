@@ -7,54 +7,54 @@ namespace Voorhees {
     public class JsonTokenWriter {
         public JsonTokenWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
-            writer = textWriter;
+            this.textWriter = textWriter;
         }
 
-        public void WriteNull() { WriteIndent(); writer.Write("null"); }
+        public void WriteNull() { WriteIndent(); textWriter.Write("null"); }
 
-        #region Json Boolean
-        public void Write(bool val) { WriteIndent(); writer.Write(val ? "true" : "false"); }
+        #region Boolean
+        public void Write(bool val) { WriteIndent(); textWriter.Write(val ? "true" : "false"); }
         #endregion
 
-        #region Json Number
+        #region Number
         // Integral types
-        public void Write(byte val)   { WriteIndent(); writer.Write(val); }
-        public void Write(sbyte val)  { WriteIndent(); writer.Write(val); }
-        public void Write(short val)  { WriteIndent(); writer.Write(val); }
-        public void Write(ushort val) { WriteIndent(); writer.Write(val); }
-        public void Write(int val)    { WriteIndent(); writer.Write(val); }
-        public void Write(uint val)   { WriteIndent(); writer.Write(val); }
-        public void Write(long val)   { WriteIndent(); writer.Write(val); }
-        public void Write(ulong val)  { WriteIndent(); writer.Write(val); }
+        public void Write(byte val)   { WriteIndent(); textWriter.Write(val); }
+        public void Write(sbyte val)  { WriteIndent(); textWriter.Write(val); }
+        public void Write(short val)  { WriteIndent(); textWriter.Write(val); }
+        public void Write(ushort val) { WriteIndent(); textWriter.Write(val); }
+        public void Write(int val)    { WriteIndent(); textWriter.Write(val); }
+        public void Write(uint val)   { WriteIndent(); textWriter.Write(val); }
+        public void Write(long val)   { WriteIndent(); textWriter.Write(val); }
+        public void Write(ulong val)  { WriteIndent(); textWriter.Write(val); }
 
         // Floating point types
-        public void Write(float val)   { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(double val)  { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(decimal val) { WriteIndent(); writer.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(float val)   { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(double val)  { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(decimal val) { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
         #endregion
 
-        #region Json String
+        #region String
         public void Write(string val) { WriteIndent(); WriteString(val); } 
         public void Write(char val)   { WriteIndent(); WriteString(val.ToString()); }
         #endregion
 
-        #region Json Array
-        public void WriteArrayStart() { WriteIndent(); writer.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
-        public void WriteArraySeparator() { writer.Write(prettyPrint ? ",\n" : ","); }
-        public void WriteArrayEnd() { indentLevel--; WriteIndent(); writer.Write("]"); }
+        #region Array
+        public void WriteArrayStart() { WriteIndent(); textWriter.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
+        public void WriteArraySeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
+        public void WriteArrayEnd() { indentLevel--; WriteIndent(); textWriter.Write("]"); }
         #endregion
 
-        #region Json Object
-        public void WriteObjectStart() { WriteIndent(); writer.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
-        public void WriteObjectKeyValueSeparator() { writer.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
-        public void WriteObjectEnd() { indentLevel--; WriteIndent(); writer.Write("}"); }
+        #region Object
+        public void WriteObjectStart() { WriteIndent(); textWriter.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
+        public void WriteObjectKeyValueSeparator() { textWriter.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
+        public void WriteObjectEnd() { indentLevel--; WriteIndent(); textWriter.Write("}"); }
         #endregion
         
-        public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { writer.Write("\n"); } }
+        public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
         
         /////////////////////////////////////////////////
         
-        readonly TextWriter writer;
+        readonly TextWriter textWriter;
         int indentLevel;
         bool skipNextTabs;
         readonly bool prettyPrint;
@@ -88,7 +88,7 @@ namespace Voorhees {
                 buffer[0] = '\"';
                 val.AsSpan().CopyTo(buffer[1..]);
                 buffer[val.Length + 1] = '\"';
-                writer.Write(buffer);
+                textWriter.Write(buffer);
             } else {
                 // There are special characters in the string we need to escape.
                 Span<char> buffer = stackalloc char[val.Length + 2 + extraLength];
@@ -119,7 +119,7 @@ namespace Voorhees {
                     }
                 }
                 buffer[bufferIndex] = '\"';
-                writer.Write(buffer);
+                textWriter.Write(buffer);
             }
         }
 
@@ -141,7 +141,7 @@ namespace Voorhees {
             for (int i = 0; i < indentLevel; ++i) {
                 buffer[i] = '\t';
             }
-            writer.Write(buffer);
+            textWriter.Write(buffer);
         }
     }
 }
