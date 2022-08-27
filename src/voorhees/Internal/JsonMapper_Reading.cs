@@ -17,10 +17,15 @@ namespace Voorhees {
             if (destinationType == typeof(uint)) { return (IValueParser<T>)UIntValueParser.Instance; }
             if (destinationType == typeof(long)) { return (IValueParser<T>)LongValueParser.Instance; }
             if (destinationType == typeof(ulong)) { return (IValueParser<T>)ULongValueParser.Instance; }
+            
             if (destinationType == typeof(float)) { return (IValueParser<T>)FloatValueParser.Instance; }
             if (destinationType == typeof(double)) { return (IValueParser<T>)DoubleValueParser.Instance; }
             if (destinationType == typeof(decimal)) { return (IValueParser<T>)DecimalValueParser.Instance; }
+            
             if (destinationType == typeof(char)) { return (IValueParser<T>)CharValueParser.Instance; }
+            
+            if (destinationType == typeof(DateTime)) { return (IValueParser<T>)DateTimeValueParser.Instance; }
+            if (destinationType == typeof(DateTimeOffset)) { return (IValueParser<T>)DateTimeOffsetValueParser.Instance; }
             return null;
         }
         
@@ -127,6 +132,22 @@ namespace Voorhees {
                 return stringVal[0];
             }
         }
+        
+        class DateTimeValueParser : IValueParser<DateTime> {
+            public static readonly DateTimeValueParser Instance = new();
+            
+            public DateTime Parse(JsonTokenReader tokenReader) {
+                return DateTime.Parse(tokenReader.ConsumeString());
+            }
+        }
+        
+        class DateTimeOffsetValueParser : IValueParser<DateTimeOffset> {
+            public static readonly DateTimeOffsetValueParser Instance = new();
+            
+            public DateTimeOffset Parse(JsonTokenReader tokenReader) {
+                return DateTimeOffset.Parse(tokenReader.ConsumeString());
+            }
+        }
     }
     
     public static partial class JsonMapper {
@@ -148,14 +169,9 @@ namespace Voorhees {
         static object ReadValueOfType(JsonTokenReader tokenReader, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;
-
-            // Maybe there's a base importer that works
-            if (Voorhees.BuiltInImporters.TryGetValue(destinationType, out var builtInImporter)) {
-                return builtInImporter(tokenReader);
-            }
-
             Type jsonType;
             object jsonValue;
+            
             switch (tokenReader.NextToken) {
                 case JsonToken.Null: {
                     if (destinationType.IsClass || underlyingType != null) {

@@ -42,7 +42,6 @@ namespace Voorhees {
         internal delegate void ExporterFunc(object obj, JsonTokenWriter os);
         internal delegate object ImporterFunc(JsonTokenReader tokenReader);
         
-        internal static readonly Dictionary<Type, ImporterFunc> BuiltInImporters = new();
         internal static readonly Dictionary<Type, ExporterFunc> BuiltInExporters = new();
         
         internal readonly Dictionary<Type, ImporterFunc> CustomImporters = new();
@@ -55,9 +54,6 @@ namespace Voorhees {
                 tokenWriter.Write(((DateTime) obj).ToString("o"));
             BuiltInExporters[typeof(DateTimeOffset)] = (obj, tokenWriter) =>
                 tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
-            
-            BuiltInImporters[typeof(DateTime)] = tokenReader => DateTime.Parse(tokenReader.ConsumeString());
-            BuiltInImporters[typeof(DateTimeOffset)] = tokenReader => DateTimeOffset.Parse(tokenReader.ConsumeString());
         }
     }
 }
