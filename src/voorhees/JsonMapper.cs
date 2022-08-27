@@ -36,11 +36,7 @@ namespace Voorhees {
         
         #region Reading
         public static T FromJson<T>(string jsonString) {
-            return (T) FromJson(new JsonTokenReader(jsonString), typeof(T));
-        }
-
-        public static JsonValue FromJson(string jsonString) {
-            return FromJson(new JsonTokenReader(jsonString));
+            return FromJson<T>(new JsonTokenReader(jsonString));
         }
 
         public static T FromJson<T>(JsonTokenReader tokenReader) {
@@ -51,6 +47,10 @@ namespace Voorhees {
                 throw new InvalidJsonException($"{tokenReader.LineColString} Expected end of file");
             }
             return result;
+        }
+
+        public static JsonValue FromJson(string jsonString) {
+            return FromJson(new JsonTokenReader(jsonString));
         }
 
         public static JsonValue FromJson(JsonTokenReader tokenReader) {
