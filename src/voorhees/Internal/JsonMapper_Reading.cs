@@ -5,46 +5,160 @@ using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
+    // Value type parser instances.  This is necessary to trick the type system into not boxing the value type results.
     public static partial class JsonMapper {
-        static object FromJson(JsonTokenReader tokenReader, Type destinationType) {
-            var underlyingType = Nullable.GetUnderlyingType(destinationType);
-            var valueType = underlyingType ?? destinationType;
-
-            if (tokenReader.NextToken == JsonToken.Null) {
-                if (destinationType.IsClass || underlyingType != null) {
-                    return null;
-                }
-                throw new Exception($"Can't assign null to an instance of type {destinationType}");
-            }
-
-            // If there's a custom importer that fits, use it
-            var config = Voorhees.Instance;
-            if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
-                return customImporter(tokenReader);
-            }
-
-            // Maybe there's a base importer that works
-            if (destinationType == typeof(byte)) { return byte.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(sbyte)) { return sbyte.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(short)) { return short.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(ushort)) { return ushort.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(int)) { return int.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(uint)) { return uint.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(long)) { return long.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(ulong)) { return ulong.Parse(tokenReader.ConsumeNumber()); }
+        static IValueParser<T> GetParser<T>() {
+            var destinationType = typeof(T);
+            if (destinationType == typeof(byte)) { return (IValueParser<T>)ByteValueParser.Instance; }
+            if (destinationType == typeof(sbyte)) { return (IValueParser<T>)SByteValueParser.Instance; }
+            if (destinationType == typeof(short)) { return (IValueParser<T>)ShortValueParser.Instance; }
+            if (destinationType == typeof(ushort)) { return (IValueParser<T>)UShortValueParser.Instance; }
+            if (destinationType == typeof(int)) { return (IValueParser<T>)IntValueParser.Instance; }
+            if (destinationType == typeof(uint)) { return (IValueParser<T>)UIntValueParser.Instance; }
+            if (destinationType == typeof(long)) { return (IValueParser<T>)LongValueParser.Instance; }
+            if (destinationType == typeof(ulong)) { return (IValueParser<T>)ULongValueParser.Instance; }
+            if (destinationType == typeof(float)) { return (IValueParser<T>)FloatValueParser.Instance; }
+            if (destinationType == typeof(double)) { return (IValueParser<T>)DoubleValueParser.Instance; }
+            if (destinationType == typeof(decimal)) { return (IValueParser<T>)DecimalValueParser.Instance; }
+            if (destinationType == typeof(char)) { return (IValueParser<T>)CharValueParser.Instance; }
+            return null;
+        }
+        
+        interface IValueParser<out T> {
+            T Parse(JsonTokenReader tokenReader);
+        }
+        
+        class ByteValueParser : IValueParser<byte> {
+            public static readonly ByteValueParser Instance = new();
             
-            if (destinationType == typeof(float)) { return float.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(double)) { return double.Parse(tokenReader.ConsumeNumber()); }
-            if (destinationType == typeof(decimal)) { return decimal.Parse(tokenReader.ConsumeNumber()); }
-
-            if (destinationType == typeof(char)) {
+            public byte Parse(JsonTokenReader tokenReader) {
+                return byte.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class SByteValueParser : IValueParser<sbyte> {
+            public static readonly SByteValueParser Instance = new();
+            
+            public sbyte Parse(JsonTokenReader tokenReader) {
+                return sbyte.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class ShortValueParser : IValueParser<short> {
+            public static readonly ShortValueParser Instance = new();
+            
+            public short Parse(JsonTokenReader tokenReader) {
+                return short.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class UShortValueParser : IValueParser<ushort> {
+            public static readonly UShortValueParser Instance = new();
+            
+            public ushort Parse(JsonTokenReader tokenReader) {
+                return ushort.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class IntValueParser : IValueParser<int> {
+            public static readonly IntValueParser Instance = new();
+            
+            public int Parse(JsonTokenReader tokenReader) {
+                return int.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class UIntValueParser : IValueParser<uint> {
+            public static readonly UIntValueParser Instance = new();
+            
+            public uint Parse(JsonTokenReader tokenReader) {
+                return uint.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class LongValueParser : IValueParser<long> {
+            public static readonly LongValueParser Instance = new();
+            
+            public long Parse(JsonTokenReader tokenReader) {
+                return long.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class ULongValueParser : IValueParser<ulong> {
+            public static readonly ULongValueParser Instance = new();
+            
+            public ulong Parse(JsonTokenReader tokenReader) {
+                return ulong.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class FloatValueParser : IValueParser<float> {
+            public static readonly FloatValueParser Instance = new();
+            
+            public float Parse(JsonTokenReader tokenReader) {
+                return float.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class DoubleValueParser : IValueParser<double> {
+            public static readonly DoubleValueParser Instance = new();
+            
+            public double Parse(JsonTokenReader tokenReader) {
+                return double.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class DecimalValueParser : IValueParser<decimal> {
+            public static readonly DecimalValueParser Instance = new();
+            
+            public decimal Parse(JsonTokenReader tokenReader) {
+                return decimal.Parse(tokenReader.ConsumeNumber());
+            }
+        }
+        
+        class CharValueParser : IValueParser<char> {
+            public static readonly CharValueParser Instance = new();
+            
+            public char Parse(JsonTokenReader tokenReader) {
                 string stringVal = tokenReader.ConsumeString();
                 if (stringVal.Length != 1) {
                     throw new FormatException($"{tokenReader.LineColString} Trying to map a string of length != 1 to a char: \"{stringVal}\"");
                 }
                 return stringVal[0];
             }
+        }
+    }
+    
+    public static partial class JsonMapper {
+        static T ReadValueOfType<T>(JsonTokenReader tokenReader) {
+            var destinationType = typeof(T);
+            // If there's a custom importer that fits, use it
+            var config = Voorhees.Instance;
+            if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
+                return (T)customImporter(tokenReader);
+            }
             
+            var parser = GetParser<T>();
+            if (parser != null) {
+                return parser.Parse(tokenReader);
+            }
+            return (T)ReadValueOfType(tokenReader, destinationType);
+        }
+        
+        static object ReadValueOfType(JsonTokenReader tokenReader, Type destinationType) {
+            var underlyingType = Nullable.GetUnderlyingType(destinationType);
+            var valueType = underlyingType ?? destinationType;
+
+            if (tokenReader.NextToken == JsonToken.Null) {
+                if (destinationType.IsClass || underlyingType != null) {
+                    tokenReader.SkipToken(JsonToken.Null);
+                    return null;
+                }
+                throw new Exception($"{tokenReader} Can't assign null to an instance of type {destinationType}");
+            }
+
+            // Maybe there's a base importer that works
+
             if (Voorhees.BuiltInImporters.TryGetValue(destinationType, out var builtInImporter)) {
                 return builtInImporter(tokenReader);
             }
@@ -98,7 +212,7 @@ namespace Voorhees {
             bool expectingValue = false;
             while (tokenReader.NextToken != JsonToken.ArrayEnd) {
                 expectingValue = false;
-                list.Add(FromJson(tokenReader, elementType));
+                list.Add(ReadValueOfType(tokenReader, elementType));
                 if (tokenReader.NextToken == JsonToken.Separator) {
                     expectingValue = true;
                     tokenReader.SkipToken(JsonToken.Separator);
@@ -123,7 +237,7 @@ namespace Voorhees {
             while (tokenReader.NextToken != JsonToken.ArrayEnd) {
                 expectingValue = false;
 
-                list.Add(rank > 1 ? ReadMultiList(tokenReader, elementType, rank - 1) : FromJson(tokenReader, elementType));
+                list.Add(rank > 1 ? ReadMultiList(tokenReader, elementType, rank - 1) : ReadValueOfType(tokenReader, elementType));
 
                 if (tokenReader.NextToken == JsonToken.Separator) {
                     expectingValue = true;
@@ -249,14 +363,14 @@ namespace Voorhees {
                 if (objectMetadata.Properties.TryGetValue(propertyName, out var propertyMetadata)) {
                     if (propertyMetadata.Ignored) {
                         // Read the value so we advance the token reader, but don't do anything with it.
-                        FromJson(tokenReader, propertyMetadata.Type);
+                        ReadValueOfType(tokenReader, propertyMetadata.Type);
                     } else {
                         if (propertyMetadata.IsField) {
-                            ((FieldInfo)propertyMetadata.Info).SetValue(instance, FromJson(tokenReader, propertyMetadata.Type));
+                            ((FieldInfo)propertyMetadata.Info).SetValue(instance, ReadValueOfType(tokenReader, propertyMetadata.Type));
                         } else {
                             var propertyInfo = (PropertyInfo)propertyMetadata.Info;
                             if (propertyInfo.CanWrite) {
-                                propertyInfo.SetValue(instance, FromJson(tokenReader, propertyMetadata.Type), null);
+                                propertyInfo.SetValue(instance, ReadValueOfType(tokenReader, propertyMetadata.Type), null);
                             } else {
                                 throw new Exception("Read property value from json but the property " +
                                                     $"{propertyInfo.Name} in type {destinationType} is read-only.");
@@ -264,7 +378,7 @@ namespace Voorhees {
                         }
                     }
                 } else if (objectMetadata.IsDictionary) {
-                    ((IDictionary)instance).Add(propertyName, FromJson(tokenReader, objectMetadata.ElementType));
+                    ((IDictionary)instance).Add(propertyName, ReadValueOfType(tokenReader, objectMetadata.ElementType));
                 } else {
                     throw new Exception($"The type {destinationType} doesn't have the property '{propertyName}'");
                 }

@@ -20,7 +20,7 @@ namespace Voorhees.Tests {
         public void ReadNull_ValueType() {
             // Value types cannot be null.
             Assert.Throws<Exception>(() => JsonMapper.FromJson<TestValueType>("null"));
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<int>("null"));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<int>("null"));
         }
     }
 

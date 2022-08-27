@@ -40,7 +40,7 @@ namespace Voorhees {
         }
 
         public static T FromJson<T>(JsonTokenReader tokenReader) {
-            var result = (T)FromJson(tokenReader, typeof(T));
+            var result = ReadValueOfType<T>(tokenReader);
             
             // Make sure there's no additional json in the buffer.
             if (tokenReader.NextToken != JsonToken.EOF) {
