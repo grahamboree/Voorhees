@@ -14,10 +14,10 @@ namespace bench {
         }
 
         [Benchmark]
-        public Voorhees.JsonValue Voorhees_Citm() => Voorhees.JsonReader.Read(citm);
+        public Voorhees.JsonValue Voorhees_Citm() => Voorhees.JsonMapper.FromJson(citm);
 
         [Benchmark]
-        public Voorhees.JsonValue Voorhees_Canada() => Voorhees.JsonReader.Read(canada);
+        public Voorhees.JsonValue Voorhees_Canada() => Voorhees.JsonMapper.FromJson(canada);
         
         [Benchmark]
         public LitJson.JsonData LitJson_Citm() => LitJson.JsonMapper.ToObject(citm);
