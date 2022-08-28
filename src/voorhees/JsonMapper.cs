@@ -27,13 +27,18 @@ namespace Voorhees {
         
         /////////////////////////////////////////////////
 
-        public void RegisterExporter<T>(ExporterFunc<T> exporter) => customExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
-        public void UnRegisterExporter<T>() => customExporters.Remove(typeof(T));
-        public void UnRegisterAllExporters() => customExporters.Clear();
+        #region Custom Importers
         public void RegisterImporter<T>(ImporterFunc<T> importer) => customImporters[typeof(T)] = json => importer(json);
         public void UnRegisterImporter<T>() => customImporters.Remove(typeof(T));
         public void UnRegisterAllImporters() => customImporters.Clear();
-
+        #endregion
+        
+        #region Custom Exporters
+        public void RegisterExporter<T>(ExporterFunc<T> exporter) => customExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
+        public void UnRegisterExporter<T>() => customExporters.Remove(typeof(T));
+        public void UnRegisterAllExporters() => customExporters.Clear();
+        #endregion
+        
         #region Writing
         public string Write<T>(T obj, bool prettyPrint = false) {
             var stringBuilder = new StringBuilder();
@@ -88,11 +93,11 @@ namespace Voorhees {
         #endregion
         
         /////////////////////////////////////////////////
-
-        static readonly JsonMapper defaultInstance = new();
         
         delegate void ExporterFunc(object obj, JsonTokenWriter os);
         delegate object ImporterFunc(JsonTokenReader tokenReader);
+
+        static readonly JsonMapper defaultInstance = new();
         
         static readonly Dictionary<Type, ExporterFunc> builtInExporters = new();
         
