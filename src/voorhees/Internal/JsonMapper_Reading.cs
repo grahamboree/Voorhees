@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
@@ -435,8 +436,8 @@ namespace Voorhees {
                 case JsonToken.Number: {
                     var numberSpan = tokenReader.ConsumeNumber();
                     try {
-                        return int.TryParse(numberSpan, out int intVal) ? new JsonValue(intVal)
-                            : new JsonValue(float.Parse(numberSpan));
+                        return int.TryParse(numberSpan, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out int intVal) ? new JsonValue(intVal)
+                            : new JsonValue(float.Parse(numberSpan, NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat));
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
                         throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
