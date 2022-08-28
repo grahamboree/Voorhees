@@ -258,7 +258,7 @@ namespace Voorhees {
                         tokenReader.SkipToken(JsonToken.Null);
                         return null;
                     }
-                    throw new Exception($"{tokenReader} Can't assign null to an instance of type {destinationType}");
+                    throw new InvalidCastException($"{tokenReader} Can't assign null to an instance of type {destinationType}");
                 }
                 case JsonToken.ObjectStart: return MapObject(tokenReader, destinationType);
                 case JsonToken.ArrayStart: return MapArray(tokenReader, destinationType);
@@ -278,7 +278,7 @@ namespace Voorhees {
                         }
                     } catch (InvalidJsonException inner) {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
-                        throw new InvalidCastException(tokenReader.LineColString + " " + inner.Message);
+                        throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
                     }
                 } break;
                 case JsonToken.True: {
@@ -316,7 +316,7 @@ namespace Voorhees {
             }
 
             // No luck
-            throw new Exception($"Can't assign value of type '{jsonType}' to value type {valueType} and destination type {destinationType}");
+            throw new InvalidCastException($"Can't assign value of type '{jsonType}' to value type {valueType} and destination type {destinationType}");
         }
 
         void ReadList(JsonTokenReader tokenReader, IList list, Type elementType) {
@@ -428,7 +428,7 @@ namespace Voorhees {
                 return list;
             }
 
-            throw new Exception($"Type {destinationType} can't act as an array");
+            throw new InvalidCastException($"Type {destinationType} can't act as an array");
         }
 
         object MapObject(JsonTokenReader tokenReader, Type destinationType) {
@@ -485,15 +485,15 @@ namespace Voorhees {
                             if (propertyInfo.CanWrite) {
                                 propertyInfo.SetValue(instance, ReadValueOfType(tokenReader, propertyMetadata.Type), null);
                             } else {
-                                throw new Exception("Read property value from json but the property " +
-                                                    $"{propertyInfo.Name} in type {destinationType} is read-only.");
+                                throw new InvalidOperationException("Read property value from json but the property " +
+                                                                    $"{propertyInfo.Name} in type {destinationType} is read-only.");
                             }
                         }
                     }
                 } else if (objectMetadata.IsDictionary) {
                     ((IDictionary)instance).Add(propertyName, ReadValueOfType(tokenReader, objectMetadata.ElementType));
                 } else {
-                    throw new Exception($"The type {destinationType} doesn't have the property '{propertyName}'");
+                    throw new InvalidOperationException($"The type {destinationType} doesn't have the property '{propertyName}'");
                 }
 
                 if (tokenReader.NextToken == JsonToken.Separator) {

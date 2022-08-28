@@ -25,7 +25,7 @@ namespace Voorhees.Tests {
         [Test]
         public void UnRegisterImporter() {
             var mapper = new JsonMapper();
-            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
+            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
             
             mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
@@ -35,7 +35,7 @@ namespace Voorhees.Tests {
             
             mapper.UnRegisterImporter<TestType>();
             
-            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
+            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
         }
 
         [Test]
@@ -49,7 +49,7 @@ namespace Voorhees.Tests {
 
             mapper.UnRegisterAllImporters();
             
-            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
+            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
         }
 
         [Test]
@@ -68,8 +68,8 @@ namespace Voorhees.Tests {
 
             mapper.UnRegisterAllImporters();
             
-            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
-            Assert.Throws<Exception>(() => mapper.Read<TestType2>("\"test\""));
+            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
+            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType2>("\"test\""));
         }
     }
 }

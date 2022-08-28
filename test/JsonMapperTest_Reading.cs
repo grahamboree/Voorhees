@@ -19,7 +19,7 @@ namespace Voorhees.Tests {
         [Test]
         public void ReadNull_ValueType() {
             // Value types cannot be null.
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestValueType>("null"));
+            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<TestValueType>("null"));
             Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<int>("null"));
         }
     }
@@ -268,7 +268,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ReadArrayToNonArrayTypeThrows() {
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<string>("[1,2,3]"));
+            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<string>("[1,2,3]"));
         }
     }
 
@@ -379,7 +379,7 @@ namespace Voorhees.Tests {
         [Test]
         public void PublicReadOnlyProperties() {
             const string JSON = "{\"publicProperty\": 3, \"publicProperty2\": 5}";
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(JSON));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(JSON));
         }
 
         [Test]
@@ -392,7 +392,7 @@ namespace Voorhees.Tests {
         [Test]
         public void MappingObjectWithExtraKeyThrows() {
             const string JSON = "{\"publicField\":1,\"publicField2\":2,\"publicField3\":3}";
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
         }
     }
 
@@ -458,7 +458,7 @@ namespace Voorhees.Tests {
         [Test]
         public void JsonContainsReadOnlyWriteOnlyAndComputedProperties() {
             const string JSON = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3, \"ComputedProperty\": 8}";
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>(JSON));
         }
     }
 
