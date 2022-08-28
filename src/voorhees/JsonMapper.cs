@@ -13,16 +13,16 @@ namespace Voorhees {
 
         #region Writing
         public static string ToJson<T>(T obj, bool prettyPrint = false) => defaultInstance.Write(obj, prettyPrint);
-        public static string ToJson(JsonValue val, bool prettyPrint = false) => defaultInstance.Write(val, prettyPrint);
         public static void ToJson<T>(T obj, JsonTokenWriter tokenWriter) => defaultInstance.Write(obj, tokenWriter);
-        public static void ToJson(JsonValue val, JsonTokenWriter tokenWriter) => defaultInstance.Write(val, tokenWriter);
+        public static string ToJson(JsonValue val, bool prettyPrint = false) => Write(val, prettyPrint);
+        public static void ToJson(JsonValue val, JsonTokenWriter tokenWriter) => Write(val, tokenWriter);
         #endregion
         
         #region Reading
         public static T FromJson<T>(string jsonString) => defaultInstance.Read<T>(jsonString);
         public static T FromJson<T>(JsonTokenReader tokenReader) => defaultInstance.Read<T>(tokenReader);
-        public static JsonValue FromJson(string jsonString) => defaultInstance.Read(jsonString);
-        public static JsonValue FromJson(JsonTokenReader tokenReader) => defaultInstance.Read(tokenReader);
+        public static JsonValue FromJson(string jsonString) => Read(jsonString);
+        public static JsonValue FromJson(JsonTokenReader tokenReader) => Read(tokenReader);
         #endregion
         
         /////////////////////////////////////////////////
@@ -46,7 +46,7 @@ namespace Voorhees {
 
         public void Write<T>(T obj, JsonTokenWriter tokenWriter) => WriteValue(obj, typeof(T), obj?.GetType(), tokenWriter);
 
-        public string Write(JsonValue val, bool prettyPrint = false) {
+        public static string Write(JsonValue val, bool prettyPrint = false) {
             // We need to explicitly specify the function body here even
             // though it's identical to the generic version.
             // This forces it to use the overload that takes a JsonValue.
@@ -58,7 +58,7 @@ namespace Voorhees {
             return stringBuilder.ToString();
         }
 
-        public void Write(JsonValue val, JsonTokenWriter tokenWriter) => WriteJsonValue(val, tokenWriter);
+        public static void Write(JsonValue val, JsonTokenWriter tokenWriter) => WriteJsonValue(val, tokenWriter);
         #endregion
         
         #region Reading
@@ -74,9 +74,9 @@ namespace Voorhees {
             return result;
         }
 
-        public JsonValue Read(string jsonString) => Read(new JsonTokenReader(jsonString));
+        public static JsonValue Read(string jsonString) => Read(new JsonTokenReader(jsonString));
 
-        public JsonValue Read(JsonTokenReader tokenReader) {
+        public static JsonValue Read(JsonTokenReader tokenReader) {
             var result = ReadJsonValue(tokenReader);
 
             // Make sure there's no additional json in the buffer.
