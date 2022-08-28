@@ -10,11 +10,8 @@ namespace Voorhees.Internal {
 
         /// Index of the current character in the entire json document.
         public int Index;
-        /// Current line number in the json document. 1-indexed
-        public int Line;
-        /// Current column number in the json document.  1-indexed
-        public int Column;
 
+        /// The character the cursor is currently pointing to.
         public char CurrentChar;
         
         public int NumCharsLeft {
@@ -37,8 +34,6 @@ namespace Voorhees.Internal {
             Document = document;
             DocLength = Document.Length;
             Index = 0;
-            Line = 1;
-            Column = 1;
             CurrentChar = !AtEOF ? Document[Index] : '\0';
         }
         
@@ -56,9 +51,8 @@ namespace Voorhees.Internal {
         /// <param name="numChars">Characters to advance by</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AdvanceBy(int numChars) {
-            for (int i = 0; i < numChars; ++i) {
-                Advance();
-            }
+            Index += numChars < NumCharsLeft ? numChars : NumCharsLeft;
+            CurrentChar = Index < DocLength ? Document[Index] : '\0';
         }
 
         /// Advances the read position forward one character.
@@ -67,13 +61,8 @@ namespace Voorhees.Internal {
             if (Index >= DocLength) {
                 return;
             }
-            if (CurrentChar == '\n') {
-                Line++;
-                Column = 0;
-            }
             Index++;
             CurrentChar = Index < DocLength ? Document[Index] : '\0';
-            Column++;
         }
 
         /// <summary>
@@ -82,7 +71,20 @@ namespace Voorhees.Internal {
         /// </summary>
         /// <returns>string containing line and column info for the current cursor position</returns>
         public override string ToString() {
-            return $"line: {Line} col: {Column}";
+            // Compute the line and column number.
+            // We could keep track of this as we move through the document
+            // but we don't need it unless we're throwing an exception, so it's
+            // fine to just compute this on-demand.
+            int line = 1;
+            int column = 1;
+            for (int i = 0; i < Index; i++) {
+                if (Document[i] == '\n') {
+                    line++;
+                    column = 0;
+                }
+                column++;
+            }
+            return $"line: {line} col: {column}";
         }
     }
 }

@@ -9,8 +9,7 @@ namespace Voorhees.Tests {
             doc.AdvanceBy(2);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));
-                Assert.That(doc.Line, Is.EqualTo(2));
-                Assert.That(doc.Column, Is.EqualTo(1));
+                Assert.That(doc.ToString(), Is.EqualTo("line: 2 col: 1"));
             });
         }
         
@@ -20,8 +19,7 @@ namespace Voorhees.Tests {
             doc.AdvanceBy(2);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));
-                Assert.That(doc.Line, Is.EqualTo(1));
-                Assert.That(doc.Column, Is.EqualTo(3));
+                Assert.That(doc.ToString(), Is.EqualTo("line: 1 col: 3"));
             });
         }
         
@@ -31,8 +29,7 @@ namespace Voorhees.Tests {
             doc.AdvanceBy(5);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));
-                Assert.That(doc.Line, Is.EqualTo(1));
-                Assert.That(doc.Column, Is.EqualTo(3));
+                Assert.That(doc.ToString(), Is.EqualTo("line: 1 col: 3"));
             });
         }
     }
