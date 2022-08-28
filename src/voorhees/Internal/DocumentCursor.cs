@@ -34,7 +34,7 @@ namespace Voorhees.Internal {
         /// Advances to the next non-whitespace character.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AdvanceToNextNonWhitespaceChar() {
-            while (Index < Document.Length && char.IsWhiteSpace(Document[Index])) {
+            while (Index < DocLength && CurrentChar is ' ' or '\n' or '\r' or '\t') {
                 Advance();
             }
         }
