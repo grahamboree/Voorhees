@@ -6,6 +6,7 @@ namespace Voorhees.Internal {
     /// numbers.  Only moves forward through the document.
     public class DocumentCursor {
         public readonly string Document;
+        readonly int DocLength;
 
         /// Index of the current character in the entire json document.
         public int Index;
@@ -14,9 +15,9 @@ namespace Voorhees.Internal {
         /// Current column number in the json document.  1-indexed
         public int Column;
 
-        public int NumCharsLeft => Document.Length - Index;
-        public bool AtEOF => Index >= Document.Length;
-        public char CurrentChar => Document[Index];
+        public int NumCharsLeft => DocLength - Index;
+        public bool AtEOF => Index >= DocLength;
+        public char CurrentChar;
 
         /////////////////////////////////////////////////
 
@@ -26,9 +27,11 @@ namespace Voorhees.Internal {
         /// <param name="document">The document to read</param>
         public DocumentCursor(string document) {
             Document = document;
+            DocLength = Document.Length;
             Index = 0;
             Line = 1;
             Column = 1;
+            CurrentChar = !AtEOF ? Document[Index] : '\0';
         }
         
         /// Advances to the next non-whitespace character.
@@ -53,14 +56,15 @@ namespace Voorhees.Internal {
         /// Advances the read position forward one character.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() {
-            if (Index >= Document.Length) {
+            if (Index >= DocLength) {
                 return;
             }
-            if (Document[Index] == '\n') {
+            if (CurrentChar == '\n') {
                 Line++;
                 Column = 0;
             }
             Index++;
+            CurrentChar = Index < DocLength ? Document[Index] : '\0';
             Column++;
         }
 
