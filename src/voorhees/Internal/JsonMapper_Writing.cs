@@ -6,21 +6,21 @@ using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
-    public static partial class JsonMapper {
-        static void WriteValue(object obj, Type referenceType, Type valueType, JsonTokenWriter tokenWriter) {
+    public partial class JsonMapper {
+        void WriteValue(object obj, Type referenceType, Type valueType, JsonTokenWriter tokenWriter) {
             if (obj == null) {
                 tokenWriter.WriteNull();
                 return;
             }
 
             // See if there's a custom exporter for the object
-            if (Voorhees.Instance.CustomExporters.TryGetValue(referenceType, out var customExporter)) {
+            if (customExporters.TryGetValue(referenceType, out var customExporter)) {
                 customExporter(obj, tokenWriter);
                 return;
             }
 
             // If not, maybe there's a built-in serializer
-            if (Voorhees.BuiltInExporters.TryGetValue(referenceType, out var builtInExporter)) {
+            if (builtInExporters.TryGetValue(referenceType, out var builtInExporter)) {
                 builtInExporter(obj, tokenWriter);
                 return;
             }
@@ -169,7 +169,7 @@ namespace Voorhees {
             tokenWriter.WriteObjectEnd();
         }
 
-        static void Write1DArray(IList list, JsonTokenWriter tokenWriter) {
+        void Write1DArray(IList list, JsonTokenWriter tokenWriter) {
             tokenWriter.WriteArrayStart();
             for (int i = 0; i < list.Count; i++) {
                 object listVal = list[i];
@@ -215,7 +215,7 @@ namespace Voorhees {
                     tokenWriter.WriteObjectStart();
 
                     bool first = true;
-                    foreach (var objectPair in val as IEnumerable<KeyValuePair<string, JsonValue>>) {
+                    foreach (var objectPair in (IEnumerable<KeyValuePair<string, JsonValue>>)val) {
                         if (!first) {
                             tokenWriter.WriteArrayOrObjectSeparator();
                         }

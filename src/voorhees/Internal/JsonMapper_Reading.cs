@@ -7,7 +7,7 @@ using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
     // Value type parser instances.  This is necessary to trick the type system into not boxing the value type results.
-    public static partial class JsonMapper {
+    public partial class JsonMapper {
         static INumericValueParser<T> GetNumericValueParser<T>() {
             var destinationType = typeof(T);
             if (destinationType == typeof(byte)) { return (INumericValueParser<T>)ByteValueParser.Instance; }
@@ -178,7 +178,7 @@ namespace Voorhees {
         }
     }
 
-    public static partial class JsonMapper {
+    public partial class JsonMapper {
         static IStringValueParser<T> GetStringValueParser<T>() {
             var destinationType = typeof(T);
             if (destinationType == typeof(char)) { return (IStringValueParser<T>)CharValueParser.Instance; }
@@ -219,13 +219,12 @@ namespace Voorhees {
         }
     }
     
-    public static partial class JsonMapper {
-        static T ReadValueOfType<T>(JsonTokenReader tokenReader) {
+    public partial class JsonMapper {
+        T ReadValueOfType<T>(JsonTokenReader tokenReader) {
             var destinationType = typeof(T);
             
             // If there's a custom importer that fits, use it
-            var config = Voorhees.Instance;
-            if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
+            if (customImporters.TryGetValue(destinationType, out var customImporter)) {
                 return (T)customImporter(tokenReader);
             }
 
@@ -247,7 +246,7 @@ namespace Voorhees {
             return (T)ReadValueOfType(tokenReader, destinationType);
         }
         
-        static object ReadValueOfType(JsonTokenReader tokenReader, Type destinationType) {
+        object ReadValueOfType(JsonTokenReader tokenReader, Type destinationType) {
             var underlyingType = Nullable.GetUnderlyingType(destinationType);
             var valueType = underlyingType ?? destinationType;
             Type jsonType;
@@ -320,7 +319,7 @@ namespace Voorhees {
             throw new Exception($"Can't assign value of type '{jsonType}' to value type {valueType} and destination type {destinationType}");
         }
 
-        static void ReadList(JsonTokenReader tokenReader, IList list, Type elementType) {
+        void ReadList(JsonTokenReader tokenReader, IList list, Type elementType) {
             tokenReader.SkipToken(JsonToken.ArrayStart);
 
             bool expectingValue = false;
@@ -342,7 +341,7 @@ namespace Voorhees {
             tokenReader.SkipToken(JsonToken.ArrayEnd);
         }
 
-        static IList ReadMultiList(JsonTokenReader tokenReader, Type elementType, int rank) {
+        IList ReadMultiList(JsonTokenReader tokenReader, Type elementType, int rank) {
             tokenReader.SkipToken(JsonToken.ArrayStart);
 
             IList list = new ArrayList();
@@ -381,7 +380,7 @@ namespace Voorhees {
             }
         }
 
-        static object MapArray(JsonTokenReader tokenReader, Type destinationType) {
+        object MapArray(JsonTokenReader tokenReader, Type destinationType) {
             var arrayMetadata = TypeInfo.GetCachedArrayMetadata(destinationType);
 
             if (arrayMetadata.IsArray) {
@@ -432,7 +431,7 @@ namespace Voorhees {
             throw new Exception($"Type {destinationType} can't act as an array");
         }
 
-        static object MapObject(JsonTokenReader tokenReader, Type destinationType) {
+        object MapObject(JsonTokenReader tokenReader, Type destinationType) {
             var valueType = destinationType;
             tokenReader.SkipToken(JsonToken.ObjectStart);
 

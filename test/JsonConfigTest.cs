@@ -3,150 +3,68 @@ using NUnit.Framework;
 
 namespace Voorhees.Tests {
     [TestFixture]
-    public class JsonConfig_RegisterExporter {
+    public class JsonMapper_CustomExporters {
         class TestType {
             public int PubIntVal;
         }
 
-        [SetUp]
-        public void SetUp() {
-            Voorhees.Instance.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterExporter<TestType>();
+        class TestType2 {
+            public string PubString;
         }
 
         [Test]
         public void RegisterExporter() {
+            var mapper = new JsonMapper();
+            mapper.RegisterExporter<TestType>((t, tokenWriter) => tokenWriter.Write(t.PubIntVal));
             var instance = new TestType {PubIntVal = 42};
-            const string expected = "42";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
-        }
-    }
-
-    [TestFixture]
-    public class JsonConfig_UnRegisterExporter {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterExporter<TestType>();
+            Assert.That(mapper.Write(instance), Is.EqualTo("42"));
         }
 
         [Test]
         public void UnRegisterExporter() {
+            var mapper = new JsonMapper();
             var instance = new TestType {PubIntVal = 42};
-
-            Voorhees.Instance.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("42"));
-
-            Voorhees.Instance.UnRegisterExporter<TestType>();
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"PubIntVal\":42}"));
-        }
-    }
-
-    [TestFixture]
-    public class JsonConfig_UnRegisterAllExporters {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        class TestType2 {
-            public string PubString;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterExporter<TestType>();
+            mapper.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
+            Assert.That(mapper.Write(instance), Is.EqualTo("42"));
+            mapper.UnRegisterExporter<TestType>();
+            Assert.That(mapper.Write(instance), Is.EqualTo("{\"PubIntVal\":42}"));
         }
 
         [Test]
         public void UnregistersSingleExporter() {
+            var mapper = new JsonMapper();
             var instance = new TestType {PubIntVal = 42};
 
-            Voorhees.Instance.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("42"));
+            mapper.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
+            Assert.That(mapper.Write(instance), Is.EqualTo("42"));
 
-            Voorhees.Instance.UnRegisterAllExporters();
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"PubIntVal\":42}"));
+            mapper.UnRegisterAllExporters();
+            Assert.That(mapper.Write(instance), Is.EqualTo("{\"PubIntVal\":42}"));
         }
 
         [Test]
         public void UnregistersMultipleExporters() {
+            var mapper = new JsonMapper();
+            
             var instance1 = new TestType {PubIntVal = 42};
             var instance2 = new TestType2 {PubString = "hello"};
 
-            Voorhees.Instance.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
-            Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("42"));
-            Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
+            mapper.RegisterExporter<TestType>((t, os) => os.Write(t.PubIntVal));
+            Assert.That(mapper.Write(instance1), Is.EqualTo("42"));
+            Assert.That(mapper.Write(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
 
-            Voorhees.Instance.RegisterExporter<TestType2>((t, os) => os.Write(t.PubString.ToUpper()));
-            Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("42"));
-            Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("\"HELLO\""));
+            mapper.RegisterExporter<TestType2>((t, os) => os.Write(t.PubString.ToUpper()));
+            Assert.That(mapper.Write(instance1), Is.EqualTo("42"));
+            Assert.That(mapper.Write(instance2), Is.EqualTo("\"HELLO\""));
 
-            Voorhees.Instance.UnRegisterAllExporters();
-            Assert.That(JsonMapper.ToJson(instance1), Is.EqualTo("{\"PubIntVal\":42}"));
-            Assert.That(JsonMapper.ToJson(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
+            mapper.UnRegisterAllExporters();
+            Assert.That(mapper.Write(instance1), Is.EqualTo("{\"PubIntVal\":42}"));
+            Assert.That(mapper.Write(instance2), Is.EqualTo("{\"PubString\":\"hello\"}"));
         }
     }
 
     [TestFixture]
-    public class JsonConfig_RegisterImporter {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        [SetUp]
-        public void SetUp() {
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterImporter<TestType>();
-        }
-
-        [Test]
-        public void RegisterImporter() {
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-        }
-    }
-    
-    [TestFixture]
-    public class JsonConfig_UnRegisterImporter {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterImporter<TestType>();
-        }
-
-        [Test]
-        public void UnRegisterImporter() {
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-            
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-            
-            Voorhees.Instance.UnRegisterImporter<TestType>();
-            
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-        }
-    }
-
-    [TestFixture]
-    public class JsonConfig_UnRegisterAllImporters {
+    public class JsonMapper_CustomImporters {
         class TestType {
             public int PubIntVal;
         }
@@ -156,132 +74,63 @@ namespace Voorhees.Tests {
         }
 
         [Test]
-        public void UnregistersSingleImporter() {
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-
-            Voorhees.Instance.UnRegisterAllImporters();
-            
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-        }
-
-        [Test]
-        public void UnregistersMultipleImporters() {
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
-
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.TypeOf<TestType2>());
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\"").PubString, Is.EqualTo("test"));
-
-            Voorhees.Instance.UnRegisterAllImporters();
-            
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
-        }
-    }
-    
-    [TestFixture]
-    public class JsonConfig_RegisterLowLevelImporter {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        [SetUp]
-        public void SetUp() {
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterImporter<TestType>();
-        }
-
-        [Test]
         public void RegisterImporter() {
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-        }
-    }
-
-    [TestFixture]
-    public class JsonConfig_UnRegisterLowLevelImporter {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        [TearDown]
-        public void TearDown() {
-            Voorhees.Instance.UnRegisterImporter<TestType>();
+            var mapper = new JsonMapper();
+            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            
+            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
+            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
         }
 
         [Test]
         public void UnRegisterImporter() {
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            var mapper = new JsonMapper();
+            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
             
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
+            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
             
-            Voorhees.Instance.UnRegisterImporter<TestType>();
+            mapper.UnRegisterImporter<TestType>();
             
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-        }
-    }
-    
-    [TestFixture]
-    public class JsonConfig_UnRegisterAllLowLevelImporters {
-        class TestType {
-            public int PubIntVal;
-        }
-
-        class TestType2 {
-            public string PubString;
+            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
         }
 
         [Test]
         public void UnregistersSingleImporter() {
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            var mapper = new JsonMapper();
+            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
+            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
+            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
 
-            Voorhees.Instance.UnRegisterAllImporters();
+            mapper.UnRegisterAllImporters();
             
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
+            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
         }
 
         [Test]
         public void UnregistersMultipleImporters() {
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
+            var mapper = new JsonMapper();
+            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            mapper.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
+
+            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
+            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
+            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
+
+            Assert.That(mapper.Read<TestType2>("\"test\""), Is.Not.Null);
+            Assert.That(mapper.Read<TestType2>("\"test\""), Is.TypeOf<TestType2>());
+            Assert.That(mapper.Read<TestType2>("\"test\"").PubString, Is.EqualTo("test"));
+
+            mapper.UnRegisterAllImporters();
             
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            Voorhees.Instance.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
-
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(JsonMapper.FromJson<TestType>("42").PubIntVal, Is.EqualTo(42));
-
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\""), Is.TypeOf<TestType2>());
-            Assert.That(JsonMapper.FromJson<TestType2>("\"test\"").PubString, Is.EqualTo("test"));
-
-            Voorhees.Instance.UnRegisterAllImporters();
-            
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType>("42"));
-            Assert.Throws<Exception>(() => JsonMapper.FromJson<TestType2>("\"test\""));
+            Assert.Throws<Exception>(() => mapper.Read<TestType>("42"));
+            Assert.Throws<Exception>(() => mapper.Read<TestType2>("\"test\""));
         }
     }
 }
