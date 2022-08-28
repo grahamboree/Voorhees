@@ -47,8 +47,8 @@ namespace Voorhees {
                 case JsonToken.KeyValueSeparator:
                 case JsonToken.Separator: cursor.Advance(); break;
                 case JsonToken.True:
-                case JsonToken.Null: cursor.AdvanceBy(4); break;
-                case JsonToken.False: cursor.AdvanceBy(5); break;
+                case JsonToken.Null: cursor.Advance(4); break;
+                case JsonToken.False: cursor.Advance(5); break;
                 case JsonToken.String: SkipString(); break;
                 case JsonToken.Number: ConsumeNumber(); break; // OK to consume because it just computes the bounds of the token and returns a ReadOnlySpan of the bounds
                 
@@ -143,7 +143,7 @@ namespace Voorhees {
             for (; lookaheadIndex < cursor.Document.Length; ++lookaheadIndex) {
                 char readAheadChar = cursor.Document[lookaheadIndex];
                 if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    cursor.AdvanceBy(lookaheadIndex - cursor.Index);
+                    cursor.Advance(lookaheadIndex - cursor.Index);
                     throw new InvalidJsonException($"{cursor} Disallowed control character in string");
                 }
                 
@@ -169,7 +169,7 @@ namespace Voorhees {
                 string result = string.Create(resultLength, data, (chars, genData) => {
                     genData.Cursor.Document.AsSpan().Slice(genData.Cursor.Index, genData.NumChars).CopyTo(chars);
                 });
-                cursor.AdvanceBy(1 + resultLength); // skip to after the closing "
+                cursor.Advance(1 + resultLength); // skip to after the closing "
                 AdvanceToNextToken();
                 return result;
             } else {
@@ -213,7 +213,7 @@ namespace Voorhees {
                                     case 'u': {
                                         // Read 4 hex digits
                                         chars[resultIndex++] = (char)Convert.ToInt16(genData.Cursor.Document.Substring(genData.Cursor.Index + 1, 4), 16);
-                                        genData.Cursor.AdvanceBy(4);
+                                        genData.Cursor.Advance(4);
                                     }
                                         break;
                                     default: throw new InvalidJsonException($"{genData.Cursor} Unknown escape character sequence");
@@ -329,7 +329,7 @@ namespace Voorhees {
                 if (cursor.CurrentChar == '\\') {
                     cursor.Advance();
                     if (cursor.CurrentChar == 'u') {
-                        cursor.AdvanceBy(4);
+                        cursor.Advance(4);
                     }
                 } else if (cursor.CurrentChar == '"') {
                     cursor.Advance();

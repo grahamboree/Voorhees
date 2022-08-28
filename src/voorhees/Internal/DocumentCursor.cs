@@ -50,18 +50,8 @@ namespace Voorhees.Internal {
         /// </summary>
         /// <param name="numChars">Characters to advance by</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AdvanceBy(int numChars) {
+        public void Advance(int numChars = 1) {
             Index += numChars < NumCharsLeft ? numChars : NumCharsLeft;
-            CurrentChar = Index < DocLength ? Document[Index] : '\0';
-        }
-
-        /// Advances the read position forward one character.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Advance() {
-            if (Index >= DocLength) {
-                return;
-            }
-            Index++;
             CurrentChar = Index < DocLength ? Document[Index] : '\0';
         }
 
