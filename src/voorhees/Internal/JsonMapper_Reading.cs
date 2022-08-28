@@ -8,145 +8,153 @@ using TypeInfo = Voorhees.Internal.TypeInfo;
 namespace Voorhees {
     // Value type parser instances.  This is necessary to trick the type system into not boxing the value type results.
     public static partial class JsonMapper {
-        static IValueParser<T> GetParser<T>() {
+        static INumericValueParser<T> GetNumericValueParser<T>() {
             var destinationType = typeof(T);
-            if (destinationType == typeof(byte)) { return (IValueParser<T>)ByteValueParser.Instance; }
-            if (destinationType == typeof(sbyte)) { return (IValueParser<T>)SByteValueParser.Instance; }
-            if (destinationType == typeof(short)) { return (IValueParser<T>)ShortValueParser.Instance; }
-            if (destinationType == typeof(ushort)) { return (IValueParser<T>)UShortValueParser.Instance; }
-            if (destinationType == typeof(int)) { return (IValueParser<T>)IntValueParser.Instance; }
-            if (destinationType == typeof(uint)) { return (IValueParser<T>)UIntValueParser.Instance; }
-            if (destinationType == typeof(long)) { return (IValueParser<T>)LongValueParser.Instance; }
-            if (destinationType == typeof(ulong)) { return (IValueParser<T>)ULongValueParser.Instance; }
-            
-            if (destinationType == typeof(float)) { return (IValueParser<T>)FloatValueParser.Instance; }
-            if (destinationType == typeof(double)) { return (IValueParser<T>)DoubleValueParser.Instance; }
-            if (destinationType == typeof(decimal)) { return (IValueParser<T>)DecimalValueParser.Instance; }
-            
-            if (destinationType == typeof(char)) { return (IValueParser<T>)CharValueParser.Instance; }
-            
-            if (destinationType == typeof(DateTime)) { return (IValueParser<T>)DateTimeValueParser.Instance; }
-            if (destinationType == typeof(DateTimeOffset)) { return (IValueParser<T>)DateTimeOffsetValueParser.Instance; }
+            if (destinationType == typeof(byte)) { return (INumericValueParser<T>)ByteValueParser.Instance; }
+            if (destinationType == typeof(sbyte)) { return (INumericValueParser<T>)SByteValueParser.Instance; }
+            if (destinationType == typeof(short)) { return (INumericValueParser<T>)ShortValueParser.Instance; }
+            if (destinationType == typeof(ushort)) { return (INumericValueParser<T>)UShortValueParser.Instance; }
+            if (destinationType == typeof(int)) { return (INumericValueParser<T>)IntValueParser.Instance; }
+            if (destinationType == typeof(uint)) { return (INumericValueParser<T>)UIntValueParser.Instance; }
+            if (destinationType == typeof(long)) { return (INumericValueParser<T>)LongValueParser.Instance; }
+            if (destinationType == typeof(ulong)) { return (INumericValueParser<T>)ULongValueParser.Instance; }
+
+            if (destinationType == typeof(float)) { return (INumericValueParser<T>)FloatValueParser.Instance; }
+            if (destinationType == typeof(double)) { return (INumericValueParser<T>)DoubleValueParser.Instance; }
+            if (destinationType == typeof(decimal)) { return (INumericValueParser<T>)DecimalValueParser.Instance; }
+            return null;
+        }
+
+        interface INumericValueParser<out T> {
+            T Parse(ReadOnlySpan<char> span);
+        }
+
+        class ByteValueParser : INumericValueParser<byte> {
+            public static readonly ByteValueParser Instance = new();
+
+            public byte Parse(ReadOnlySpan<char> span) {
+                return byte.Parse(span);
+            }
+        }
+
+        class SByteValueParser : INumericValueParser<sbyte> {
+            public static readonly SByteValueParser Instance = new();
+
+            public sbyte Parse(ReadOnlySpan<char> span) {
+                return sbyte.Parse(span);
+            }
+        }
+
+        class ShortValueParser : INumericValueParser<short> {
+            public static readonly ShortValueParser Instance = new();
+
+            public short Parse(ReadOnlySpan<char> span) {
+                return short.Parse(span);
+            }
+        }
+
+        class UShortValueParser : INumericValueParser<ushort> {
+            public static readonly UShortValueParser Instance = new();
+
+            public ushort Parse(ReadOnlySpan<char> span) {
+                return ushort.Parse(span);
+            }
+        }
+
+        class IntValueParser : INumericValueParser<int> {
+            public static readonly IntValueParser Instance = new();
+
+            public int Parse(ReadOnlySpan<char> span) {
+                return int.Parse(span);
+            }
+        }
+
+        class UIntValueParser : INumericValueParser<uint> {
+            public static readonly UIntValueParser Instance = new();
+
+            public uint Parse(ReadOnlySpan<char> span) {
+                return uint.Parse(span);
+            }
+        }
+
+        class LongValueParser : INumericValueParser<long> {
+            public static readonly LongValueParser Instance = new();
+
+            public long Parse(ReadOnlySpan<char> span) {
+                return long.Parse(span);
+            }
+        }
+
+        class ULongValueParser : INumericValueParser<ulong> {
+            public static readonly ULongValueParser Instance = new();
+
+            public ulong Parse(ReadOnlySpan<char> span) {
+                return ulong.Parse(span);
+            }
+        }
+
+        class FloatValueParser : INumericValueParser<float> {
+            public static readonly FloatValueParser Instance = new();
+
+            public float Parse(ReadOnlySpan<char> span) {
+                return float.Parse(span);
+            }
+        }
+
+        class DoubleValueParser : INumericValueParser<double> {
+            public static readonly DoubleValueParser Instance = new();
+
+            public double Parse(ReadOnlySpan<char> span) {
+                return double.Parse(span);
+            }
+        }
+
+        class DecimalValueParser : INumericValueParser<decimal> {
+            public static readonly DecimalValueParser Instance = new();
+
+            public decimal Parse(ReadOnlySpan<char> span) {
+                return decimal.Parse(span);
+            }
+        }
+    }
+
+    public static partial class JsonMapper {
+        static IStringValueParser<T> GetStringValueParser<T>() {
+            var destinationType = typeof(T);
+            if (destinationType == typeof(char)) { return (IStringValueParser<T>)CharValueParser.Instance; }
+            if (destinationType == typeof(DateTime)) { return (IStringValueParser<T>)DateTimeValueParser.Instance; }
+            if (destinationType == typeof(DateTimeOffset)) { return (IStringValueParser<T>)DateTimeOffsetValueParser.Instance; }
             return null;
         }
         
-        interface IValueParser<out T> {
-            T Parse(JsonTokenReader tokenReader);
+        interface IStringValueParser<out T> {
+            T Parse(string str);
         }
         
-        class ByteValueParser : IValueParser<byte> {
-            public static readonly ByteValueParser Instance = new();
-            
-            public byte Parse(JsonTokenReader tokenReader) {
-                return byte.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class SByteValueParser : IValueParser<sbyte> {
-            public static readonly SByteValueParser Instance = new();
-            
-            public sbyte Parse(JsonTokenReader tokenReader) {
-                return sbyte.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class ShortValueParser : IValueParser<short> {
-            public static readonly ShortValueParser Instance = new();
-            
-            public short Parse(JsonTokenReader tokenReader) {
-                return short.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class UShortValueParser : IValueParser<ushort> {
-            public static readonly UShortValueParser Instance = new();
-            
-            public ushort Parse(JsonTokenReader tokenReader) {
-                return ushort.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class IntValueParser : IValueParser<int> {
-            public static readonly IntValueParser Instance = new();
-            
-            public int Parse(JsonTokenReader tokenReader) {
-                return int.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class UIntValueParser : IValueParser<uint> {
-            public static readonly UIntValueParser Instance = new();
-            
-            public uint Parse(JsonTokenReader tokenReader) {
-                return uint.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class LongValueParser : IValueParser<long> {
-            public static readonly LongValueParser Instance = new();
-            
-            public long Parse(JsonTokenReader tokenReader) {
-                return long.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class ULongValueParser : IValueParser<ulong> {
-            public static readonly ULongValueParser Instance = new();
-            
-            public ulong Parse(JsonTokenReader tokenReader) {
-                return ulong.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class FloatValueParser : IValueParser<float> {
-            public static readonly FloatValueParser Instance = new();
-            
-            public float Parse(JsonTokenReader tokenReader) {
-                return float.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class DoubleValueParser : IValueParser<double> {
-            public static readonly DoubleValueParser Instance = new();
-            
-            public double Parse(JsonTokenReader tokenReader) {
-                return double.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class DecimalValueParser : IValueParser<decimal> {
-            public static readonly DecimalValueParser Instance = new();
-            
-            public decimal Parse(JsonTokenReader tokenReader) {
-                return decimal.Parse(tokenReader.ConsumeNumber());
-            }
-        }
-        
-        class CharValueParser : IValueParser<char> {
+        class CharValueParser : IStringValueParser<char> {
             public static readonly CharValueParser Instance = new();
             
-            public char Parse(JsonTokenReader tokenReader) {
-                string stringVal = tokenReader.ConsumeString();
-                if (stringVal.Length != 1) {
-                    throw new FormatException($"{tokenReader.LineColString} Trying to map a string of length != 1 to a char: \"{stringVal}\"");
+            public char Parse(string str) {
+                if (str.Length != 1) {
+                    throw new FormatException($"Trying to map a string of length != 1 to a char: \"{str}\"");
                 }
-                return stringVal[0];
+                return str[0];
             }
         }
         
-        class DateTimeValueParser : IValueParser<DateTime> {
+        class DateTimeValueParser : IStringValueParser<DateTime> {
             public static readonly DateTimeValueParser Instance = new();
             
-            public DateTime Parse(JsonTokenReader tokenReader) {
-                return DateTime.Parse(tokenReader.ConsumeString());
+            public DateTime Parse(string str) {
+                return DateTime.Parse(str);
             }
         }
         
-        class DateTimeOffsetValueParser : IValueParser<DateTimeOffset> {
+        class DateTimeOffsetValueParser : IStringValueParser<DateTimeOffset> {
             public static readonly DateTimeOffsetValueParser Instance = new();
             
-            public DateTimeOffset Parse(JsonTokenReader tokenReader) {
-                return DateTimeOffset.Parse(tokenReader.ConsumeString());
+            public DateTimeOffset Parse(string str) {
+                return DateTimeOffset.Parse(str);
             }
         }
     }
@@ -154,16 +162,23 @@ namespace Voorhees {
     public static partial class JsonMapper {
         static T ReadValueOfType<T>(JsonTokenReader tokenReader) {
             var destinationType = typeof(T);
+            
             // If there's a custom importer that fits, use it
             var config = Voorhees.Instance;
             if (config.CustomImporters.TryGetValue(destinationType, out var customImporter)) {
                 return (T)customImporter(tokenReader);
             }
             
-            var parser = GetParser<T>();
-            if (parser != null) {
-                return parser.Parse(tokenReader);
+            var numericParser = GetNumericValueParser<T>();
+            if (numericParser != null) {
+                return numericParser.Parse(tokenReader.ConsumeNumber());
             }
+            
+            var stringParser = GetStringValueParser<T>();
+            if (stringParser != null) {
+                return stringParser.Parse(tokenReader.ConsumeString());
+            }
+            
             return (T)ReadValueOfType(tokenReader, destinationType);
         }
         
