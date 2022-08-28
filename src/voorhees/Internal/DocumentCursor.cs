@@ -15,9 +15,17 @@ namespace Voorhees.Internal {
         /// Current column number in the json document.  1-indexed
         public int Column;
 
-        public int NumCharsLeft => DocLength - Index;
-        public bool AtEOF => Index >= DocLength;
         public char CurrentChar;
+        
+        public int NumCharsLeft {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => DocLength - Index;
+        }
+        
+        public bool AtEOF {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Index >= DocLength;
+        }
 
         /////////////////////////////////////////////////
 
