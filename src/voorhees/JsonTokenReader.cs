@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Voorhees {
@@ -47,8 +48,8 @@ namespace Voorhees {
                 case JsonToken.KeyValueSeparator:
                 case JsonToken.Separator: cursor.Advance(); break;
                 case JsonToken.True:
-                case JsonToken.Null: cursor.Advance(4); break;
-                case JsonToken.False: cursor.Advance(5); break;
+                case JsonToken.False:
+                case JsonToken.Null: break; // We've already advanced the cursor for true, false and null.
                 case JsonToken.String: SkipString(); break;
                 case JsonToken.Number: ConsumeNumber(); break; // OK to consume because it just computes the bounds of the token and returns a ReadOnlySpan of the bounds
                 
@@ -65,20 +66,23 @@ namespace Voorhees {
         /// </summary>
         /// <returns>The number's character span in the original json string</returns>
         /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
-        public ReadOnlySpan<char> ConsumeNumber() {
+        public string ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
                 throw new InvalidOperationException($"{cursor} Trying to consume a number, but the next JSON token is not a number");
             }
-            
-            int start = cursor.Index;
+
+            int length = 0;
+            Span<char> numberChars = stackalloc char[256];
 
             // optional leading -
             if (!cursor.AtEOF && cursor.CurrentChar == '-') {
+                numberChars[length++] = cursor.CurrentChar;
                 cursor.Advance();
             }
 
             bool leadingZero = !cursor.AtEOF && cursor.CurrentChar == '0';
             if (leadingZero) {
+                numberChars[length++] = cursor.CurrentChar;
                 cursor.Advance();
             }
 
@@ -87,36 +91,42 @@ namespace Voorhees {
                 if (leadingZero) {
                     throw new InvalidJsonException($"{cursor} Leading zero in a number must be immediately followed by a decimal point or exponent");
                 }
+                numberChars[length++] = cursor.CurrentChar;
                 cursor.Advance();
             }
             
             // decimal
             if (!cursor.AtEOF && cursor.CurrentChar == '.') {
+                numberChars[length++] = cursor.CurrentChar;
                 cursor.Advance();
 
                 // fractional part digits
                 while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                    numberChars[length++] = cursor.CurrentChar;
                     cursor.Advance();
                 }
             }
 
             // Optional exponent
             if (!cursor.AtEOF && (cursor.CurrentChar == 'e' || cursor.CurrentChar == 'E')) {
+                numberChars[length++] = cursor.CurrentChar;
                 cursor.Advance();
                 
                 // optional + or -
                 if (!cursor.AtEOF && (cursor.CurrentChar == '+' || cursor.CurrentChar == '-')) {
+                    numberChars[length++] = cursor.CurrentChar;
                     cursor.Advance();
                 }
 
                 // exponent digits
                 while (!cursor.AtEOF && (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
+                    numberChars[length++] = cursor.CurrentChar;
                     cursor.Advance();
                 }
             }
-            int length = cursor.Index - start;
+            
             AdvanceToNextToken();
-            return cursor.Document.AsSpan(start, length);
+            return new string(numberChars[..length]);
         }
 
         /// <summary>
@@ -136,102 +146,72 @@ namespace Voorhees {
             }
             
             cursor.Advance(); // Skip the "
-            int resultLength = 0; // Number of characters in the resulting string.
-            bool hasEscapeChars = false; // False if the string contains escape codes that need to be parsed
-
-            int lookaheadIndex = cursor.Index;
-            for (; lookaheadIndex < cursor.Document.Length; ++lookaheadIndex) {
-                char readAheadChar = cursor.Document[lookaheadIndex];
-                if (readAheadChar <= 0x1F || readAheadChar == 0x7F || (readAheadChar >= 0x80 && readAheadChar <= 0x9F)) {
-                    cursor.Advance(lookaheadIndex - cursor.Index);
-                    throw new InvalidJsonException($"{cursor} Disallowed control character in string");
-                }
-                
-                if (readAheadChar == '\\') {
-                    // This string isn't trivial, so use the normal slower parsing.
-                    hasEscapeChars = true;
-                    lookaheadIndex++;
-                    if (cursor.Document[lookaheadIndex] == 'u') {
-                        lookaheadIndex += 4;
-                    }
-                } else if (readAheadChar == '"') {
+            
+            Span<char> hexChars = stackalloc char[4];
+            var readChars = new List<char>(); // TODO temp alloc
+            
+            while (!cursor.AtEOF) {
+                if (cursor.CurrentChar == '"') {
+                    cursor.Advance();
                     break;
                 }
-                resultLength++;
-            }
-
-            if (!hasEscapeChars) {
-                var data = new StringGeneratorContextData {
-                    Cursor = cursor,
-                    EndIndex = lookaheadIndex,
-                    NumChars = resultLength
-                };
-                string result = string.Create(resultLength, data, (chars, genData) => {
-                    genData.Cursor.Document.AsSpan().Slice(genData.Cursor.Index, genData.NumChars).CopyTo(chars);
-                });
-                cursor.Advance(1 + resultLength); // skip to after the closing "
-                AdvanceToNextToken();
-                return result;
-            } else {
-                var data = new StringGeneratorContextData {
-                    Cursor = cursor,
-                    EndIndex = lookaheadIndex,
-                    NumChars = resultLength
-                };
-
-                string result = string.Create(resultLength, data, (chars, genData) => {
-                    int resultIndex = 0;
-                    while (genData.Cursor.Index < genData.EndIndex) {
-                        switch (genData.Cursor.CurrentChar) {
-                            case '\\': {
-                                genData.Cursor.Advance();
-                                switch (genData.Cursor.CurrentChar) {
-                                    case '\\':
-                                        chars[resultIndex++] = '\\';
-                                        break;
-                                    case '"':
-                                        chars[resultIndex++] = '"';
-                                        break;
-                                    case '/':
-                                        chars[resultIndex++] = '/';
-                                        break;
-                                    case 'b':
-                                        chars[resultIndex++] = '\b';
-                                        break;
-                                    case 'f':
-                                        chars[resultIndex++] = '\f';
-                                        break;
-                                    case 'n':
-                                        chars[resultIndex++] = '\n';
-                                        break;
-                                    case 'r':
-                                        chars[resultIndex++] = '\r';
-                                        break;
-                                    case 't':
-                                        chars[resultIndex++] = '\t';
-                                        break;
-                                    case 'u': {
-                                        // Read 4 hex digits
-                                        chars[resultIndex++] = (char)Convert.ToInt16(genData.Cursor.Document.Substring(genData.Cursor.Index + 1, 4), 16);
-                                        genData.Cursor.Advance(4);
-                                    }
-                                        break;
-                                    default: throw new InvalidJsonException($"{genData.Cursor} Unknown escape character sequence");
-                                }
-                            }
-                                break;
-                            default:
-                                chars[resultIndex++] = genData.Cursor.CurrentChar;
-                                break;
-                        }
-                        genData.Cursor.Advance();
+                
+                if (cursor.CurrentChar == '\\') {
+                    cursor.Advance();
+                    switch (cursor.CurrentChar) {
+                        case '\\':
+                            readChars.Add('\\');
+                            break;
+                        case '"':
+                            readChars.Add('"');
+                            break;
+                        case '/':
+                            readChars.Add('/');
+                            break;
+                        case 'b':
+                            readChars.Add('\b');
+                            break;
+                        case 'f':
+                            readChars.Add('\f');
+                            break;
+                        case 'n':
+                            readChars.Add('\n');
+                            break;
+                        case 'r':
+                            readChars.Add('\r');
+                            break;
+                        case 't':
+                            readChars.Add('\t');
+                            break;
+                        case 'u': {
+                            cursor.Advance();
+                            // Read 4 hex digits
+                            hexChars[0] = cursor.CurrentChar;
+                            cursor.Advance();
+                            hexChars[1] = cursor.CurrentChar;
+                            cursor.Advance();
+                            hexChars[2] = cursor.CurrentChar;
+                            cursor.Advance();
+                            hexChars[3] = cursor.CurrentChar;
+                            readChars.Add((char)Convert.ToInt16(new string(hexChars), 16));
+                        } break;
+                        default: throw new InvalidJsonException($"{cursor} Unknown escape character sequence");
                     }
-                    genData.Cursor.Advance();
-                });
+                } else if (cursor.CurrentChar <= 0x1F || cursor.CurrentChar == 0x7F || (cursor.CurrentChar >= 0x80 && cursor.CurrentChar <= 0x9F)) {
+                    throw new InvalidJsonException($"{cursor} Disallowed control character in string");
+                } else {
+                    readChars.Add(cursor.CurrentChar);
+                }
 
-                AdvanceToNextToken();
-                return result;
+                cursor.Advance();
             }
+
+            AdvanceToNextToken();
+            return string.Create(readChars.Count, readChars, (chars, read) => {
+                for (int i = 0; i < read.Count; ++i) {
+                    chars[i] = read[i];
+                }
+            });
         }
 
         /// <summary>
@@ -245,12 +225,6 @@ namespace Voorhees {
         
         readonly Internal.DocumentCursor cursor;
 
-        struct StringGeneratorContextData {
-            public Internal.DocumentCursor Cursor;
-            public int EndIndex;
-            public int NumChars;
-        }
-        
         /////////////////////////////////////////////////
 
         /// <summary>
@@ -279,33 +253,42 @@ namespace Voorhees {
                 case ',': NextToken = JsonToken.Separator; return;
                 case '"': NextToken = JsonToken.String; return;
                 case ':': NextToken = JsonToken.KeyValueSeparator; return;
-            }
-
-            // number
-            if (cursor.CurrentChar == '-' || (cursor.CurrentChar >= '0' && cursor.CurrentChar <= '9')) {
-                NextToken = JsonToken.Number;
-                return;
-            }
-            
-            // true
-            const string TOKEN_TRUE = "true";
-            if (cursor.NumCharsLeft >= 4 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_TRUE, 0, TOKEN_TRUE.Length) == 0) {
-                NextToken = JsonToken.True;
-                return;
-            }
-
-            // false
-            const string TOKEN_FALSE = "false";
-            if (cursor.NumCharsLeft >= 5 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_FALSE, 0, TOKEN_FALSE.Length) == 0) {
-                NextToken = JsonToken.False;
-                return;
-            }
-
-            // null
-            const string TOKEN_NULL = "null";
-            if (cursor.NumCharsLeft >= 4 && string.CompareOrdinal(cursor.Document, cursor.Index, TOKEN_NULL, 0, TOKEN_NULL.Length) == 0) {
-                NextToken = JsonToken.Null;
-                return;
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9': NextToken = JsonToken.Number; return;
+                case 't': { // true
+                    cursor.Advance(); if (cursor.CurrentChar != 'r') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'u') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'e') { break; }
+                    cursor.Advance();
+                    NextToken = JsonToken.True;
+                    return;
+                }
+                case 'f': { // false
+                    cursor.Advance(); if (cursor.CurrentChar != 'a') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'l') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 's') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'e') { break; }
+                    cursor.Advance();
+                    NextToken = JsonToken.False;
+                    return;
+                }
+                case 'n': { // null
+                    cursor.Advance(); if (cursor.CurrentChar != 'u') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'l') { break; }
+                    cursor.Advance(); if (cursor.CurrentChar != 'l') { break; }
+                    cursor.Advance();
+                    NextToken = JsonToken.Null;
+                    return;
+                }
             }
 
             throw new InvalidJsonException($"{cursor} Unexpected character '{cursor.CurrentChar}'");

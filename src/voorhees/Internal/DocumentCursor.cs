@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Voorhees.Internal {
@@ -5,23 +6,23 @@ namespace Voorhees.Internal {
     /// forward through the document as well as current line and column 
     /// numbers.  Only moves forward through the document.
     public class DocumentCursor {
-        public readonly string Document;
-        readonly int DocLength;
-
         /// Index of the current character in the entire json document.
         public int Index;
 
+        // These are 1-indexed.
+        /// The json line number currently being read
+        public int Line = 1;
+        /// The column number of the json character being read
+        public int Column = 1;
+
         /// The character the cursor is currently pointing to.
         public char CurrentChar;
-        
-        public int NumCharsLeft {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => DocLength - Index;
-        }
+
+        TextReader Reader;
         
         public bool AtEOF {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Index >= DocLength;
+            get => Reader.Peek() == -1;
         }
 
         /////////////////////////////////////////////////
@@ -31,16 +32,18 @@ namespace Voorhees.Internal {
         /// </summary>
         /// <param name="document">The document to read</param>
         public DocumentCursor(string document) {
-            Document = document;
-            DocLength = Document.Length;
+            Reader = new StringReader(document);
             Index = 0;
-            CurrentChar = !AtEOF ? Document[Index] : '\0';
+
+            int readChar = Reader.Peek();
+            
+            CurrentChar = readChar == -1 ? '\0' : (char) readChar;
         }
         
         /// Advances to the next non-whitespace character.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AdvanceToNextNonWhitespaceChar() {
-            while (Index < DocLength && CurrentChar is ' ' or '\n' or '\r' or '\t') {
+            while (!AtEOF && CurrentChar is ' ' or '\n' or '\r' or '\t') {
                 Advance();
             }
         }
@@ -51,8 +54,23 @@ namespace Voorhees.Internal {
         /// <param name="numChars">Characters to advance by</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int numChars = 1) {
-            Index += numChars < NumCharsLeft ? numChars : NumCharsLeft;
-            CurrentChar = Index < DocLength ? Document[Index] : '\0';
+            for (int i = 0; i < numChars; ++i) {
+                Reader.Read(); // Skip past the current char.
+                int readChar = Reader.Peek();
+                Column++;
+                Index++;
+
+                if (readChar == -1) {
+                    CurrentChar = '\0';
+                    return;
+                }
+                CurrentChar = (char)readChar;
+                
+                if (CurrentChar == '\n') {
+                    Line++;
+                    Column = 0;
+                }
+            }
         }
 
         /// <summary>
@@ -61,20 +79,7 @@ namespace Voorhees.Internal {
         /// </summary>
         /// <returns>string containing line and column info for the current cursor position</returns>
         public override string ToString() {
-            // Compute the line and column number.
-            // We could keep track of this as we move through the document
-            // but we don't need it unless we're throwing an exception, so it's
-            // fine to just compute this on-demand.
-            int line = 1;
-            int column = 1;
-            for (int i = 0; i < Index; i++) {
-                if (Document[i] == '\n') {
-                    line++;
-                    column = 0;
-                }
-                column++;
-            }
-            return $"line: {line} col: {column}";
+            return $"line: {Line} col: {Column}";
         }
     }
 }
