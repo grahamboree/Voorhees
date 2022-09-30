@@ -1,3 +1,4 @@
+using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -5,7 +6,7 @@ namespace Voorhees.Tests {
     public class DocumentCursorTest {
         [Test]
         public void TracksSeenNewlines() {
-            var doc = new Internal.DocumentCursor(" \n \n");
+            var doc = new Internal.DocumentCursor(new StringReader(" \n \n"));
             doc.Advance(2);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));
@@ -15,7 +16,7 @@ namespace Voorhees.Tests {
         
         [Test]
         public void UpdatesColumnValue() {
-            var doc = new Internal.DocumentCursor("    ");
+            var doc = new Internal.DocumentCursor(new StringReader("    "));
             doc.Advance(2);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));
@@ -25,7 +26,7 @@ namespace Voorhees.Tests {
         
         [Test]
         public void DoesNotReadPastEndOfDocument() {
-            var doc = new Internal.DocumentCursor("  ");
+            var doc = new Internal.DocumentCursor(new StringReader("  "));
             doc.Advance(5);
             Assert.Multiple(() => {
                 Assert.That(doc.Index, Is.EqualTo(2));

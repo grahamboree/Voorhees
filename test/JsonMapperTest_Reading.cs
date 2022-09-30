@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -467,7 +468,7 @@ namespace Voorhees.Tests {
         [Test]
         public void ReadingWithAProvidedTokenReaderIsEquivalentToTheGeneratedOne() {
             const string JSON = "\"test\"";
-            var tokenReader = new JsonTokenReader(JSON);
+            var tokenReader = new JsonTokenReader(new StringReader(JSON));
             Assert.That(JsonMapper.FromJson<string>(tokenReader), Is.EqualTo(JsonMapper.FromJson<string>(JSON)));
         }
     }

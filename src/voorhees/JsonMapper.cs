@@ -18,9 +18,11 @@ namespace Voorhees {
         #endregion
         
         #region Reading
-        public static T FromJson<T>(string jsonString) => defaultInstance.Read<T>(jsonString);
+        public static T FromJson<T>(string json) => defaultInstance.Read<T>(new StringReader(json));
+        public static T FromJson<T>(TextReader json) => defaultInstance.Read<T>(json);
         public static T FromJson<T>(JsonTokenReader tokenReader) => defaultInstance.Read<T>(tokenReader);
-        public static JsonValue FromJson(string jsonString) => Read(jsonString);
+        public static JsonValue FromJson(string json) => Read(new StringReader(json));
+        public static JsonValue FromJson(TextReader json) => Read(json);
         public static JsonValue FromJson(JsonTokenReader tokenReader) => Read(tokenReader);
         #endregion
         
@@ -66,7 +68,8 @@ namespace Voorhees {
         #endregion
         
         #region Reading
-        public T Read<T>(string jsonString) => Read<T>(new JsonTokenReader(jsonString));
+        public T Read<T>(string json) => Read<T>(new JsonTokenReader(new StringReader(json)));
+        public T Read<T>(TextReader json) => Read<T>(new JsonTokenReader(json));
 
         public T Read<T>(JsonTokenReader tokenReader) {
             var result = ReadValueOfType<T>(tokenReader);
@@ -78,7 +81,7 @@ namespace Voorhees {
             return result;
         }
 
-        public static JsonValue Read(string jsonString) => Read(new JsonTokenReader(jsonString));
+        public static JsonValue Read(TextReader json) => Read(new JsonTokenReader(json));
 
         public static JsonValue Read(JsonTokenReader tokenReader) {
             var result = ReadJsonValue(tokenReader);

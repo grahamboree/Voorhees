@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 namespace Voorhees.Internal {
     /// A cursor in a document string that tracks a position 
     /// forward through the document as well as current line and column 
-    /// numbers.  Only moves forward through the document.
+    /// numbers.  Only moves forward through the document a
+    /// single character at a time and does not provide random access.
     public class DocumentCursor {
         /// Index of the current character in the entire json document.
         public int Index;
@@ -17,12 +18,13 @@ namespace Voorhees.Internal {
 
         /// The character the cursor is currently pointing to.
         public char CurrentChar;
-
-        TextReader Reader;
+        
+        /// Where the json is being read from.
+        readonly TextReader jsonDataStream;
         
         public bool AtEOF {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Reader.Peek() == -1;
+            get => jsonDataStream.Peek() == -1;
         }
 
         /////////////////////////////////////////////////
@@ -31,11 +33,11 @@ namespace Voorhees.Internal {
         /// Create a document cursor at the start of the given document
         /// </summary>
         /// <param name="document">The document to read</param>
-        public DocumentCursor(string document) {
-            Reader = new StringReader(document);
+        public DocumentCursor(TextReader document) {
+            jsonDataStream = document;
             Index = 0;
 
-            int readChar = Reader.Peek();
+            int readChar = jsonDataStream.Peek();
             
             CurrentChar = readChar == -1 ? '\0' : (char) readChar;
         }
@@ -55,8 +57,8 @@ namespace Voorhees.Internal {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int numChars = 1) {
             for (int i = 0; i < numChars; ++i) {
-                Reader.Read(); // Skip past the current char.
-                int readChar = Reader.Peek();
+                jsonDataStream.Read(); // Skip past the current char.
+                int readChar = jsonDataStream.Peek();
                 Column++;
                 Index++;
 

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -6,7 +7,7 @@ namespace Voorhees.Tests {
 	public class JsonTokenReader_SkipToken {
 		[Test]
 		public void ArrayStart() {
-			var doc = new Internal.DocumentCursor("[1,2,3]");
+			var doc = new Internal.DocumentCursor(new StringReader("[1,2,3]"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.ArrayStart);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -14,7 +15,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void ArrayEnd() {
-			var doc = new Internal.DocumentCursor("][1,2,3]");
+			var doc = new Internal.DocumentCursor(new StringReader("][1,2,3]"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.ArrayEnd);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -22,7 +23,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void ObjectStart() {
-			var doc = new Internal.DocumentCursor("{\"test\": 123}");
+			var doc = new Internal.DocumentCursor(new StringReader("{\"test\": 123}"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.ObjectStart);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -30,7 +31,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void KeyValueSeparator() {
-			var doc = new Internal.DocumentCursor(":123}");
+			var doc = new Internal.DocumentCursor(new StringReader(":123}"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.KeyValueSeparator);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -38,7 +39,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void ObjectEnd() {
-			var doc = new Internal.DocumentCursor("}{\"test\": 123}");
+			var doc = new Internal.DocumentCursor(new StringReader("}{\"test\": 123}"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.ObjectEnd);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -46,7 +47,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void Separator() {
-			var doc = new Internal.DocumentCursor(",{\"test\": 123}");
+			var doc = new Internal.DocumentCursor(new StringReader(",{\"test\": 123}"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.Separator);
 			Assert.That(doc.Index, Is.EqualTo(1));
@@ -54,7 +55,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void True() {
-			var doc = new Internal.DocumentCursor("true, true");
+			var doc = new Internal.DocumentCursor(new StringReader("true, true"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.True);
 			Assert.That(doc.Index, Is.EqualTo(4));
@@ -62,7 +63,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void False() {
-			var doc = new Internal.DocumentCursor("false, false");
+			var doc = new Internal.DocumentCursor(new StringReader("false, false"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.False);
 			Assert.That(doc.Index, Is.EqualTo(5));
@@ -70,7 +71,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void Null() {
-			var doc = new Internal.DocumentCursor("null, null");
+			var doc = new Internal.DocumentCursor(new StringReader("null, null"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.Null);
 			Assert.That(doc.Index, Is.EqualTo(4));
@@ -79,7 +80,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void String() {
-			var doc = new Internal.DocumentCursor("\"test\", 123");
+			var doc = new Internal.DocumentCursor(new StringReader("\"test\", 123"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(6));
@@ -87,7 +88,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void Number() {
-			var doc = new Internal.DocumentCursor("-123.456e7, 123");
+			var doc = new Internal.DocumentCursor(new StringReader("-123.456e7, 123"));
 			var tokenReader = new JsonTokenReader(doc);
             tokenReader.SkipToken(JsonToken.Number);
 			Assert.That(doc.Index, Is.EqualTo(10));
@@ -95,7 +96,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void SkipsTrailingWhitespace() {
-			var doc = new Internal.DocumentCursor("true    , false");
+			var doc = new Internal.DocumentCursor(new StringReader("true    , false"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.True);
 			Assert.That(doc.Index, Is.EqualTo(8));
@@ -115,7 +116,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void SkippingStringWithEscapedCharacter() {
-			var doc = new Internal.DocumentCursor("\"test\\\"\", false");
+			var doc = new Internal.DocumentCursor(new StringReader("\"test\\\"\", false"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(8));
@@ -123,7 +124,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void SkippingStringContainingEscapedUnicodeCharacter() {
-			var doc = new Internal.DocumentCursor("\"\\u597D\", false");
+			var doc = new Internal.DocumentCursor(new StringReader("\"\\u597D\", false"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.String);
 			Assert.That(doc.Index, Is.EqualTo(8));
@@ -306,7 +307,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void MixedRegularAndEscapedChars() {
-			var tokenReader = new JsonTokenReader("\"¿ni\\u597Dma?\"");
+			var tokenReader = new JsonTokenReader(new StringReader("\"¿ni\\u597Dma?\""));
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("¿ni好ma?"));
 		}
 
@@ -347,7 +348,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void DoesNotReadPastEndOfString() {
-			var doc = new Internal.DocumentCursor("{\"test\": 3}");
+			var doc = new Internal.DocumentCursor(new StringReader("{\"test\": 3}"));
 			var tokenReader = new JsonTokenReader(doc);
 			tokenReader.SkipToken(JsonToken.ObjectStart);
 			string str = tokenReader.ConsumeString();
@@ -359,7 +360,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void DoubleQuotedString()  {
-			var doc = new Internal.DocumentCursor("\"\\\"test\\\"\",");
+			var doc = new Internal.DocumentCursor(new StringReader("\"\\\"test\\\"\","));
             var tokenReader = new JsonTokenReader(doc);
             Assert.Multiple(() => {
                 Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\"test\""));

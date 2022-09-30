@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace Voorhees {
     public class JsonTokenReader {
@@ -22,10 +23,13 @@ namespace Voorhees {
         /// Read tokens from the start of the json string.
         /// </summary>
         /// <param name="json">The JSON document to read</param>
-        public JsonTokenReader(string json) {
-            cursor = new Internal.DocumentCursor(json);
-            AdvanceToNextToken();
-        }
+        public JsonTokenReader(string json) : this (new StringReader(json)) { }
+        
+        /// <summary>
+        /// Read tokens from the start of the json string.
+        /// </summary>
+        /// <param name="json">The JSON document to read</param>
+        public JsonTokenReader(TextReader json) : this (new Internal.DocumentCursor(json)) { }
 
         /// <summary>
         /// Skip over a token of the given type.  Ensures that a valid token of that type was actually skipped over.
