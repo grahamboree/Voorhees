@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -99,17 +98,7 @@ namespace Voorhees {
 
         static readonly JsonMapper defaultInstance = new();
         
-        static readonly Dictionary<Type, ExporterFunc> builtInExporters = new();
-        
         readonly Dictionary<Type, ImporterFunc> customImporters = new();
         readonly Dictionary<Type, ExporterFunc> customExporters = new();
-        
-        /////////////////////////////////////////////////
-        
-        static JsonMapper() {
-            builtInExporters[typeof(DateTime)] = (obj, tokenWriter) => tokenWriter.Write(((DateTime) obj).ToString("o"));
-            builtInExporters[typeof(DateTimeOffset)] = (obj, tokenWriter) =>
-                tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
-        }
     }
 }

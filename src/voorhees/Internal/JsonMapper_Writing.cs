@@ -18,13 +18,19 @@ namespace Voorhees {
                 customExporter(obj, tokenWriter);
                 return;
             }
-
-            // If not, maybe there's a built-in serializer
-            if (builtInExporters.TryGetValue(referenceType, out var builtInExporter)) {
-                builtInExporter(obj, tokenWriter);
+            
+            // Special case built-in serializer for DateTime
+            if (referenceType == typeof(DateTime)) {
+                tokenWriter.Write(((DateTime) obj).ToString("o"));
                 return;
             }
             
+            // Special case built-in serializer for DateTimeOffset
+            if (referenceType == typeof(DateTimeOffset)) {
+                tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
+                return;
+            }
+
             switch (obj) { 
                 case JsonValue jsonValue: WriteJsonValue(jsonValue, tokenWriter); return;
 
