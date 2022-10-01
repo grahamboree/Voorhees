@@ -1,3 +1,4 @@
+using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -35,18 +36,32 @@ namespace Voorhees.Tests {
 
         [Test]
         public void IgnoreField() {
-            string json = "{\"intValue\":5}";
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json).intValue, Is.EqualTo(5));
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json).floatVal, Is.EqualTo(3.5f));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json).intValue, Is.EqualTo(5));
+                }
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json).floatVal, Is.EqualTo(3.5f));
+                }
+            });
         }
 
         [Test]
         public void IgnoreFieldEvenIfSpecified() {
-            string json = "{\"intValue\":5,\"floatVal\":7.9}";
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json).intValue, Is.EqualTo(5));
-            Assert.That(JsonMapper.FromJson<FieldsTest>(json).floatVal, Is.EqualTo(3.5f));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json), Is.Not.Null);                
+                }
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json).intValue, Is.EqualTo(5));
+                }
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<FieldsTest>(json).floatVal, Is.EqualTo(3.5f));
+                }
+            });
         }
 
         class PropertiesTest {
@@ -56,18 +71,32 @@ namespace Voorhees.Tests {
 
         [Test]
         public void IgnoreProperty() {
-            string json = "{\"intValue\":5}";
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json).intValue, Is.EqualTo(5));
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json).floatVal, Is.EqualTo(3.5f));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json).intValue, Is.EqualTo(5));
+                }
+                using (var json = new StringReader("{\"intValue\":5}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json).floatVal, Is.EqualTo(3.5f));
+                }
+            });
         }
 
         [Test]
         public void IgnorePropertyEvenIfSpecified() {
-            string json = "{\"intValue\":5,\"floatVal\":7.9}";
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json), Is.Not.Null);
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json).intValue, Is.EqualTo(5));
-            Assert.That(JsonMapper.FromJson<PropertiesTest>(json).floatVal, Is.EqualTo(3.5f));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json).intValue, Is.EqualTo(5));
+                }
+                using (var json = new StringReader("{\"intValue\":5,\"floatVal\":7.9}")) {
+                    Assert.That(JsonMapper.FromJson<PropertiesTest>(json).floatVal, Is.EqualTo(3.5f));
+                }
+            });
         }
     }
 }

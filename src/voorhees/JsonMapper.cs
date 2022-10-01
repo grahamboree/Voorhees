@@ -18,10 +18,8 @@ namespace Voorhees {
         #endregion
         
         #region Reading
-        public static T FromJson<T>(string json) => defaultInstance.Read<T>(new StringReader(json));
         public static T FromJson<T>(TextReader json) => defaultInstance.Read<T>(json);
         public static T FromJson<T>(JsonTokenReader tokenReader) => defaultInstance.Read<T>(tokenReader);
-        public static JsonValue FromJson(string json) => Read(new StringReader(json));
         public static JsonValue FromJson(TextReader json) => Read(json);
         public static JsonValue FromJson(JsonTokenReader tokenReader) => Read(tokenReader);
         #endregion

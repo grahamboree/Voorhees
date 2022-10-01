@@ -315,14 +315,17 @@ namespace Voorhees.Tests {
 		public void DisallowsControlCharacters() {
 			for (int i = 0; i < 0x20; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson($"\"{controlChar}\""); });
+				using var json1 = new StringReader($"\"{controlChar}\"");
+				Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json1); });
 			}
 
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson($"\"{char.ConvertFromUtf32(0x7F)}\""); });
+			using var json2 = new StringReader($"\"{char.ConvertFromUtf32(0x7F)}\"");
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json2); });
 
 			for (int i = 0x80; i <= 0x9F; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
-				Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson($"\"{controlChar}\""); });
+				using var json3 = new StringReader($"\"{controlChar}\"");
+				Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json3); });
 			}
 		}
 
