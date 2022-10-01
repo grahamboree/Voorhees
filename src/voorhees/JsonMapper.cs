@@ -66,7 +66,6 @@ namespace Voorhees {
         #endregion
         
         #region Reading
-        public T Read<T>(string json) => Read<T>(new JsonTokenReader(new StringReader(json)));
         public T Read<T>(TextReader json) => Read<T>(new JsonTokenReader(json));
 
         public T Read<T>(JsonTokenReader tokenReader) {

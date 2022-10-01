@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -16,40 +17,71 @@ namespace Voorhees.Tests {
         public void RegisterImporter() {
             var mapper = new JsonMapper();
             mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            
-            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
-            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
+
+            Assert.Multiple(() => {
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                }
+            });
         }
 
         [Test]
         public void UnRegisterImporter() {
             var mapper = new JsonMapper();
-            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
-            
-            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            
-            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
-            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
-            
-            mapper.UnRegisterImporter<TestType>();
-            
-            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
+
+            Assert.Multiple(() => {
+                using (var json = new StringReader("42")) {
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                }
+
+                mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = int.Parse(tokenReader.ConsumeNumber()) });
+
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                }
+
+                mapper.UnRegisterImporter<TestType>();
+
+                using (var json = new StringReader("42")) {
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                }
+            });
         }
 
         [Test]
         public void UnregistersSingleImporter() {
             var mapper = new JsonMapper();
             mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            
-            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
-            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
 
-            mapper.UnRegisterAllImporters();
-            
-            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                }
+
+                mapper.UnRegisterAllImporters();
+
+                using (var json = new StringReader("42")) {
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                }
+            });
         }
 
         [Test]
@@ -58,18 +90,36 @@ namespace Voorhees.Tests {
             mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
             mapper.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
 
-            Assert.That(mapper.Read<TestType>("42"), Is.Not.Null);
-            Assert.That(mapper.Read<TestType>("42"), Is.TypeOf<TestType>());
-            Assert.That(mapper.Read<TestType>("42").PubIntVal, Is.EqualTo(42));
+            Assert.Multiple(() => {
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                }
+                using (var json = new StringReader("42")) {
+                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                }
 
-            Assert.That(mapper.Read<TestType2>("\"test\""), Is.Not.Null);
-            Assert.That(mapper.Read<TestType2>("\"test\""), Is.TypeOf<TestType2>());
-            Assert.That(mapper.Read<TestType2>("\"test\"").PubString, Is.EqualTo("test"));
+                using (var json = new StringReader("\"test\"")) {
+                    Assert.That(mapper.Read<TestType2>(json), Is.Not.Null);
+                }
+                using (var json = new StringReader("\"test\"")) {
+                    Assert.That(mapper.Read<TestType2>(json), Is.TypeOf<TestType2>());
+                }
+                using (var json = new StringReader("\"test\"")) {
+                    Assert.That(mapper.Read<TestType2>(json).PubString, Is.EqualTo("test"));
+                }
 
-            mapper.UnRegisterAllImporters();
-            
-            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>("42"));
-            Assert.Throws<InvalidCastException>(() => mapper.Read<TestType2>("\"test\""));
+                mapper.UnRegisterAllImporters();
+
+                using (var json = new StringReader("42")) {
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                }
+                using (var json = new StringReader("\"test\"")) {
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType2>(json));
+                }
+            });
         }
     }
 }
