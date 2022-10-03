@@ -104,13 +104,15 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void SkippingTheWrongTokenThrows() {
-			var tokenReader = new JsonTokenReader("true, false");
+			using var json = new StringReader("true, false");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.ArrayStart));
 		}
 		
 		[Test]
 		public void SkippingEOFThrows() {
-			var tokenReader = new JsonTokenReader("");
+			using var json = new StringReader("");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.EOF));
 		}
 
@@ -135,18 +137,21 @@ namespace Voorhees.Tests {
 			for (int i = 0; i < 0x20; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
 				Assert.Throws<InvalidJsonException>(() => {
-					new JsonTokenReader($"\"{controlChar}\"").SkipToken(JsonToken.String);
+					using var json = new StringReader($"\"{controlChar}\"");
+					new JsonTokenReader(json).SkipToken(JsonToken.String);
 				});
 			}
 
 			Assert.Throws<InvalidJsonException>(() => {
-				new JsonTokenReader($"\"{char.ConvertFromUtf32(0x7F)}\"").SkipToken(JsonToken.String);
+				using var json = new StringReader($"\"{char.ConvertFromUtf32(0x7F)}\"");
+				new JsonTokenReader(json).SkipToken(JsonToken.String);
 			});
 
 			for (int i = 0x80; i <= 0x9F; i++) {
 				string controlChar = char.ConvertFromUtf32(i);
 				Assert.Throws<InvalidJsonException>(() => {
-					new JsonTokenReader($"\"{controlChar}\"").SkipToken(JsonToken.String);
+					using var json = new StringReader($"\"{controlChar}\"");
+					new JsonTokenReader(json).SkipToken(JsonToken.String);
 				});
 			}
 		}
@@ -156,13 +161,15 @@ namespace Voorhees.Tests {
 	public class JsonTokenReader_ConsumeNumber {
 		[Test]
 		public void NotANumberNext() {
-			var tokenReader = new JsonTokenReader("true");
+			using var json = new StringReader("true");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.Throws<InvalidOperationException>(() => tokenReader.ConsumeNumber());
 		}
 		
 		[Test]
 		public void LeadingZeroMustHaveDecimalOrExponent() {
-			var tokenReader = new JsonTokenReader("0123");
+			using var json = new StringReader("0123");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.Throws<InvalidJsonException>(() => tokenReader.ConsumeNumber());
 		}
 
@@ -232,7 +239,8 @@ namespace Voorhees.Tests {
 		}
 
 		static void TestString(string json) {
-			string tokenString = new(new JsonTokenReader(json).ConsumeNumber());
+			using var jsonStringReader = new StringReader(json);
+			string tokenString = new(new JsonTokenReader(jsonStringReader).ConsumeNumber());
 			Assert.That(tokenString, Is.EqualTo(json));
 		}
 	}
@@ -241,73 +249,85 @@ namespace Voorhees.Tests {
 	public class JsonTokenReader_ConsumeString {
 		[Test]
 		public void BasicString() {
-			var tokenReader = new JsonTokenReader("\"test\"");
+			using var json = new StringReader("\"test\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("test"));
 		}
 
 		[Test]
 		public void EscapedQuotes() {
-			var tokenReader = new JsonTokenReader("\"\\\"\"");
+			using var json = new StringReader("\"\\\"\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\""));
 		}
 		
 		[Test]
 		public void EscapedBackslash() {
-			var tokenReader = new JsonTokenReader("\"\\\\\"");
+			using var json = new StringReader("\"\\\\\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\\"));
 		}
 		
 		[Test]
 		public void EscapedForwardSlash() {
-			var tokenReader = new JsonTokenReader("\"\\/\"");
+			using var json = new StringReader("\"\\/\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("/"));
 		}
 		
 		[Test]
 		public void EscapedBackspace() {
-			var tokenReader = new JsonTokenReader("\"\\b\"");
+			using var json = new StringReader("\"\\b\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\b"));
 		}
 		
 		[Test]
 		public void EscapedFormFeed() {
-			var tokenReader = new JsonTokenReader("\"\\f\"");
+			using var json = new StringReader("\"\\f\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\f"));
 		}
 		
 		[Test]
 		public void EscapedLineFeed() {
-			var tokenReader = new JsonTokenReader("\"\\n\"");
+			using var json = new StringReader("\"\\n\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\n"));
 		}
 		
 		[Test]
 		public void EscapedCarriageReturn() {
-			var tokenReader = new JsonTokenReader("\"\\r\"");
+			using var json = new StringReader("\"\\r\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\r"));
 		}
 		
 		[Test]
 		public void EscapedHorizontalTab() {
-			var tokenReader = new JsonTokenReader("\"\\t\"");
+			using var json = new StringReader("\"\\t\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("\t"));
 		}
 		
 		[Test]
 		public void EscapedUnicode() {
-			var tokenReader = new JsonTokenReader("\"\\u597D\"");
+			using var json = new StringReader("\"\\u597D\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("好"));
 		}
 
 		[Test]
 		public void InvalidEscapeCode() {
-			var tokenReader = new JsonTokenReader("\"\\g\"");
+			using var json = new StringReader("\"\\g\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.Throws<InvalidJsonException>(() => tokenReader.ConsumeString());
 		}
 
 		[Test]
 		public void MixedRegularAndEscapedChars() {
-			var tokenReader = new JsonTokenReader(new StringReader("\"¿ni\\u597Dma?\""));
+			using var json = new StringReader("\"¿ni\\u597Dma?\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("¿ni好ma?"));
 		}
 
@@ -333,19 +353,22 @@ namespace Voorhees.Tests {
 		public void AdvancingToRandomCharactersThrows() {
 			Assert.Throws<InvalidJsonException>(() => {
 				// ReSharper disable once ObjectCreationAsStatement
-				new JsonTokenReader("fail");
+				using var json = new StringReader("fail");
+				var _ = new JsonTokenReader(json);
 			});
 		}
 		
 		[Test]
 		public void ParsesUnicodeSurrogatePairsCorrectly() {
-			var tokenReader = new JsonTokenReader("\"\\ud83d\\ude80\"");
+			using var json = new StringReader("\"\\ud83d\\ude80\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("🚀"));
 		}
 		
 		[Test]
 		public void ParsesEmojiCorrectly() {
-			var tokenReader = new JsonTokenReader("\"🚀\"");
+			using var json = new StringReader("\"🚀\"");
+			var tokenReader = new JsonTokenReader(json);
 			Assert.That(tokenReader.ConsumeString(), Is.EqualTo("🚀"));
 		}
 

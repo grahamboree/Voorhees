@@ -23,12 +23,6 @@ namespace Voorhees {
         /// Read tokens from the start of the json string.
         /// </summary>
         /// <param name="json">The JSON document to read</param>
-        public JsonTokenReader(string json) : this (new StringReader(json)) { }
-        
-        /// <summary>
-        /// Read tokens from the start of the json string.
-        /// </summary>
-        /// <param name="json">The JSON document to read</param>
         public JsonTokenReader(TextReader json) : this (new Internal.DocumentCursor(json)) { }
 
         /// <summary>
