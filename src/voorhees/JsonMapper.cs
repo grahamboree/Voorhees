@@ -4,6 +4,9 @@ using System.IO;
 using System.Text;
 
 namespace Voorhees {
+    /// Maps json data to values of specific types, and vice-versa.
+    /// Uses any (optional) json importer and/or exporter functions
+    /// registered for specific types.
     public partial class JsonMapper {
         public delegate void ExporterFunc<in T>(T objectToSerialize, JsonTokenWriter tokenWriter);
         public delegate T ImporterFunc<out T>(JsonTokenReader tokenReader);

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace Voorhees {
+    /// Reads json tokens from a json document stream.
     public class JsonTokenReader {
         /// The next Json token in the document.
         public JsonToken NextToken = JsonToken.None;

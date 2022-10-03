@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 
 namespace Voorhees.Internal {
+    /// Reflection cache for serialized and de-serialized types.
+    /// Used by JsonMapper to serialize and de-serialize fields on values.
     public static class TypeInfo {
         /// Gather property and field info about the type
         /// Cache it so we don't have to get this info every

@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace Voorhees {
-   /// A union-type representing a value that can exist in a JSON document.
-   /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
+   /// A union-type representing a value in a JSON document.
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
+   /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
       public JsonType Type { get; private set; }
 

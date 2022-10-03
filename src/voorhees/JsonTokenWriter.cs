@@ -3,14 +3,17 @@ using System.Globalization;
 using System.IO;
 
 namespace Voorhees {
-    // Writes JSON tokens to a TextWriter.  Can optionally write tokens in pretty printing mode.
+    /// Writes JSON tokens to a TextWriter.
+    /// Can optionally write tokens in pretty printing mode.
     public class JsonTokenWriter {
         public JsonTokenWriter(TextWriter textWriter, bool prettyPrint) {
             this.prettyPrint = prettyPrint;
             this.textWriter = textWriter;
         }
 
+        #region Null
         public void WriteNull() { WriteIndent(); textWriter.Write("null"); }
+        #endregion
 
         #region Boolean
         public void Write(bool val) { WriteIndent(); textWriter.Write(val ? "true" : "false"); }
@@ -51,6 +54,7 @@ namespace Voorhees {
         
         /// Separator between elements of an array or key value pairs in an object.
         public void WriteArrayOrObjectSeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
+        
         /// Call this before writing the end token for arrays and objects.  Adds a newline in pretty printing mode. 
         public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
         
