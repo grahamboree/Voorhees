@@ -14,7 +14,7 @@ namespace Voorhees {
             }
 
             // See if there's a custom exporter for the object
-            if (customExporters.TryGetValue(referenceType, out var customExporter)) {
+            if (exporters.TryGetValue(referenceType, out var customExporter)) {
                 customExporter(obj, tokenWriter);
                 return;
             }

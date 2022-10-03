@@ -22,18 +22,20 @@ namespace Voorhees {
         public static JsonValue FromJson(JsonTokenReader tokenReader) => defaultInstance.Read(tokenReader);
         #endregion
         
+        static readonly JsonMapper defaultInstance = new();
+        
         /////////////////////////////////////////////////
 
-        #region Custom Importers
-        public void RegisterImporter<T>(ImporterFunc<T> importer) => customImporters[typeof(T)] = json => importer(json);
-        public void UnRegisterImporter<T>() => customImporters.Remove(typeof(T));
-        public void UnRegisterAllImporters() => customImporters.Clear();
+        #region Importers
+        public void RegisterImporter<T>(ImporterFunc<T> importer) => importers[typeof(T)] = json => importer(json);
+        public void UnRegisterImporter<T>() => importers.Remove(typeof(T));
+        public void UnRegisterAllImporters() => importers.Clear();
         #endregion
         
-        #region Custom Exporters
-        public void RegisterExporter<T>(ExporterFunc<T> exporter) => customExporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
-        public void UnRegisterExporter<T>() => customExporters.Remove(typeof(T));
-        public void UnRegisterAllExporters() => customExporters.Clear();
+        #region Exporters
+        public void RegisterExporter<T>(ExporterFunc<T> exporter) => exporters[typeof(T)] = (obj, os) => exporter((T) obj, os);
+        public void UnRegisterExporter<T>() => exporters.Remove(typeof(T));
+        public void UnRegisterAllExporters() => exporters.Clear();
         #endregion
         
         #region Writing
@@ -91,10 +93,8 @@ namespace Voorhees {
         
         delegate void ExporterFunc(object obj, JsonTokenWriter os);
         delegate object ImporterFunc(JsonTokenReader tokenReader);
-
-        static readonly JsonMapper defaultInstance = new();
         
-        readonly Dictionary<Type, ImporterFunc> customImporters = new();
-        readonly Dictionary<Type, ExporterFunc> customExporters = new();
+        readonly Dictionary<Type, ImporterFunc> importers = new();
+        readonly Dictionary<Type, ExporterFunc> exporters = new();
     }
 }

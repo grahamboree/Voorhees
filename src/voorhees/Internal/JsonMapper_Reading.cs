@@ -224,7 +224,7 @@ namespace Voorhees {
             var destinationType = typeof(T);
             
             // If there's a custom importer that fits, use it
-            if (customImporters.TryGetValue(destinationType, out var customImporter)) {
+            if (importers.TryGetValue(destinationType, out var customImporter)) {
                 return (T)customImporter(tokenReader);
             }
 
