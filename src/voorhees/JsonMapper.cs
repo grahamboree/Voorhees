@@ -12,16 +12,14 @@ namespace Voorhees {
 
         #region Writing
         public static string ToJson<T>(T obj, bool prettyPrint = false) => defaultInstance.Write(obj, prettyPrint);
-        public static void ToJson<T>(T obj, JsonTokenWriter tokenWriter) => defaultInstance.Write(obj, tokenWriter);
-        public static string ToJson(JsonValue val, bool prettyPrint = false) => Write(val, prettyPrint);
-        public static void ToJson(JsonValue val, JsonTokenWriter tokenWriter) => Write(val, tokenWriter);
+        public static string ToJson(JsonValue val, bool prettyPrint = false) => defaultInstance.Write(val, prettyPrint);
         #endregion
         
         #region Reading
         public static T FromJson<T>(TextReader json) => defaultInstance.Read<T>(json);
         public static T FromJson<T>(JsonTokenReader tokenReader) => defaultInstance.Read<T>(tokenReader);
-        public static JsonValue FromJson(TextReader json) => Read(json);
-        public static JsonValue FromJson(JsonTokenReader tokenReader) => Read(tokenReader);
+        public static JsonValue FromJson(TextReader json) => defaultInstance.Read(json);
+        public static JsonValue FromJson(JsonTokenReader tokenReader) => defaultInstance.Read(tokenReader);
         #endregion
         
         /////////////////////////////////////////////////
@@ -42,31 +40,31 @@ namespace Voorhees {
         public string Write<T>(T obj, bool prettyPrint = false) {
             var stringBuilder = new StringBuilder();
             using (var stringWriter = new StringWriter(stringBuilder)) {
-                var jsonWriter = new JsonTokenWriter(stringWriter, prettyPrint);
-                Write(obj, jsonWriter);
+                Write(obj, new JsonTokenWriter(stringWriter, prettyPrint));
+            }
+            return stringBuilder.ToString();
+        }
+
+        public string Write(JsonValue val, bool prettyPrint = false) {
+            // We need to explicitly specify the function body here even
+            // though it's identical to the generic version.
+            // This forces it to use the overload that takes a JsonValue.
+            var stringBuilder = new StringBuilder();
+            using (var stringWriter = new StringWriter(stringBuilder)) {
+                Write(val, new JsonTokenWriter(stringWriter, prettyPrint));
             }
             return stringBuilder.ToString();
         }
 
         public void Write<T>(T obj, JsonTokenWriter tokenWriter) => WriteValue(obj, typeof(T), obj?.GetType(), tokenWriter);
 
-        public static string Write(JsonValue val, bool prettyPrint = false) {
-            // We need to explicitly specify the function body here even
-            // though it's identical to the generic version.
-            // This forces it to use the overload that takes a JsonValue.
-            var stringBuilder = new StringBuilder();
-            using (var stringWriter = new StringWriter(stringBuilder)) {
-                var jsonWriter = new JsonTokenWriter(stringWriter, prettyPrint);
-                Write(val, jsonWriter);
-            }
-            return stringBuilder.ToString();
-        }
-
-        public static void Write(JsonValue val, JsonTokenWriter tokenWriter) => WriteJsonValue(val, tokenWriter);
+        public void Write(JsonValue val, JsonTokenWriter tokenWriter) => WriteJsonValue(val, tokenWriter);
         #endregion
         
         #region Reading
         public T Read<T>(TextReader json) => Read<T>(new JsonTokenReader(json));
+        
+        public JsonValue Read(TextReader json) => Read(new JsonTokenReader(json));
 
         public T Read<T>(JsonTokenReader tokenReader) {
             var result = ReadValueOfType<T>(tokenReader);
@@ -77,10 +75,8 @@ namespace Voorhees {
             }
             return result;
         }
-
-        public static JsonValue Read(TextReader json) => Read(new JsonTokenReader(json));
-
-        public static JsonValue Read(JsonTokenReader tokenReader) {
+        
+        public JsonValue Read(JsonTokenReader tokenReader) {
             var result = ReadJsonValue(tokenReader);
 
             // Make sure there's no additional json in the buffer.
