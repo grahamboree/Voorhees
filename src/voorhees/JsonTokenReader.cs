@@ -147,7 +147,7 @@ namespace Voorhees {
             cursor.Advance(); // Skip the "
             
             Span<char> hexChars = stackalloc char[4];
-            var readChars = new List<char>(); // TODO temp alloc
+            readChars.Clear();
             
             while (!cursor.AtEOF) {
                 if (cursor.CurrentChar == '"') {
@@ -223,6 +223,7 @@ namespace Voorhees {
         /////////////////////////////////////////////////
         
         readonly Internal.DocumentCursor cursor;
+        readonly List<char> readChars = new(512); //128 
 
         /////////////////////////////////////////////////
 
