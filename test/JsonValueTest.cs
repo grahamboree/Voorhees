@@ -17,9 +17,9 @@ namespace Voorhees.Tests {
 			var two = new JsonValue();
 			var three = new JsonValue(1);
 			Assert.Multiple(() => {
-				Assert.That(one.Equals(two), Is.False);
-				Assert.That(one.Equals(three), Is.False);
-				Assert.That(three.Equals(one), Is.False);
+				Assert.That(one, Is.Not.EqualTo(two));
+				Assert.That(one, Is.Not.EqualTo(three));
+				Assert.That(three, Is.Not.EqualTo(one));
 			});
 		}
 	}
@@ -86,15 +86,15 @@ namespace Voorhees.Tests {
 	}
 	
 	[TestFixture]
-	class JsonValue_Float {
+	class JsonValue_Double {
 		[Test]
-		public void ConstructingWithFloatSetsTypeToFloat() {
-			Assert.That(new JsonValue(1.0f).Type, Is.EqualTo(JsonType.Double));
+		public void ConstructingWithFloatSetsTypeToDouble() {
+			Assert.That(new JsonValue(1.0).Type, Is.EqualTo(JsonType.Double));
 		}
 
 		[Test]
-		public void ImplicitConversionCreatesFloatValue() {
-			JsonValue test = 1.0f;
+		public void ImplicitConversionCreatesFloatDouble() {
+			JsonValue test = 1.0;
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
 			});
@@ -102,7 +102,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
-			JsonValue test = 1.0f;
+			JsonValue test = 1.0;
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
 				Assert.That((double) test, Is.EqualTo(1.0));
@@ -110,21 +110,21 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void ExplicitConversionForNonFloatTypeThrows() {
+		public void ExplicitConversionForNonDoubleTypeThrows() {
 			JsonValue test = true;
 			Assert.Throws<InvalidCastException>(() => {
-				float _ = (float)test;
+				double _ = (double)test;
 			});
 		}
 
 		[Test]
 		public void EqualsTestsEquality() {
-			JsonValue one = 1f;
-			JsonValue two = 1f;
-			JsonValue three = 2f;
+			JsonValue one = 1.0;
+			JsonValue two = 1.0;
+			JsonValue three = 2.0;
 			Assert.Multiple(() => {
-				Assert.That(one.Equals(two), Is.True);
-				Assert.That(one.Equals(three), Is.False);
+				Assert.That(one, Is.EqualTo(two));
+				Assert.That(one, Is.Not.EqualTo(three));
 			});
 		}
 	}
