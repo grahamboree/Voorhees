@@ -1,51 +1,32 @@
-Voorhees
-========
+# 🔪 Voorhees
 
-*A terrifyingly fast C# JSON micro-framework*
+<p align="center">
+	<i>A terrifyingly fast C# JSON framework with a focus CPU performance and minimizing allocations</i>	
+</p>
 
-Current Status
-------
 [![Build & Test](https://github.com/grahamboree/Voorhees/actions/workflows/build.yaml/badge.svg)](https://github.com/grahamboree/Voorhees/actions/workflows/build.yaml)[![Coverage Status](https://coveralls.io/repos/github/grahamboree/Voorhees/badge.svg?branch=main)](https://coveralls.io/github/grahamboree/Voorhees?branch=main)[![CodeFactor](https://www.codefactor.io/repository/github/grahamboree/voorhees/badge)](https://www.codefactor.io/repository/github/grahamboree/voorhees)
 
-[Kanban board](https://github.com/grahamboree/Voorhees/projects/1)
-
-**Current Features**
-* Read and write json data into a structured object graph with minimal allocations.
-* Map complex objects to and from json values
-* Multidimensional array mapping support
-* Field and Property annotations to ignore specific values when serializing
-* Optionally generate pretty-printed JSON instead of condensed JSON
-
-**In-Development**
-* Serialize and de-serialize correct underlying value for polymorphic type references
-* Serialized object versioning and version data migration system
-* De-dupe multiple references to the same value.  Handle serializing circular references.
-
-Why
 ---
 
-Voorhees was designed specifically with game development in mind.  This means a specific focus on CPU performance and reducing allocations.
+## Reading Json Data
 
----
+You can read arbitrary json data into a `JsonValue` structure using the `JsonMapper.FromJson` method.  This method operates on `TextReader` streams, allowing for reading from strings, files, network messages, and more with a shared inteface.
 
-Reading Json Data
------------------
-
-Given a JSON string...
-```C#
-string json = "{ \"someIntValue\": 3}";
-```
-
-You can read it into a `JsonValue` structure using the static `JsonReader.Read` method.  This is useful for reading and manipulating arbitrary data.
 ```C#
 using Voorhees;
 
-JsonValue jsonValue = JsonReader.Read(json);
+// Create a json string and wrap it in a TextReader straem
+TextReader json = new StringReader("{ \"someIntValue\": 3}");
+
+// Load the data into a JsonValue
+JsonValue jsonValue = JsonMapper.FromJson(json);
+
 Console.WriteLine(jsonValue.Type); // JsonType.Object
 Console.WriteLine((int)jsonValue["someIntValue"]); // 3
 ```
 
-Alternatively, you can map it to a matching C# structure using `JsonMapper`.  This is most useful for easily reading in structured config or save data into specific C# types.
+You can also map json data to a matching C# structure using the generic version of `JsonMapper.FromJson<T>`.  This is most useful for reading in structured data into existing corresponding C# types.
+
 ```C#
 using Voorhees;
 
@@ -53,27 +34,30 @@ struct ExampleStructure {
 	public int someIntValue;
 }
 
+TextReader json = new StringReader("{ \"someIntValue\": 3}");
 ExampleStructure mappedValue = JsonMapper.FromJson<ExampleStructure>(json);
+
 Console.WriteLine(mappedValue.someIntValue); // 3
 ```
 
-`JsonMapper` can also be used to map values to built-in types like `Dictionary<T, U>`, `List<T>`, or array values:
+`JsonMapper` supports loading values into built-in collection types like `Dictionary<T, U>`, `List<T>`, arrays, and more:
+
 ```C#
-string dictJson = "{\"one\": 1, \"two\": 2}";
+TextReader dictJson = new StringReader("{\"one\": 1, \"two\": 2}");
 
 Dictionary<string, int> numberNamesToInts = JsonMapper.FromJson<Dictionary<string, int>>(dictJson);
 Console.WriteLine(numberNamesToInts.Count); // 2
 Console.WriteLine(numberNamesToInts["one"]); // 1
 Console.WriteLine(numberNamesToInts["two"]); // 2
 
-string arrayJson = "[1, 2, 3]";
-
-List<int> mappedList = JsonMapper.FromJson<List<int>>(arrayJson);
+TextReader listJson = new StringReader("[1, 2, 3]");
+List<int> mappedList = JsonMapper.FromJson<List<int>>(listJson);
 Console.WriteLine(mappedList.Count); // 3
 Console.WriteLine(mappedList[0]); // 1
 Console.WriteLine(mappedList[1]); // 2
 Console.WriteLine(mappedList[2]); // 3
 
+TextReader arrayJson = new StringReader("[1, 2, 3]");
 int[] mappedArray = JsonMapper.FromJson<int[]>(arrayJson);
 Console.WriteLine(mappedArray.Length); // 3
 Console.WriteLine(mappedArray[0]); // 1
@@ -81,12 +65,10 @@ Console.WriteLine(mappedArray[1]); // 2
 Console.WriteLine(mappedArray[2]); // 3
 ```
 
----
+## Writing Json Data
 
-Writing Json Data
------------------
+You can convert a JsonValue object into the matching JSON string using `JsonMapper`:
 
-You can convert a JsonValue object into the matching JSON string using `JsonWriter`:
 ```C#
 using Voorhees;
 
@@ -95,15 +77,16 @@ JsonValue objectValue = new JsonValue {
 	{ "two", 2 },
 	{ "three", 3 }
 };
-string jsonObject = JsonWriter.ToJson(objectValue);
+string jsonObject = JsonMapper.ToJson(objectValue);
 Console.WriteLine(jsonObject); // {"one":1,"two":2,"three":3}
 
 JsonValue arrayValue = new JsonValue {1, 2, 3};
-string jsonArray = JsonWriter.ToJson(arrayValue);
+string jsonArray = JsonMapper.ToJson(arrayValue);
 Console.WriteLine(jsonObject); // [1,2,3]
 ```
 
-Alternatively, you can map a C# value to a matching JSON string using `JsonMapper`.
+`JsonMapper` also supports mapping arbitrary C# data types in addition to `JsonValue`.
+
 ```C#
 using Voorhees;
 
@@ -127,10 +110,8 @@ int[] fibonacci = {1, 1, 2, 3, 5, 8};
 string fibonacciJson = JsonMapper.ToJson(fibonacci);
 Console.WriteLine(fibonacciJson); // [1,1,2,3,5,8]
 ```
----
 
-Working with JsonValue
-----------------------
+## Working with JsonValue
 
 `JsonValue` is a discriminated union type that represents a [JSON value](https://www.json.org/json-en.html).  `JsonValue` represents a value that is either a `bool`, `int`, `float`, `string`, `List<JsonValue>` or `Dictionary<string, JsonValue>`.  The `Type` parameter on a `JsonValue` instance returns an enum that indicates what the contained type is.
 
@@ -169,3 +150,21 @@ Console.WriteLine((int)intValue); // 3
 Console.WriteLine((float)floatValue); // 3.5
 Console.WriteLine((string)stringValue); // lorem ipsum
 ```
+
+---
+
+## Development & Roadmap
+
+[Kanban board](https://github.com/grahamboree/Voorhees/projects/1)
+
+**Current Features**
+* Read and write json data into a structured object graph with minimal allocations.
+* Map complex objects to and from json values
+* Multidimensional array mapping support
+* Field and Property annotations to ignore specific values when serializing
+* Optionally generate pretty-printed JSON instead of condensed JSON
+* Serialize and de-serialize correct underlying value for polymorphic type references
+
+**In-Development**
+* Serialized object versioning and version data migration system
+* De-dupeing multiple references to the same value.  Correctly serialize and deserialize circular references.
