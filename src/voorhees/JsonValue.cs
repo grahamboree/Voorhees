@@ -84,6 +84,40 @@ namespace Voorhees {
          return data.intValue;
       }
 
+      public static explicit operator uint(JsonValue data) {
+         return (uint)(int)data;
+      }
+
+      public static explicit operator sbyte(JsonValue data) {
+         return (sbyte)(int)data;
+      }
+
+      public static explicit operator byte(JsonValue data) {
+         return (byte)(int)data;
+      }
+
+      public static explicit operator short(JsonValue data) {
+         return (short)(int)data;
+      }
+
+      public static explicit operator ushort(JsonValue data) {
+         return (ushort)(int)data;
+      }
+
+      public static explicit operator long(JsonValue data) {
+         return (long)(int)data;
+      }
+
+      public static explicit operator ulong(JsonValue data) {
+         return (ulong)(int)data;
+      }
+      
+      public static explicit operator char(JsonValue data) {
+         // Using the int val because char is really an integral type
+         // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types
+         return (char)(int)data;
+      }
+
       public static explicit operator string(JsonValue data) {
          if (data.Type != JsonType.String) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a string");

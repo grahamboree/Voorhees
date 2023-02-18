@@ -167,7 +167,80 @@ namespace Voorhees.Tests {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
-				Assert.That((int) test, Is.EqualTo(1));
+				Assert.That((int)test, Is.EqualTo(1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToSByte() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((sbyte)test, Is.EqualTo((sbyte)1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToByte() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((byte)test, Is.EqualTo((byte)1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToShort() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((short)test, Is.EqualTo((short)1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToUShort() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((ushort)test, Is.EqualTo((ushort)1));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToUInt() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((uint)test, Is.EqualTo(1U));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToLong() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((long)test, Is.EqualTo(1L));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToULong() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((ulong)test, Is.EqualTo(1ul));
+			});
+		}
+
+		// Because char is really an integral type https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types
+		[Test]
+		public void ExplicitConversionOperatorConvertsToChar() {
+			JsonValue test = 1;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That((char)test, Is.EqualTo((char)1));
 			});
 		}
 
