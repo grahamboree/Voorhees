@@ -113,7 +113,7 @@ Console.WriteLine(fibonacciJson); // [1,1,2,3,5,8]
 
 ## Working with JsonValue
 
-`JsonValue` is a discriminated union type that represents a [JSON value](https://www.json.org/json-en.html).  `JsonValue` represents a value that is either a `bool`, `int`, `float`, `string`, `List<JsonValue>` or `Dictionary<string, JsonValue>`.  The `Type` parameter on a `JsonValue` instance returns an enum that indicates what the contained type is.
+`JsonValue` is a discriminated union type that represents a [JSON value](https://www.json.org/json-en.html).  `JsonValue` represents a value that is either a `bool`, `int`, `double`, `string`, `List<JsonValue>` or `Dictionary<string, JsonValue>`.  The `Type` parameter on a `JsonValue` instance returns an enum that indicates what the contained type is.
 
 **Creating JsonValue instances**
 `JsonValue` has a number of implicit conversion constructors, and is compatible with the C# syntactic sugar for declaring list and dictionary literals:
@@ -121,7 +121,7 @@ Console.WriteLine(fibonacciJson); // [1,1,2,3,5,8]
 ```C#
 JsonValue boolValue = false;
 JsonValue intValue = 3;
-JsonValue floatValue = 3.5f;
+JsonValue doubletValue = 3.5;
 JsonValue stringValue = "lorem ipsum";
 JsonValue listValue = new JsonValue {1, 2, 3};
 JsonValue objectValue = new JsonValue {{"one", 1}, {"two", 2}};
@@ -147,7 +147,7 @@ JsonValue complexValue = new JsonValue {
 
 Console.WriteLine((bool)boolValue); // false
 Console.WriteLine((int)intValue); // 3
-Console.WriteLine((float)floatValue); // 3.5
+Console.WriteLine((double)doubleValue); // 3.5
 Console.WriteLine((string)stringValue); // lorem ipsum
 ```
 

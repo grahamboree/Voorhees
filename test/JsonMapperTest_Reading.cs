@@ -170,18 +170,12 @@ namespace Voorhees.Tests {
     }
     
     [TestFixture]
-    public class JsonMapper_Read_Float {
-        [Test]
-        public void ReadFloat() {
-            using var json = new StringReader("3.5");
-            Assert.That(JsonMapper.FromJson<float>(json), Is.EqualTo(3.5f));
-        }
-
+    public class JsonMapper_Read_Double {
         class ClassWithImplicitConversionOperator {
-            public float floatVal;
+            public double doubleVal;
 
-            public static implicit operator ClassWithImplicitConversionOperator(float data) {
-                return new ClassWithImplicitConversionOperator {floatVal = data};
+            public static implicit operator ClassWithImplicitConversionOperator(double data) {
+                return new ClassWithImplicitConversionOperator {doubleVal = data};
             }
         }
 
@@ -192,7 +186,17 @@ namespace Voorhees.Tests {
             }
 
             using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json).floatVal, Is.EqualTo(3.5f));
+                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json).doubleVal, Is.EqualTo(3.5));
+            }
+        }
+        
+        [Test]
+        public void ReadFloat() {
+            using (var json = new StringReader("3.5")) {
+                Assert.That(JsonMapper.FromJson<float>(json), Is.TypeOf<float>());
+            }
+            using (var json = new StringReader("3.5")) {
+                Assert.That(JsonMapper.FromJson<float>(json), Is.EqualTo(3.5f));
             }
         }
 

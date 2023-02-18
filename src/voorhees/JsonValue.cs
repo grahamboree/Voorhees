@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Voorhees {
    /// A union-type representing a value in a JSON document.
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
-   /// Distinguishes between floating point and integral values even though JSON treats them both as the "number" type.
+   /// Distinguishes between floating point and integral values even though JSON treats them both as doubles.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
       public JsonType Type { get; private set; }
 
@@ -15,9 +15,9 @@ namespace Voorhees {
          boolValue = boolean;
       }
 
-      public JsonValue(float number) {
-         Type = JsonType.Float;
-         floatValue = number;
+      public JsonValue(double number) {
+         Type = JsonType.Double;
+         doubleValue = number;
       }
 
       public JsonValue(int number) {
@@ -49,7 +49,7 @@ namespace Voorhees {
 
       #region Implicit Conversions to JsonValue from other types
       public static implicit operator JsonValue(bool data) { return new JsonValue(data); }
-      public static implicit operator JsonValue(float data) { return new JsonValue(data); }
+      public static implicit operator JsonValue(double data) { return new JsonValue(data); }
       public static implicit operator JsonValue(int data) { return new JsonValue(data); }
       public static implicit operator JsonValue(string data) { return new JsonValue(data); }
       #endregion
@@ -62,11 +62,11 @@ namespace Voorhees {
          return data.boolValue;
       }
 
-      public static explicit operator float(JsonValue data) {
-         if (data.Type != JsonType.Float) {
-            throw new InvalidCastException("Instance of JsonData doesn't hold a float");
+      public static explicit operator double(JsonValue data) {
+         if (data.Type != JsonType.Double) {
+            throw new InvalidCastException("Instance of JsonData doesn't hold a double");
          }
-         return data.floatValue;
+         return data.doubleValue;
       }
 
       public static explicit operator int(JsonValue data) {
@@ -150,7 +150,7 @@ namespace Voorhees {
             case JsonType.String: return stringValue == other.stringValue;
             case JsonType.Boolean: return boolValue == other.boolValue;
             case JsonType.Int: return intValue == other.intValue;
-            case JsonType.Float: return floatValue == other.floatValue;
+            case JsonType.Double: return doubleValue == other.doubleValue;
             case JsonType.Object: {
                if (objectValue.Count != other.objectValue.Count) {
                   return false;
@@ -209,7 +209,7 @@ namespace Voorhees {
       
       readonly bool boolValue;
       readonly int intValue;
-      readonly float floatValue;
+      readonly double doubleValue;
       readonly string stringValue;
       List<JsonValue> arrayValue;
       Dictionary<string, JsonValue> objectValue;

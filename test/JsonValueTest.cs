@@ -89,14 +89,14 @@ namespace Voorhees.Tests {
 	class JsonValue_Float {
 		[Test]
 		public void ConstructingWithFloatSetsTypeToFloat() {
-			Assert.That(new JsonValue(1.0f).Type, Is.EqualTo(JsonType.Float));
+			Assert.That(new JsonValue(1.0f).Type, Is.EqualTo(JsonType.Double));
 		}
 
 		[Test]
 		public void ImplicitConversionCreatesFloatValue() {
 			JsonValue test = 1.0f;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Float));
+				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
 			});
 		}
 
@@ -104,8 +104,8 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = 1.0f;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-				Assert.That((float) test, Is.EqualTo(1.0f));
+				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That((double) test, Is.EqualTo(1.0));
 			});
 		}
 

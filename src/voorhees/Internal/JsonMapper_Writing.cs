@@ -198,7 +198,7 @@ namespace Voorhees {
 
             switch (val.Type) {
                 case JsonType.Int:     tokenWriter.Write((int) val); break;
-                case JsonType.Float:   tokenWriter.Write((float) val); break;
+                case JsonType.Double:   tokenWriter.Write((double) val); break;
                 case JsonType.Boolean: tokenWriter.Write((bool) val); break;
                 case JsonType.String:  tokenWriter.Write((string) val); break;
                 case JsonType.Null:    tokenWriter.WriteNull(); break;

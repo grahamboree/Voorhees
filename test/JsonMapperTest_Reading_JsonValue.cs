@@ -29,8 +29,8 @@ namespace Voorhees.Tests {
 			using var json = new StringReader("1.5");
 			var test = JsonMapper.FromJson(json);
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Float));
-				Assert.That((float) test, Is.EqualTo(1.5f));
+				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That((float) test, Is.EqualTo(1.5));
 			});
 		}
 		
@@ -175,8 +175,8 @@ namespace Voorhees.Tests {
 
 				Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
 				Assert.That((int) test[0], Is.EqualTo(1));
-				Assert.That(test[1].Type, Is.EqualTo(JsonType.Float));
-				Assert.That((float) test[1], Is.EqualTo(1.5));
+				Assert.That(test[1].Type, Is.EqualTo(JsonType.Double));
+				Assert.That((double) test[1], Is.EqualTo(1.5));
 				Assert.That(test[2].Type, Is.EqualTo(JsonType.String));
 				Assert.That((string) test[2], Is.EqualTo("test"));
 				Assert.That(test[3].Type, Is.EqualTo(JsonType.Boolean));

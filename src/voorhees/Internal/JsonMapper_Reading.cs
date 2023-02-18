@@ -273,8 +273,8 @@ namespace Voorhees {
                             jsonType = typeof(int);
                             jsonValue = intVal; // TODO Boxing
                         } else {
-                            jsonType = typeof(float);
-                            jsonValue = GetNumericValueParser<float>().Parse(numberSpan); // TODO Boxing
+                            jsonType = typeof(double);
+                            jsonValue = GetNumericValueParser<double>().Parse(numberSpan); // TODO Boxing
                         }
                     } catch (InvalidJsonException inner) {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
@@ -307,6 +307,11 @@ namespace Voorhees {
             // Integral value can be converted to enum values
             if (jsonType == typeof(int) && valueType.IsEnum) {
                 return Convert.ChangeType(Enum.ToObject(valueType, jsonValue), destinationType);
+            }
+            
+            // Double values can be converted to floats
+            if (jsonType == typeof(double) && valueType == typeof(float)) {
+                return Convert.ToSingle(jsonValue); // TODO boxing
             }
 
             // Try using an implicit conversion operator
@@ -521,7 +526,7 @@ namespace Voorhees {
                     var numberSpan = tokenReader.ConsumeNumber();
                     try {
                         return GetNumericValueParser<int>().TryParse(numberSpan, out int intVal) ? new JsonValue(intVal)
-                            : new JsonValue(GetNumericValueParser<float>().Parse(numberSpan));
+                            : new JsonValue(GetNumericValueParser<double>().Parse(numberSpan));
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
                         throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
