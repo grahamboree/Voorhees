@@ -30,7 +30,7 @@ namespace Voorhees.Tests {
 			var test = JsonMapper.FromJson(json);
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
-				Assert.That((float) test, Is.EqualTo(1.5));
+				Assert.That((double) test, Is.EqualTo(1.5));
 			});
 		}
 		
