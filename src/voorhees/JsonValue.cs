@@ -69,6 +69,14 @@ namespace Voorhees {
          return data.doubleValue;
       }
 
+      public static explicit operator float(JsonValue data) {
+         return (float)(double)data;
+      }
+
+      public static explicit operator decimal(JsonValue data) {
+         return (decimal)(double)data;
+      }
+
       public static explicit operator int(JsonValue data) {
          if (data.Type != JsonType.Int) {
             throw new InvalidCastException("Instance of JsonData doesn't hold an int");

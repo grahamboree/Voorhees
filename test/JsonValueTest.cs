@@ -110,6 +110,24 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
+		public void ExplicitConversionOperatorConvertsToFloat() {
+			JsonValue test = 1.0;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That((float) test, Is.EqualTo(1.0f));
+			});
+		}
+
+		[Test]
+		public void ExplicitConversionOperatorConvertsToDecimal() {
+			JsonValue test = 1.0;
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That((decimal) test, Is.EqualTo(1.0m));
+			});
+		}
+
+		[Test]
 		public void ExplicitConversionForNonDoubleTypeThrows() {
 			JsonValue test = true;
 			Assert.Throws<InvalidCastException>(() => {
