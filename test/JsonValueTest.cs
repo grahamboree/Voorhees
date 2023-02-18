@@ -258,8 +258,8 @@ namespace Voorhees.Tests {
 			JsonValue two = 1;
 			JsonValue three = 2;
 			Assert.Multiple(() => {
-				Assert.That(one.Equals(two), Is.True);
-				Assert.That(one.Equals(three), Is.False);
+				Assert.That(one, Is.EqualTo(two));
+				Assert.That(one, Is.Not.EqualTo(three));
 			});
 		}
 

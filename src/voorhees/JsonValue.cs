@@ -17,12 +17,12 @@ namespace Voorhees {
 
       public JsonValue(double number) {
          Type = JsonType.Double;
-         doubleValue = number;
+         numberValue = number;
       }
 
       public JsonValue(int number) {
          Type = JsonType.Int;
-         intValue = number;
+         numberValue = number;
       }
 
       public JsonValue(string str) {
@@ -64,59 +64,32 @@ namespace Voorhees {
 
       public static explicit operator double(JsonValue data) {
          if (data.Type != JsonType.Double) {
-            throw new InvalidCastException("Instance of JsonData doesn't hold a double");
+            throw new InvalidCastException("Instance of JsonData doesn't hold a number");
          }
-         return data.doubleValue;
+         return data.numberValue;
       }
 
-      public static explicit operator float(JsonValue data) {
-         return (float)(double)data;
-      }
-
-      public static explicit operator decimal(JsonValue data) {
-         return (decimal)(double)data;
-      }
-
+      public static explicit operator float(JsonValue data) { return (float)(double)data; }
+      public static explicit operator decimal(JsonValue data) { return (decimal)(double)data; }
+      
       public static explicit operator int(JsonValue data) {
          if (data.Type != JsonType.Int) {
-            throw new InvalidCastException("Instance of JsonData doesn't hold an int");
+            throw new InvalidCastException("Instance of JsonData doesn't hold a number");
          }
-         return data.intValue;
-      }
-
-      public static explicit operator uint(JsonValue data) {
-         return (uint)(int)data;
-      }
-
-      public static explicit operator sbyte(JsonValue data) {
-         return (sbyte)(int)data;
-      }
-
-      public static explicit operator byte(JsonValue data) {
-         return (byte)(int)data;
-      }
-
-      public static explicit operator short(JsonValue data) {
-         return (short)(int)data;
-      }
-
-      public static explicit operator ushort(JsonValue data) {
-         return (ushort)(int)data;
-      }
-
-      public static explicit operator long(JsonValue data) {
-         return (long)(int)data;
-      }
-
-      public static explicit operator ulong(JsonValue data) {
-         return (ulong)(int)data;
+         return (int)data.numberValue;
       }
       
-      public static explicit operator char(JsonValue data) {
-         // Using the int val because char is really an integral type
-         // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types
-         return (char)(int)data;
-      }
+      public static explicit operator uint(JsonValue data) { return (uint)(int)data; }
+      public static explicit operator sbyte(JsonValue data) { return (sbyte)(int)data; }
+      public static explicit operator byte(JsonValue data) { return (byte)(int)data; }
+      public static explicit operator short(JsonValue data) { return (short)(int)data; }
+      public static explicit operator ushort(JsonValue data) { return (ushort)(int)data; }
+      public static explicit operator long(JsonValue data) { return (long)(int)data; }
+      public static explicit operator ulong(JsonValue data) { return (ulong)(int)data; }
+      
+      // Using the number value because char is really an integral type
+      // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types
+      public static explicit operator char(JsonValue data) { return (char)(int)data; }
 
       public static explicit operator string(JsonValue data) {
          if (data.Type != JsonType.String) {
@@ -191,8 +164,8 @@ namespace Voorhees {
             case JsonType.Null: return true;
             case JsonType.String: return stringValue == other.stringValue;
             case JsonType.Boolean: return boolValue == other.boolValue;
-            case JsonType.Int: return intValue == other.intValue;
-            case JsonType.Double: return doubleValue == other.doubleValue;
+            case JsonType.Int: return (int)numberValue == (int)other.numberValue;
+            case JsonType.Double: return numberValue == other.numberValue;
             case JsonType.Object: {
                if (objectValue.Count != other.objectValue.Count) {
                   return false;
@@ -250,8 +223,7 @@ namespace Voorhees {
       /////////////////////////////////////////////////
       
       readonly bool boolValue;
-      readonly int intValue;
-      readonly double doubleValue;
+      readonly double numberValue;
       readonly string stringValue;
       List<JsonValue> arrayValue;
       Dictionary<string, JsonValue> objectValue;
