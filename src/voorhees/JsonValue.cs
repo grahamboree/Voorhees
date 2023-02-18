@@ -12,7 +12,7 @@ namespace Voorhees {
       #region Constructors
       public JsonValue(bool boolean) {
          Type = JsonType.Boolean;
-         boolValue = boolean;
+         numberValue = boolean ? 1.0 : 0.0;
       }
 
       public JsonValue(double number) {
@@ -59,7 +59,7 @@ namespace Voorhees {
          if (data.Type != JsonType.Boolean) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
          }
-         return data.boolValue;
+         return data.numberValue == 1.0;
       }
 
       public static explicit operator double(JsonValue data) {
@@ -163,7 +163,7 @@ namespace Voorhees {
          switch (Type) {
             case JsonType.Null: return true;
             case JsonType.String: return stringValue == other.stringValue;
-            case JsonType.Boolean: return boolValue == other.boolValue;
+            case JsonType.Boolean: return (numberValue == 1.0) == (other.numberValue == 1.0);
             case JsonType.Int: return (int)numberValue == (int)other.numberValue;
             case JsonType.Double: return numberValue == other.numberValue;
             case JsonType.Object: {
@@ -222,7 +222,6 @@ namespace Voorhees {
       
       /////////////////////////////////////////////////
       
-      readonly bool boolValue;
       readonly double numberValue;
       readonly string stringValue;
       List<JsonValue> arrayValue;
