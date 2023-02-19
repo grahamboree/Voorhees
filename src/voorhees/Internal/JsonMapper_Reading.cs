@@ -476,16 +476,20 @@ namespace Voorhees {
                 case JsonToken.False: tokenReader.SkipToken(JsonToken.False); return new JsonValue(false);
                 case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
                 case JsonToken.Number: {
-                    string numberSpan = tokenReader.ConsumeNumber();
+                    string numberSpan;
+                    try {
+                        numberSpan = tokenReader.ConsumeNumber();
+                    } catch (InvalidJsonException inner) {
+                        // Need to re-throw these because the value parsers don't have access to the line & column info
+                        throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
+                    }
+                    
                     try {
                         double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
                         return doubleVal == (int)doubleVal ? new JsonValue((int)doubleVal) : new JsonValue(doubleVal);
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
                         throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
-                    } catch (InvalidJsonException inner) {
-                        // Need to re-throw these because the value parsers don't have access to the line & column info
-                        throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
                     }
                 }
                 case JsonToken.ArrayStart: {
