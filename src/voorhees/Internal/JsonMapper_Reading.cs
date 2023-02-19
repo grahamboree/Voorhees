@@ -222,6 +222,11 @@ namespace Voorhees {
     public partial class JsonMapper {
         T ReadValueOfType<T>(JsonTokenReader tokenReader) {
             var destinationType = typeof(T);
+
+            if (destinationType == typeof(JsonValue)) {
+                // All this casting does nothing but is necessary to make the type checker happy.
+                return (T)Convert.ChangeType(ReadJsonValue(tokenReader), destinationType);
+            }
             
             // If there's a custom importer that fits, use it
             if (importers.TryGetValue(destinationType, out var customImporter)) {
