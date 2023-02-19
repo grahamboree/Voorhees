@@ -92,7 +92,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Write_Array {
         [Test]
         public void EmptyArray() {
-            Assert.That(JsonMapper.ToJson(new int[] { }), Is.EqualTo("[]"));
+            Assert.That(JsonMapper.ToJson(Array.Empty<int>()), Is.EqualTo("[]"));
         }
 
         [Test]
@@ -128,7 +128,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Write_Array_PrettyPrint {
         [Test]
         public void EmptyArray() {
-            Assert.That(JsonMapper.ToJson(new int[] { }, true), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(Array.Empty<int>(), true), Is.EqualTo("[\n]"));
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Write_MultiDimensionalArray {
         [Test]
         public void EmptyJaggedArray() {
-            Assert.That(JsonMapper.ToJson(new int[][] { }), Is.EqualTo("[]"));
+            Assert.That(JsonMapper.ToJson(Array.Empty<int[]>()), Is.EqualTo("[]"));
         }
 
         [Test]
@@ -179,7 +179,11 @@ namespace Voorhees.Tests {
 
         [Test]
         public void JaggedArray() {
-            var arrayOfArrays = new[] {new[] {1, 2}, new[] {3, 4}, new[] {5, 6}};
+            int[][] arrayOfArrays = {
+                new[] {1, 2},
+                new[] {3, 4},
+                new[] {5, 6}
+            };
             Assert.That(JsonMapper.ToJson(arrayOfArrays), Is.EqualTo("[[1,2],[3,4],[5,6]]"));
         }
 
@@ -190,7 +194,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void LargeMultiArray() {
-            var multi = new[,,,] {
+            int[,,,] multi = {
                 {
                     {
                         {1, 2},
@@ -210,7 +214,7 @@ namespace Voorhees.Tests {
                 }
             };
 
-            string json =
+            const string EXPECTED =
                 "[[" +
                 "[[1,2],[3,4]]," +
                 "[[5,6],[7,8]]" +
@@ -218,7 +222,7 @@ namespace Voorhees.Tests {
                 "[[9,10],[11,12]]," +
                 "[[13,14],[15,16]]" +
                 "]]";
-            Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(multi), Is.EqualTo(EXPECTED));
         }
     }
     
@@ -232,9 +236,9 @@ namespace Voorhees.Tests {
         [Test]
         public void JaggedList() {
             var arrayOfArrays = new List<List<int>> {
-                new List<int> {1, 2}, 
-                new List<int> {3, 4}, 
-                new List<int> {5, 6}
+                new() {1, 2}, 
+                new() {3, 4}, 
+                new() {5, 6}
             };
             Assert.That(JsonMapper.ToJson(arrayOfArrays), Is.EqualTo("[[1,2],[3,4],[5,6]]"));
         }
@@ -244,7 +248,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Write_MultiDimensionalArray_PrettyPrint {
         [Test]
         public void EmptyJaggedArray() {
-            Assert.That(JsonMapper.ToJson(new int[][] { }, true), Is.EqualTo("[\n]"));
+            Assert.That(JsonMapper.ToJson(Array.Empty<int[]>(), true), Is.EqualTo("[\n]"));
         }
 
         [Test]
@@ -254,13 +258,13 @@ namespace Voorhees.Tests {
 
         [Test]
         public void JaggedArray() {
-            var arrayOfArrays = new[] {
+            int[][] arrayOfArrays = {
                 new[] {1, 2}, 
                 new[] {3, 4}, 
                 new[] {5, 6}
             };
             
-            string json = 
+            const string EXPECTED = 
                 "[\n" +
                 "\t[\n" +
                 "\t\t1,\n" +
@@ -276,12 +280,12 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             
-            Assert.That(JsonMapper.ToJson(arrayOfArrays, true), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(arrayOfArrays, true), Is.EqualTo(EXPECTED));
         }
 
         [Test]
         public void MultiArray() {
-            string json = 
+            const string EXPECTED = 
                 "[\n" +
                 "\t[\n" +
                 "\t\t1\n" +
@@ -291,12 +295,12 @@ namespace Voorhees.Tests {
                 "\t]\n" +
                 "]";
             
-            Assert.That(JsonMapper.ToJson(new[,] {{1}, {2}}, true), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(new[,] {{1}, {2}}, true), Is.EqualTo(EXPECTED));
         }
 
         [Test]
         public void LargeMultiArray() {
-            var multi = new[,,,] {
+            int[,,,] multi = {
                 {
                     {
                         {1, 2},
@@ -316,7 +320,7 @@ namespace Voorhees.Tests {
                 }
             };
 
-            string json =
+            const string EXPECTED =
                 "[\n"+
                 "\t[\n" +
                 "\t\t[\n" +
@@ -363,7 +367,7 @@ namespace Voorhees.Tests {
                 "\t\t]\n" +
                 "\t]\n" +
                 "]";
-            Assert.That(JsonMapper.ToJson(multi, true), Is.EqualTo(json));
+            Assert.That(JsonMapper.ToJson(multi, true), Is.EqualTo(EXPECTED));
         }
     }
     
@@ -377,9 +381,9 @@ namespace Voorhees.Tests {
         [Test]
         public void JaggedList() {
             var listOfLists = new List<List<int>> {
-                new List<int> {1, 2}, 
-                new List<int> {3, 4}, 
-                new List<int> {5, 6}
+                new() {1, 2}, 
+                new() {3, 4}, 
+                new() {5, 6}
             };
             
             string json = 
@@ -423,8 +427,7 @@ namespace Voorhees.Tests {
                 {"two", 2},
                 {"three", 3}
             };
-            const string expected = "{\"one\":1,\"two\":2,\"three\":3}";
-            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(dict), Is.EqualTo("{\"one\":1,\"two\":2,\"three\":3}"));
         }
     }
 
@@ -449,119 +452,112 @@ namespace Voorhees.Tests {
                 {"two", 2},
                 {"three", 3}
             };
-            const string expected = "{\n\t\"one\": 1,\n\t\"two\": 2,\n\t\"three\": 3\n}";
-            Assert.That(JsonMapper.ToJson(dict, true), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(dict, true), Is.EqualTo("{\n\t\"one\": 1,\n\t\"two\": 2,\n\t\"three\": 3\n}"));
         }
     }
     
     [TestFixture]
     public class JsonMapper_Write_Object {
         class TestType {
-            public int PubIntVal;
+            public int PublicIntVal;
 #pragma warning disable 414
-            int privIntVal = -1;
+            int privateIntVal = -1;
 #pragma warning restore 414
         }
 
         [Test]
         public void OnlySerializePublicFields() {
-            var instance = new TestType {PubIntVal = 42};
-            const string expected = "{\"PubIntVal\":42}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            var instance = new TestType { PublicIntVal = 42 };
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"PublicIntVal\":42}"));
         }
-        
+
         class MultiFieldType {
-            public int PubIntVal;
-            public string PubStringVal;
+            public int PublicIntVal;
+            public string PublicStringVal;
         }
 
         [Test]
         public void SerializeMultipleFields() {
             var instance = new MultiFieldType {
-                PubIntVal = 42,
-                PubStringVal = "test"
+                PublicIntVal = 42,
+                PublicStringVal = "test"
             };
-            const string expected = "{\"PubIntVal\":42,\"PubStringVal\":\"test\"}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"PublicIntVal\":42,\"PublicStringVal\":\"test\"}"));
         }
 
         class NestedClass {
-            public int PubIntegerVal;
+            public int PublicIntegerVal;
             public TestType TestTypeVal;
         }
-        
+
         [Test]
         public void NestedObjectReferences() {
             var instance = new NestedClass {
-                PubIntegerVal = 42,
+                PublicIntegerVal = 42,
                 TestTypeVal = new TestType {
-                    PubIntVal = 99
+                    PublicIntVal = 99
                 }
             };
-            const string expected = "{\"PubIntegerVal\":42,\"TestTypeVal\":{\"PubIntVal\":99}}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"PublicIntegerVal\":42,\"TestTypeVal\":{\"PublicIntVal\":99}}"));
         }
 
         [Test]
         public void AnonymousObject() {
-            var instance = new {stringVal = "someString", intVal = 3};
-            string expected = "{\"stringVal\":\"someString\",\"intVal\":3}";
-            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo(expected));
+            var instance = new { stringVal = "someString", intVal = 3 };
+            Assert.That(JsonMapper.ToJson(instance), Is.EqualTo("{\"stringVal\":\"someString\",\"intVal\":3}"));
         }
     }
 
     [TestFixture]
     public class JsonMapper_Write_Object_PrettyPrint {
         class TestType {
-            public int PubIntVal;
+            public int PublicIntVal;
 #pragma warning disable 414
-            int privIntVal = -1;
+            int privateIntVal = -1;
 #pragma warning restore 414
         }
 
         [Test]
         public void OnlySerializePublicFields() {
-            var instance = new TestType {PubIntVal = 42};
-            const string expected = "{\n\t\"PubIntVal\": 42\n}";
-            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
+            var instance = new TestType {PublicIntVal = 42};
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo("{\n\t\"PublicIntVal\": 42\n}"));
         }
         
         class MultiFieldType {
-            public int PubIntVal;
-            public string PubStringVal;
+            public int PublicIntVal;
+            public string PublicStringVal;
         }
 
         [Test]
         public void SerializeMultipleFields() {
             var instance = new MultiFieldType {
-                PubIntVal = 42,
-                PubStringVal = "test"
+                PublicIntVal = 42,
+                PublicStringVal = "test"
             };
-            const string expected = "{\n\t\"PubIntVal\": 42,\n\t\"PubStringVal\": \"test\"\n}";
-            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo("{\n\t\"PublicIntVal\": 42,\n\t\"PublicStringVal\": \"test\"\n}"));
         }
 
         class NestedClass {
-            public int PubIntegerVal;
+            public int PublicIntegerVal;
             public TestType TestTypeVal;
         }
         
         [Test]
         public void NestedObjectReferences() {
             var instance = new NestedClass {
-                PubIntegerVal = 42,
+                PublicIntegerVal = 42,
                 TestTypeVal = new TestType {
-                    PubIntVal = 99
+                    PublicIntVal = 99
                 }
             };
-            const string expected =
+            const string EXPECTED =
                 "{\n" + 
-                "\t\"PubIntegerVal\": 42,\n" +
+                "\t\"PublicIntegerVal\": 42,\n" +
                 "\t\"TestTypeVal\": {\n" +
-                "\t\t\"PubIntVal\": 99\n" +
+                "\t\t\"PublicIntVal\": 99\n" +
                 "\t}\n" +
                 "}";
-            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(expected));
+            Assert.That(JsonMapper.ToJson(instance, true), Is.EqualTo(EXPECTED));
         }
     }
 
@@ -623,8 +619,7 @@ namespace Voorhees.Tests {
         
         [Test]
         public void JsonDoesNotContainComputedProperty() {
-            const string JSON = "{\"ReadOnlyProperty\":5,\"WriteOnlyProperty\":3}";
-            Assert.That(JsonMapper.ToJson(new ObjectWithFields()), Is.EqualTo(JSON));
+            Assert.That(JsonMapper.ToJson(new ObjectWithFields()), Is.EqualTo("{\"ReadOnlyProperty\":5,\"WriteOnlyProperty\":3}"));
         }
     }
 
@@ -634,49 +629,73 @@ namespace Voorhees.Tests {
         enum SByteEnum : sbyte { FirstVal, SecondVal }
         enum ShortEnum : short { FirstVal, SecondVal }
         enum UShortEnum : ushort { FirstVal, SecondVal }
-        enum IntEnum : int { FirstVal, SecondVal }
+        enum IntEnum { FirstVal, SecondVal }
         enum UIntEnum : uint { FirstVal, SecondVal }
         enum LongEnum : long { FirstVal, SecondVal }
         enum ULongEnum : ulong { FirstVal, SecondVal }
 
         [Test]
         public void WriteByteEnum() {
-            Assert.That(JsonMapper.ToJson(ByteEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(ByteEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(ByteEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteSByteEnum() {
-            Assert.That(JsonMapper.ToJson(SByteEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(SByteEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(SByteEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteShortEnum() {
-            Assert.That(JsonMapper.ToJson(ShortEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(ShortEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(ShortEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteUShortEnum() {
-            Assert.That(JsonMapper.ToJson(UShortEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(UShortEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(UShortEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteIntEnum() {
-            Assert.That(JsonMapper.ToJson(IntEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(IntEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(IntEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteUIntEnum() {
-            Assert.That(JsonMapper.ToJson(UIntEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(UIntEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(UIntEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteLongEnum() {
-            Assert.That(JsonMapper.ToJson(LongEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(LongEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(LongEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
-        
+
         [Test]
         public void WriteULongEnum() {
-            Assert.That(JsonMapper.ToJson(ULongEnum.SecondVal), Is.EqualTo("1"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(ULongEnum.FirstVal), Is.EqualTo("0"));
+                Assert.That(JsonMapper.ToJson(ULongEnum.SecondVal), Is.EqualTo("1"));
+            });
         }
     }
 }
