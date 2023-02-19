@@ -352,9 +352,17 @@ namespace Voorhees.Tests {
 		[Test]
 		public void AdvancingToRandomCharactersThrows() {
 			Assert.Throws<InvalidJsonException>(() => {
-				// ReSharper disable once ObjectCreationAsStatement
 				using var json = new StringReader("fail");
 				var _ = new JsonTokenReader(json);
+			});
+		}
+
+		[Test]
+		public void ConsumingANonStringTypeAsStringThrows() {
+			Assert.Throws<InvalidOperationException>(() => {
+				using var json = new StringReader("3");
+				var tokenReader = new JsonTokenReader(json);
+				string _ = tokenReader.ConsumeString();
 			});
 		}
 		
