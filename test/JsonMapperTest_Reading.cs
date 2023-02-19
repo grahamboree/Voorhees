@@ -104,6 +104,22 @@ namespace Voorhees.Tests {
             Assert.That(JsonMapper.FromJson<decimal>("3"), Is.TypeOf<decimal>());
             Assert.That(JsonMapper.FromJson<decimal>("3"), Is.EqualTo((decimal)3));
         }
+
+        enum TestEnum {
+            One = 1,
+            Two = 2
+        }
+        
+        [Test]
+        public void CanConvertIntToEnumValue()
+        {
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.FromJson<TestEnum>("1"), Is.TypeOf<TestEnum>());
+                Assert.That(JsonMapper.FromJson<TestEnum>("1"), Is.EqualTo(TestEnum.One));
+                Assert.That(JsonMapper.FromJson<TestEnum>("2"), Is.TypeOf<TestEnum>());
+                Assert.That(JsonMapper.FromJson<TestEnum>("2"), Is.EqualTo(TestEnum.Two));
+            });
+        }
     }
 
     [TestFixture]

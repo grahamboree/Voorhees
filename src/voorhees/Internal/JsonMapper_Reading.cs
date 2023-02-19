@@ -218,7 +218,7 @@ namespace Voorhees {
                     jsonValue = tokenReader.ConsumeString();
                 } break;
                 case JsonToken.Number: {
-                    var numberSpan = tokenReader.ConsumeNumber();
+                    string numberSpan = tokenReader.ConsumeNumber();
                     try {
                         double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
 
