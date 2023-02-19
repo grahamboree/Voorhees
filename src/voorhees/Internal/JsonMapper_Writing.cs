@@ -18,21 +18,15 @@ namespace Voorhees {
                 customExporter(obj, tokenWriter);
                 return;
             }
-            
-            // Special case built-in serializer for DateTime
-            if (referenceType == typeof(DateTime)) {
-                tokenWriter.Write(((DateTime) obj).ToString("o"));
-                return;
-            }
-            
-            // Special case built-in serializer for DateTimeOffset
-            if (referenceType == typeof(DateTimeOffset)) {
-                tokenWriter.Write(((DateTimeOffset) obj).ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo));
-                return;
-            }
 
             switch (obj) { 
                 case JsonValue jsonValue: WriteJsonValue(jsonValue, tokenWriter); return;
+                
+                // Special case built-in serializer for DateTime
+                case DateTime dateTime: tokenWriter.Write(dateTime.ToString("o")); return;
+                
+                // Special case built-in serializer for DateTimeOffset
+                case DateTimeOffset dateTimeOffset: tokenWriter.Write(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo)); return;
 
                 // JSON String
                 case string stringVal: tokenWriter.Write(stringVal); return;
