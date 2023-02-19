@@ -36,13 +36,10 @@ namespace Voorhees {
 
       public JsonValue(JsonValueType type = JsonValueType.Unspecified) {
          Type = type;
-         switch (type) {
-            case JsonValueType.Object:
-               objectValue = new Dictionary<string, JsonValue>();
-               break;
-            case JsonValueType.Array:
-               arrayValue = new List<JsonValue>();
-               break;
+         if (type == JsonValueType.Object) {
+            objectValue = new Dictionary<string, JsonValue>();
+         } else if (type == JsonValueType.Array) {
+            arrayValue = new List<JsonValue>();
          }
       }
       #endregion
@@ -84,18 +81,24 @@ namespace Voorhees {
       public static explicit operator byte(JsonValue data) { return (byte)(int)data; }
       public static explicit operator short(JsonValue data) { return (short)(int)data; }
       public static explicit operator ushort(JsonValue data) { return (ushort)(int)data; }
-      public static explicit operator long(JsonValue data) { return (long)(int)data; }
+      public static explicit operator long(JsonValue data) { return (int)data; }
       public static explicit operator ulong(JsonValue data) { return (ulong)(int)data; }
       
-      // Using the number value because char is really an integral type
-      // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/types
-      public static explicit operator char(JsonValue data) { return (char)(int)data; }
-
       public static explicit operator string(JsonValue data) {
          if (data.Type != JsonValueType.String) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a string");
          }
          return data.stringValue;
+      }
+
+      public static explicit operator char(JsonValue data) {
+         if (data.Type == JsonValueType.String) {
+            return ((string)data)[0];
+         }
+         if (data.Type == JsonValueType.Int) {
+            return (char)(int)data.numberValue;
+         }
+         throw new InvalidCastException("Instance of JsonData doesn't hold a string or number");
       }
       #endregion
 

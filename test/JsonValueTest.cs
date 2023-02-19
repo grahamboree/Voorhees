@@ -279,7 +279,7 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
-		public void ImplicitConversionCreatesIntValue() {
+		public void ImplicitConversionCreatesStringValue() {
 			JsonValue test = "test";
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.String));
@@ -300,6 +300,23 @@ namespace Voorhees.Tests {
 			JsonValue test = true;
 			Assert.Throws<InvalidCastException>(() => {
 				string _ = (string)test;
+			});
+		}
+		
+		[Test]
+		public void ExplicitConversionToCharWorksWithStrings() {
+			JsonValue test = "test";
+			Assert.Multiple(() => {
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.String));
+				Assert.That((char)test, Is.EqualTo('t'));
+			});
+		}
+		
+		[Test]
+		public void ExplicitConversionToCharWithNonStringOrIntValueThrows() {
+			JsonValue test = true;
+			Assert.Throws<InvalidCastException>(() => {
+				char _ = (char)test;
 			});
 		}
 
