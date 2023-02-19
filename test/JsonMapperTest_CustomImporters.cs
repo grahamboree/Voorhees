@@ -20,13 +20,13 @@ namespace Voorhees.Tests {
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.Not.Null);
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.TypeOf<TestType>());
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)).PubIntVal, Is.EqualTo(42));
                 }
             });
         }
@@ -37,25 +37,25 @@ namespace Voorhees.Tests {
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
-                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(new JsonTokenReader(json)));
                 }
 
                 mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = int.Parse(tokenReader.ConsumeNumber()) });
 
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.Not.Null);
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.TypeOf<TestType>());
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)).PubIntVal, Is.EqualTo(42));
                 }
 
                 mapper.UnRegisterImporter<TestType>();
 
                 using (var json = new StringReader("42")) {
-                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(new JsonTokenReader(json)));
                 }
             });
         }
@@ -67,19 +67,19 @@ namespace Voorhees.Tests {
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.Not.Null);
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.TypeOf<TestType>());
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)).PubIntVal, Is.EqualTo(42));
                 }
 
                 mapper.UnRegisterAllImporters();
 
                 using (var json = new StringReader("42")) {
-                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(new JsonTokenReader(json)));
                 }
             });
         }
@@ -92,32 +92,32 @@ namespace Voorhees.Tests {
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.Not.Null);
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.Not.Null);
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json), Is.TypeOf<TestType>());
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.TypeOf<TestType>());
                 }
                 using (var json = new StringReader("42")) {
-                    Assert.That(mapper.Read<TestType>(json).PubIntVal, Is.EqualTo(42));
+                    Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)).PubIntVal, Is.EqualTo(42));
                 }
 
                 using (var json = new StringReader("\"test\"")) {
-                    Assert.That(mapper.Read<TestType2>(json), Is.Not.Null);
+                    Assert.That(mapper.Read<TestType2>(new JsonTokenReader(json)), Is.Not.Null);
                 }
                 using (var json = new StringReader("\"test\"")) {
-                    Assert.That(mapper.Read<TestType2>(json), Is.TypeOf<TestType2>());
+                    Assert.That(mapper.Read<TestType2>(new JsonTokenReader(json)), Is.TypeOf<TestType2>());
                 }
                 using (var json = new StringReader("\"test\"")) {
-                    Assert.That(mapper.Read<TestType2>(json).PubString, Is.EqualTo("test"));
+                    Assert.That(mapper.Read<TestType2>(new JsonTokenReader(json)).PubString, Is.EqualTo("test"));
                 }
 
                 mapper.UnRegisterAllImporters();
 
                 using (var json = new StringReader("42")) {
-                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(json));
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(new JsonTokenReader(json)));
                 }
                 using (var json = new StringReader("\"test\"")) {
-                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType2>(json));
+                    Assert.Throws<InvalidCastException>(() => mapper.Read<TestType2>(new JsonTokenReader(json)));
                 }
             });
         }

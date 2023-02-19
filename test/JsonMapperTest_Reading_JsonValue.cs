@@ -1,13 +1,11 @@
-﻿using System.IO;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Voorhees.Tests {
     [TestFixture]
 	public class JsonValue_Reading_Primitives {
 		[Test]
 		public void Int() {
-			using var json = new StringReader("1");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("1");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)test, Is.EqualTo(1));
@@ -16,8 +14,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void NegativeInt() {
-			using var json = new StringReader("-1");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("-1");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)test, Is.EqualTo(-1));
@@ -26,8 +23,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void Float() {
-			using var json = new StringReader("1.5");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("1.5");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Double));
 				Assert.That((double) test, Is.EqualTo(1.5));
@@ -36,8 +32,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void String() {
-			using var json = new StringReader("\"test\"");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("\"test\"");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.String));
 				Assert.That((string) test, Is.EqualTo("test"));
@@ -46,8 +41,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void True() {
-			using var json = new StringReader("true");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("true");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Boolean));
 				Assert.That((bool) test, Is.True);
@@ -56,8 +50,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void False() {
-			using var json = new StringReader("false");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("false");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Boolean));
 				Assert.That((bool) test, Is.False);
@@ -66,8 +59,7 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void Null() {
-			using var json = new StringReader("null");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("null");
 			Assert.That(test.Type, Is.EqualTo(JsonValueType.Null));
 		}
 	}
@@ -76,8 +68,7 @@ namespace Voorhees.Tests {
 	public class JsonValue_Reading_Arrays {
 		[Test]
 		public void EmptyArray() {
-			using var json = new StringReader("[]");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("[]");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(test.Count, Is.EqualTo(0));
@@ -86,8 +77,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void SingleValueArray() {
-			using var json = new StringReader("[1]");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("[1]");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(test.Count, Is.EqualTo(1));
@@ -98,8 +88,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void MultiValueArray() {
-			using var json = new StringReader("[1, 2, 3]");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("[1, 2, 3]");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(test.Count, Is.EqualTo(3));
@@ -114,8 +103,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void NestedArray() {
-			using var json = new StringReader("[[1, 2], [3, 4]]");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("[[1, 2], [3, 4]]");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(test.Count, Is.EqualTo(2));
@@ -137,8 +125,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void MultipleNestedArrays() {
-			using var json = new StringReader("[[1, 2, 3], [4, [5]]]");
-			var outer = JsonMapper.FromJson(json);
+			var outer = JsonMapper.FromJson<JsonValue>("[[1, 2, 3], [4, [5]]]");
 			Assert.Multiple(() => {
 				Assert.That(outer.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(outer.Count, Is.EqualTo(2));
@@ -167,8 +154,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void ArrayOfAllTypes() {
-			using var json = new StringReader(@"[1, 1.5, ""test"", true, false, null, [], {}]");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>(@"[1, 1.5, ""test"", true, false, null, [], {}]");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
 				Assert.That(test.Count, Is.EqualTo(8));
@@ -193,56 +179,47 @@ namespace Voorhees.Tests {
 		
 		[Test]
 		public void JustArrayComma() {
-			using var json = new StringReader("[,]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[,]"); });
 		}
 		
 		[Test]
 		public void JustMinusArray() {
-			using var json = new StringReader("[-]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[-]"); });
 		}
 
 		[Test]
 		public void MissingArrayComma() {
-			using var json = new StringReader("[1 2]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[1 2]"); });
 		}
 
 		[Test]
 		public void ExtraLeadingArrayComma() {
-			using var json = new StringReader("[,1, 2]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[,1, 2]"); });
 		}
 
 		[Test]
 		public void ExtraSeparatingArrayComma() {
-			using var json = new StringReader("[1,, 2]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[1,, 2]"); });
 		}
 
 		[Test]
 		public void ExtraTrailingArrayComma() {
-			using var json = new StringReader("[1, 2,]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[1, 2,]"); });
 		}
 
 		[Test]
 		public void TooManyClosingArrayBrackets() {
-			using var json = new StringReader("[1, 2]]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[1, 2]]"); });
 		}
 
 		[Test]
 		public void TooFewClosingArrayBrackets() {
-			using var json = new StringReader("[1, 2");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("[1, 2"); });
 		}
 
 		[Test]
 		public void LeadingClosingArrayBracket() {
-			using var json = new StringReader("]1, 2]");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("]1, 2]"); });
 		}
 	}
 	
@@ -250,21 +227,19 @@ namespace Voorhees.Tests {
 	public class JsonValue_Reading_Objects {
 		[Test]
 		public void EmptyObject() {
-			using var json = new StringReader("{}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(0));
+				Assert.That(test, Is.Empty);
 			});
 		}
 
 		[Test]
 		public void SimpleObject() {
-			using var json = new StringReader("{\"test\": 1}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{\"test\": 1}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(1));
+				Assert.That(test, Has.Count.EqualTo(1));
 				Assert.That(test.ContainsKey("test"), Is.True);
 				Assert.That(test["test"].Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)test["test"], Is.EqualTo(1));
@@ -273,11 +248,10 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void MultiObject() {
-			using var json = new StringReader("{\"test\": 1, \"test2\": 2}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{\"test\": 1, \"test2\": 2}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(2));
+				Assert.That(test, Has.Count.EqualTo(2));
 
 				Assert.That(test.ContainsKey("test"), Is.True);
 				Assert.That(test["test"].Type, Is.EqualTo(JsonValueType.Int));
@@ -291,11 +265,10 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void NestedObject() {
-			using var json = new StringReader("{\"test\": {\"test2\": 1}}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{\"test\": {\"test2\": 1}}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(1));
+				Assert.That(test, Has.Count.EqualTo(1));
 				Assert.That(test.ContainsKey("test"), Is.True);
 				Assert.That(test["test"].Type, Is.EqualTo(JsonValueType.Object));
 				Assert.That(test["test"].ContainsKey("test2"), Is.True);
@@ -306,14 +279,13 @@ namespace Voorhees.Tests {
 
         [Test]
 		public void ObjectMappingToArray() {
-			using var json = new StringReader("{\"test\": [1, 2, 3]}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{\"test\": [1, 2, 3]}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(1));
+				Assert.That(test, Has.Count.EqualTo(1));
 				Assert.That(test.ContainsKey("test"), Is.True);
 				Assert.That(test["test"].Type, Is.EqualTo(JsonValueType.Array));
-				Assert.That(test["test"].Count, Is.EqualTo(3));
+				Assert.That(test["test"], Has.Count.EqualTo(3));
 
 				Assert.That(test["test"][0].Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int) test["test"][0], Is.EqualTo(1));
@@ -326,17 +298,15 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void LeadingObjectClosingBrace() {
-			using var json = new StringReader("}\"test\": 1}");
-			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson(json); });
+			Assert.Throws<InvalidJsonException>(() => { JsonMapper.FromJson<JsonValue>("}\"test\": 1}"); });
 		}
 
 		[Test]
 		public void ObjectWithDuplicateKeysPrefersTheLastOccurenceOfTheKey() {
-			using var json = new StringReader("{\"a\":\"b\",\"a\":\"c\"}");
-			var test = JsonMapper.FromJson(json);
+			var test = JsonMapper.FromJson<JsonValue>("{\"a\":\"b\",\"a\":\"c\"}");
 			Assert.Multiple(() => {
 				Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
-				Assert.That(test.Count, Is.EqualTo(1));
+				Assert.That(test, Has.Count.EqualTo(1));
 				Assert.That(test.ContainsKey("a"), Is.True);
 				Assert.That(test["a"].Type, Is.EqualTo(JsonValueType.String));
 				Assert.That((string)test["a"], Is.EqualTo("c")); // c since it's the last value for the key "a" appearing in the json

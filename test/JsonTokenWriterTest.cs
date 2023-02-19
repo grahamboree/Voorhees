@@ -16,7 +16,7 @@ namespace Voorhees.Tests {
 		[Test]
 		public void WriteNull() {
 			Assert.That(JsonMapper.ToJson(new JsonValue(null)), Is.EqualTo("null"));
-			Assert.That(JsonMapper.ToJson(null), Is.EqualTo("null"));
+			Assert.That(JsonMapper.ToJson<object>(null), Is.EqualTo("null"));
 		}
 
 		[Test]

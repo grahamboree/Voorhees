@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -14,16 +13,14 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ReadNull_ReferenceType() {
-            using var json = new StringReader("null");
-            Assert.That(JsonMapper.FromJson<TestReferenceType>(json), Is.Null);
+            Assert.That(JsonMapper.FromJson<TestReferenceType>("null"), Is.Null);
         }
 
         [Test]
         public void ReadNull_ValueType() {
             // Value types cannot be null.
-            using var json = new StringReader("null");
-            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<TestValueType>(json));
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<int>(json));
+            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<TestValueType>("null"));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<int>("null"));
         }
     }
 
@@ -31,8 +28,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Read_Int {
         [Test]
         public void Basic() {
-            using var json = new StringReader("3");
-            Assert.That(JsonMapper.FromJson<int>(json), Is.EqualTo(3));
+            Assert.That(JsonMapper.FromJson<int>("3"), Is.EqualTo(3));
         }
 
         class ClassWithImplicitConversionOperator {
@@ -45,112 +41,68 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ImplicitOperator() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json), Is.Not.Null);
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json).intVal, Is.EqualTo(3));
-            }
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("3"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("3").intVal, Is.EqualTo(3));
         }
 
         [Test]
         public void ReadByte() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<byte>(json), Is.TypeOf<byte>());                
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<byte>(json), Is.EqualTo((byte)3));
-            }
+            Assert.That(JsonMapper.FromJson<byte>("3"), Is.TypeOf<byte>());                
+            Assert.That(JsonMapper.FromJson<byte>("3"), Is.EqualTo((byte)3));
         }
 
         [Test]
         public void ReadSByte() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<sbyte>(json), Is.TypeOf<sbyte>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<sbyte>(json), Is.EqualTo((sbyte)3));
-            }
+            Assert.That(JsonMapper.FromJson<sbyte>("3"), Is.TypeOf<sbyte>());
+            Assert.That(JsonMapper.FromJson<sbyte>("3"), Is.EqualTo((sbyte)3));
         }
 
         [Test]
         public void ReadShort() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<short>(json), Is.TypeOf<short>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<short>(json), Is.EqualTo((short)3));
-            }
+            Assert.That(JsonMapper.FromJson<short>("3"), Is.TypeOf<short>());
+            Assert.That(JsonMapper.FromJson<short>("3"), Is.EqualTo((short)3));
         }
 
         [Test]
         public void ReadUShort() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ushort>(json), Is.TypeOf<ushort>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ushort>(json), Is.EqualTo((ushort)3));
-            }
+            Assert.That(JsonMapper.FromJson<ushort>("3"), Is.TypeOf<ushort>());
+            Assert.That(JsonMapper.FromJson<ushort>("3"), Is.EqualTo((ushort)3));
         }
 
         [Test]
         public void ReadUInt() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<uint>(json), Is.TypeOf<uint>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<uint>(json), Is.EqualTo((uint)3));
-            }
+            Assert.That(JsonMapper.FromJson<uint>("3"), Is.TypeOf<uint>());
+            Assert.That(JsonMapper.FromJson<uint>("3"), Is.EqualTo((uint)3));
         }
 
         [Test]
         public void ReadLong() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<long>(json), Is.TypeOf<long>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<long>(json), Is.EqualTo((long)3));
-            }
+            Assert.That(JsonMapper.FromJson<long>("3"), Is.TypeOf<long>());
+            Assert.That(JsonMapper.FromJson<long>("3"), Is.EqualTo((long)3));
         }
 
         [Test]
         public void ReadULong() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ulong>(json), Is.TypeOf<ulong>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<ulong>(json), Is.EqualTo((ulong)3));
-            }
+            Assert.That(JsonMapper.FromJson<ulong>("3"), Is.TypeOf<ulong>());
+            Assert.That(JsonMapper.FromJson<ulong>("3"), Is.EqualTo((ulong)3));
         }
 
         [Test]
         public void ReadFloat() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<float>(json), Is.TypeOf<float>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<float>(json), Is.EqualTo((float)3));
-            }
+            Assert.That(JsonMapper.FromJson<float>("3"), Is.TypeOf<float>());
+            Assert.That(JsonMapper.FromJson<float>("3"), Is.EqualTo((float)3));
         }
 
         [Test]
         public void ReadDouble() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<double>(json), Is.TypeOf<double>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<double>(json), Is.EqualTo((double)3));
-            }
+            Assert.That(JsonMapper.FromJson<double>("3"), Is.TypeOf<double>());
+            Assert.That(JsonMapper.FromJson<double>("3"), Is.EqualTo((double)3));
         }
 
         [Test]
         public void ReadDecimal() {
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<decimal>(json), Is.TypeOf<decimal>());
-            }
-            using (var json = new StringReader("3")) {
-                Assert.That(JsonMapper.FromJson<decimal>(json), Is.EqualTo((decimal)3));
-            }
+            Assert.That(JsonMapper.FromJson<decimal>("3"), Is.TypeOf<decimal>());
+            Assert.That(JsonMapper.FromJson<decimal>("3"), Is.EqualTo((decimal)3));
         }
     }
 
@@ -158,14 +110,12 @@ namespace Voorhees.Tests {
     public class JsonMapper_Read_Bool {
         [Test]
         public void True() {
-            using var json = new StringReader("true");
-            Assert.That(JsonMapper.FromJson<bool>(json), Is.True);
+            Assert.That(JsonMapper.FromJson<bool>("true"), Is.True);
         }
         
         [Test]
         public void False() {
-            using var json = new StringReader("false");
-            Assert.That(JsonMapper.FromJson<bool>(json), Is.False);
+            Assert.That(JsonMapper.FromJson<bool>("false"), Is.False);
         }
     }
     
@@ -181,52 +131,34 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ImplicitOperator() {
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json), Is.Not.Null);
-            }
-
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json).doubleVal, Is.EqualTo(3.5));
-            }
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("3.5"), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("3.5").doubleVal, Is.EqualTo(3.5));
         }
         
         [Test]
         public void ReadFloat() {
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<float>(json), Is.TypeOf<float>());
-            }
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<float>(json), Is.EqualTo(3.5f));
-            }
+            Assert.That(JsonMapper.FromJson<float>("3.5"), Is.TypeOf<float>());
+            Assert.That(JsonMapper.FromJson<float>("3.5"), Is.EqualTo(3.5f));
         }
 
         [Test]
         public void ReadDouble() {
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<double>(json), Is.TypeOf<double>());
-            }
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<double>(json), Is.EqualTo(3.5));
-            }
+            Assert.That(JsonMapper.FromJson<double>("3.5"), Is.TypeOf<double>());
+            Assert.That(JsonMapper.FromJson<double>("3.5"), Is.EqualTo(3.5));
         }
 
         [Test]
         public void ReadDecimal() {
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<decimal>(json), Is.TypeOf<decimal>());
-            }
-            using (var json = new StringReader("3.5")) {
-                Assert.That(JsonMapper.FromJson<decimal>(json), Is.EqualTo(3.5m));
-            }
+            Assert.That(JsonMapper.FromJson<decimal>("3.5"), Is.TypeOf<decimal>());
+            Assert.That(JsonMapper.FromJson<decimal>("3.5"), Is.EqualTo(3.5m));
         }
     }
 
     [TestFixture]
     public class JsonMapper_Read_String {
         [Test]
-        public void ReadFloat() {
-            using var json = new StringReader("\"test\"");
-            Assert.That(JsonMapper.FromJson<string>(json), Is.EqualTo("test"));
+        public void ReadString() {
+            Assert.That(JsonMapper.FromJson<string>("\"test\""), Is.EqualTo("test"));
         }
 
         class ClassWithImplicitConversionOperator {
@@ -239,54 +171,40 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ImplicitOperator() {
-            using (var json = new StringReader("\"test\"")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json), Is.Not.Null);
-            }
-            using (var json = new StringReader("\"test\"")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json), Is.TypeOf<ClassWithImplicitConversionOperator>());
-            }
-            using (var json = new StringReader("\"test\"")) {
-                Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>(json).stringVal, Is.EqualTo("test"));
-            }
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("\"test\""), Is.Not.Null);
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("\"test\""), Is.TypeOf<ClassWithImplicitConversionOperator>());
+            Assert.That(JsonMapper.FromJson<ClassWithImplicitConversionOperator>("\"test\"").stringVal, Is.EqualTo("test"));
         }
 
         [Test]
         public void ReadChar() {
             Assert.Multiple(() => {
-                using (var json = new StringReader("\"c\"")) {
-                    Assert.That(JsonMapper.FromJson<char>(json), Is.TypeOf<char>());                
-                }
-                using (var json = new StringReader("\"c\"")) {
-                    Assert.That(JsonMapper.FromJson<char>(json), Is.EqualTo('c'));
-                }
+                Assert.That(JsonMapper.FromJson<char>("\"c\""), Is.TypeOf<char>());                
+                Assert.That(JsonMapper.FromJson<char>("\"c\""), Is.EqualTo('c'));
             });
         }
 
         [Test]
         public void ReadCharTooLong() {
-            using var json = new StringReader("\"test\"");
-            Assert.Throws<FormatException>(() => JsonMapper.FromJson<char>(json));
+            Assert.Throws<FormatException>(() => JsonMapper.FromJson<char>("\"test\""));
         }
 
         [Test]
         public void ReadDateTime() {
-            using var json = new StringReader("\"1970-01-02T03:04:05.0060000\"");
             var dateTime = new DateTime(1970, 1, 2, 3, 4, 5, 6);
-            Assert.That(JsonMapper.FromJson<DateTime>(json), Is.EqualTo(dateTime));
+            Assert.That(JsonMapper.FromJson<DateTime>("\"1970-01-02T03:04:05.0060000\""), Is.EqualTo(dateTime));
         }
 
         [Test]
         public void ReadInvalidDateTime() {
-            using var json = new StringReader("\"test\"");
-            Assert.Throws<FormatException>(() => JsonMapper.FromJson<DateTime>(json));
+            Assert.Throws<FormatException>(() => JsonMapper.FromJson<DateTime>("\"test\""));
         }
 
         [Test]
         public void ReadDateTimeOffset() {
             var span = new TimeSpan(0, -5, 0, 0, 0);
             var offset = new DateTimeOffset(1970, 1, 2, 3, 4, 5, 6, span);
-            using var json = new StringReader("\"1970-01-02T03:04:05.0060000-05:00\"");
-            Assert.That(JsonMapper.FromJson<DateTimeOffset>(json), Is.EqualTo(offset));
+            Assert.That(JsonMapper.FromJson<DateTimeOffset>("\"1970-01-02T03:04:05.0060000-05:00\""), Is.EqualTo(offset));
         }
     }
 
@@ -294,8 +212,7 @@ namespace Voorhees.Tests {
     public class JsonMapper_Read_Array {
         [Test]
         public void IntArray() {
-            using var json = new StringReader("[1, 2, 3]");
-            Assert.That(JsonMapper.FromJson<int[]>(json), Is.EqualTo(new[] {1, 2, 3}));
+            Assert.That(JsonMapper.FromJson<int[]>("[1, 2, 3]"), Is.EqualTo(new[] {1, 2, 3}));
         }
 
         class IntOrString {
@@ -335,14 +252,12 @@ namespace Voorhees.Tests {
                 new IntOrString {stringValue = "three"}
             };
 
-            using var json = new StringReader("[1, 2, \"three\"]");
-            Assert.That(JsonMapper.FromJson<IntOrString[]>(json), Is.EqualTo(expected));
+            Assert.That(JsonMapper.FromJson<IntOrString[]>("[1, 2, \"three\"]"), Is.EqualTo(expected));
         }
 
         [Test]
         public void ReadArrayToList() {
-            using var json = new StringReader("[1, 2, 3]");
-            var result = JsonMapper.FromJson<List<int>>(json);
+            var result = JsonMapper.FromJson<List<int>>("[1, 2, 3]");
             Assert.Multiple(() => {
                 Assert.That(result, Is.Not.Null);
                 Assert.That(result.Count, Is.EqualTo(3));
@@ -354,8 +269,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void ReadArrayToNonArrayTypeThrows() {
-            using var json = new StringReader("[1,2,3]");
-            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<string>(json));
+            Assert.Throws<InvalidCastException>(() => JsonMapper.FromJson<string>("[1,2,3]"));
         }
     }
 
@@ -363,26 +277,22 @@ namespace Voorhees.Tests {
     public class JsonMapper_Read_MultiDimensionalArray {
         [Test]
         public void EmptyJaggedArray() {
-            using var json = new StringReader("[]");
-            Assert.That(JsonMapper.FromJson<int[][]>(json), Is.EqualTo(Array.Empty<int[]>()));
+            Assert.That(JsonMapper.FromJson<int[][]>("[]"), Is.EqualTo(Array.Empty<int[]>()));
         }
 
         [Test]
         public void EmptyMultiArray() {
-            using var json = new StringReader("[]");
-            Assert.That(JsonMapper.FromJson<int[,]>(json), Is.EqualTo(new int[,] { }));
+            Assert.That(JsonMapper.FromJson<int[,]>("[]"), Is.EqualTo(new int[,] { }));
         }
 
         [Test]
         public void JaggedArray() {
-            using var json = new StringReader("[[1, 2], [3, 4]]");
-            Assert.That(JsonMapper.FromJson<int[][]>(json), Is.EqualTo(new[] {new[] {1, 2}, new[] {3, 4}}));
+            Assert.That(JsonMapper.FromJson<int[][]>("[[1, 2], [3, 4]]"), Is.EqualTo(new[] {new[] {1, 2}, new[] {3, 4}}));
         }
 
         [Test]
         public void MultiArray() {
-            using var json = new StringReader("[[1, 2], [3, 4]]");
-            Assert.That(JsonMapper.FromJson<int[,]>(json), Is.EqualTo(new[,] {{1, 2}, {3, 4}}));
+            Assert.That(JsonMapper.FromJson<int[,]>("[[1, 2], [3, 4]]"), Is.EqualTo(new[,] {{1, 2}, {3, 4}}));
         }
 
         [Test]
@@ -407,14 +317,14 @@ namespace Voorhees.Tests {
                 }
             };
 
-            using var json = new StringReader(
+            string json =
                 "[[" +
                     "[[1,2],[3,4]]," +
                     "[[5,6],[7,8]]" +
                 "],[" +
                     "[[9,10],[11,12]]," +
                     "[[13,14],[15,16]]" +
-                "]]");
+                "]]";
             Assert.That(JsonMapper.FromJson<int[,,,]>(json), Is.EqualTo(multi));
         }
     }
@@ -429,15 +339,9 @@ namespace Voorhees.Tests {
         [Test]
         public void PublicFields() {
             Assert.Multiple(() => {
-                using (var json = new StringReader("{\"publicField\": 3, \"publicField2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader("{\"publicField\": 3, \"publicField2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField, Is.EqualTo(3));
-                }
-                using (var json = new StringReader("{\"publicField\": 3, \"publicField2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).publicField2, Is.EqualTo(5));
-                }
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>("{\"publicField\": 3, \"publicField2\": 5}"), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>("{\"publicField\": 3, \"publicField2\": 5}").publicField, Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>("{\"publicField\": 3, \"publicField2\": 5}").publicField2, Is.EqualTo(5));
             });
         }
 
@@ -449,15 +353,9 @@ namespace Voorhees.Tests {
         [Test]
         public void PublicProperties() {
             Assert.Multiple(() => {
-                using (var json = new StringReader("{\"publicProperty\": 3, \"publicProperty2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader("{\"publicProperty\": 3, \"publicProperty2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty, Is.EqualTo(3));
-                }
-                using (var json = new StringReader("{\"publicProperty\": 3, \"publicProperty2\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithProperties>(json).publicProperty2, Is.EqualTo(5));
-                }
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}"), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}").publicProperty, Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<ObjectWithProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}").publicProperty2, Is.EqualTo(5));
             });
         }
 
@@ -465,18 +363,10 @@ namespace Voorhees.Tests {
         public void PublicDictionary() {
             
             Assert.Multiple(() => {
-                using (var json = new StringReader("{\"a\": 3, \"b\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader("{\"a\": 3, \"b\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json), Has.Count.EqualTo(2));
-                }
-                using (var json = new StringReader("{\"a\": 3, \"b\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["a"], Is.EqualTo(3));
-                }
-                using (var json = new StringReader("{\"a\": 3, \"b\": 5}")) {
-                    Assert.That(JsonMapper.FromJson<Dictionary<string, int>>(json)["b"], Is.EqualTo(5));
-                }
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>("{\"a\": 3, \"b\": 5}"), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>("{\"a\": 3, \"b\": 5}"), Has.Count.EqualTo(2));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>("{\"a\": 3, \"b\": 5}")["a"], Is.EqualTo(3));
+                Assert.That(JsonMapper.FromJson<Dictionary<string, int>>("{\"a\": 3, \"b\": 5}")["b"], Is.EqualTo(5));
             });
         }
 
@@ -487,21 +377,18 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicReadOnlyProperties() {
-            using var json = new StringReader("{\"publicProperty\": 3, \"publicProperty2\": 5}");
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>(json));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}"));
         }
 
         [Test]
         public void ThrowsIfAssemblyQualifiedNameDoesNotExist() {
             const string BOGUS_AQN = "TopNamespace.SubNameSpace.ContainingClass+NestedClass, MyAssembly, Version=1.3.0.0, Culture=neutral, PublicKeyToken=b17a5c561934e089";
-            using var json = new StringReader("{\"$t\"=\"" + BOGUS_AQN + "\",\"foo\":\"bar\"}");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<object>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<object>("{\"$t\"=\"" + BOGUS_AQN + "\",\"foo\":\"bar\"}"));
         }
 
         [Test]
         public void MappingObjectWithExtraKeyThrows() {
-            using var json = new StringReader("{\"publicField\":1,\"publicField2\":2,\"publicField3\":3}");
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>(json));
+            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>("{\"publicField\":1,\"publicField2\":2,\"publicField3\":3}"));
         }
     }
 
@@ -522,33 +409,26 @@ namespace Voorhees.Tests {
         [Test]
         public void PolymorphicTypeReference() {
             Assert.Multiple(() => {
-                using (var json = new StringReader("{\"derivedClassValue\":false,\"baseClassValue\":2}")) {
-                    Assert.That(JsonMapper.FromJson<DerivedClass>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader("{\"derivedClassValue\":false,\"baseClassValue\":2}")) {
-                    Assert.That(JsonMapper.FromJson<DerivedClass>(json).derivedClassValue, Is.False);
-                }
-                using (var json = new StringReader("{\"derivedClassValue\":false,\"baseClassValue\":2}")) {
-                    Assert.That(JsonMapper.FromJson<DerivedClass>(json).baseClassValue, Is.EqualTo(2));
-                }
+                Assert.That(JsonMapper.FromJson<DerivedClass>("{\"derivedClassValue\":false,\"baseClassValue\":2}"), Is.Not.Null);
+                Assert.That(JsonMapper.FromJson<DerivedClass>("{\"derivedClassValue\":false,\"baseClassValue\":2}").derivedClassValue, Is.False);
+                Assert.That(JsonMapper.FromJson<DerivedClass>("{\"derivedClassValue\":false,\"baseClassValue\":2}").baseClassValue, Is.EqualTo(2));
             });
         }
 
         [Test]
         public void DerivedValueInBaseReference() {
             Assert.Multiple(() => {
-                using (var json = new StringReader($"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}")) {
-                    Assert.That(JsonMapper.FromJson<BaseClass>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader($"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}")) {
-                    Assert.That(JsonMapper.FromJson<BaseClass>(json), Is.TypeOf<DerivedClass>());
-                }
-                using (var json = new StringReader($"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}")) {
-                    Assert.That(JsonMapper.FromJson<BaseClass>(json).baseClassValue, Is.EqualTo(2));
-                }
-                using (var json = new StringReader($"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}")) {
-                    Assert.That(((DerivedClass)JsonMapper.FromJson<BaseClass>(json)).derivedClassValue, Is.False);
-                }
+                string json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
+                Assert.That(JsonMapper.FromJson<BaseClass>(json), Is.Not.Null);
+                
+                json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
+                Assert.That(JsonMapper.FromJson<BaseClass>(json), Is.TypeOf<DerivedClass>());
+                
+                json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
+                Assert.That(JsonMapper.FromJson<BaseClass>(json).baseClassValue, Is.EqualTo(2));
+                
+                json = $"{{\"$t\":\"{typeof(DerivedClass).AssemblyQualifiedName}\",\"derivedClassValue\":false,\"baseClassValue\":2}}";
+                Assert.That(((DerivedClass)JsonMapper.FromJson<BaseClass>(json)).derivedClassValue, Is.False);
             });
         }
     }
@@ -568,36 +448,24 @@ namespace Voorhees.Tests {
         [Test]
         public void JsonContainsReadOnlyAndWriteOnlyProperties() {
             Assert.Multiple(() => {
-                using (var json = new StringReader("{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json), Is.Not.Null);
-                }
-                using (var json = new StringReader("{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).ReadOnlyProperty, Is.EqualTo(5));
-                }
-                using (var json = new StringReader("{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).GetWriteOnlyValue(), Is.EqualTo(3));
-                }
-                using (var json = new StringReader("{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}")) {
-                    Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).ComputedProperty, Is.EqualTo(8));
-                }
+                string json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}";
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(json), Is.Not.Null);
+
+                json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}";
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).ReadOnlyProperty, Is.EqualTo(5));
+
+                json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}";
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).GetWriteOnlyValue(), Is.EqualTo(3));
+
+                json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3}";
+                Assert.That(JsonMapper.FromJson<ObjectWithFields>(json).ComputedProperty, Is.EqualTo(8));
             });
         }
         
         [Test]
         public void JsonContainsReadOnlyWriteOnlyAndComputedProperties() {
-            using var json = new StringReader("{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3, \"ComputedProperty\": 8}");
+            string json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3, \"ComputedProperty\": 8}";
             Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>(json));
-        }
-    }
-
-    [TestFixture]
-    public class JsonMapper_Read_FromJsonOverloads {
-        [Test]
-        public void ReadingWithAProvidedTokenReaderIsEquivalentToTheGeneratedOne() {
-            using var json1 = new StringReader("\"test\"");
-            using var json2 = new StringReader("\"test\"");
-            var tokenReader = new JsonTokenReader(json1);
-            Assert.That(JsonMapper.FromJson<string>(tokenReader), Is.EqualTo(JsonMapper.FromJson<string>(json2)));
         }
     }
 
@@ -605,50 +473,42 @@ namespace Voorhees.Tests {
     public class JsonMapper_Read_ReadingInvalidJsonThrows {
         [Test]
         public void EOF() {
-            using var json = new StringReader("");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(""));
         }
         
         [Test]
         public void ArrayEnd() {
-            using var json = new StringReader("]");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>("]"));
         }
         
         [Test]
         public void KeyValueSeparator() {
-            using var json = new StringReader(":");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(":"));
         }
         
         [Test]
         public void ObjectEnd() {
-            using var json = new StringReader("}");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>("}"));
         }
         
         [Test]
         public void Separator() {
-            using var json = new StringReader(",");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<bool>(","));
         }
         
         [Test]
         public void ListWithoutSeparators() {
-            using var json = new StringReader("[1 2 3]");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>("[1 2 3]"));
         }
         
         [Test]
         public void ListWithTrailingSeparator() {
-            using var json = new StringReader("[1,2,3,]");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>("[1,2,3,]"));
         }
 
         [Test]
         public void ListWithoutClosingBracket() {
-            using var json = new StringReader("[1,2,3");
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>("[1,2,3"));
         }
     }
 }
