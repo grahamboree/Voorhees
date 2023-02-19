@@ -11,6 +11,10 @@ namespace bench {
         StringReader citm_reader;
         StringReader canada_reader;
 
+        Voorhees.JsonMapper voorhees_mapper = new Voorhees.JsonMapper();
+        Voorhees.JsonTokenReader citm_tokenReader;
+        Voorhees.JsonTokenReader canada_tokenReader;
+
         public JsonValueReadBench() {
             citm = File.ReadAllText("../../../../../../citm_catalog.json");
             canada = File.ReadAllText("../../../../../../canada.json");
@@ -23,11 +27,21 @@ namespace bench {
             canada_reader = new StringReader(canada);
         }
 
-        [Benchmark]
-        public Voorhees.JsonValue Read_Citm_Voorhees() => Voorhees.JsonMapper.FromJson(citm_reader);
+        [IterationSetup(Target = nameof(Read_Citm_Voorhees))]
+        public void Setup_Voorhees_citm() {
+            citm_tokenReader = new Voorhees.JsonTokenReader(new StringReader(citm));
+        }
+
+        [IterationSetup(Target = nameof(Read_Canada_Voorhees))]
+        public void Setup_Voorhees_Canada() {
+            canada_tokenReader = new Voorhees.JsonTokenReader(new StringReader(canada));
+        }
 
         [Benchmark]
-        public Voorhees.JsonValue Read_Canada_Voorhees() => Voorhees.JsonMapper.FromJson(canada_reader);
+        public Voorhees.JsonValue Read_Citm_Voorhees() => voorhees_mapper.Read<Voorhees.JsonValue>(citm_tokenReader);
+
+        [Benchmark]
+        public Voorhees.JsonValue Read_Canada_Voorhees() => voorhees_mapper.Read<Voorhees.JsonValue>(canada_tokenReader);
 
         [Benchmark]
         public LitJson.JsonData Read_Citm_LitJson() => LitJson.JsonMapper.ToObject(citm_reader);
@@ -51,24 +65,44 @@ namespace bench {
     [MemoryDiagnoser]
     [MarkdownExporterAttribute.GitHub]
     public class JsonValueWriteBench {
-        Voorhees.JsonValue voorhees_canada;
+        const int ITERATIONS = 100;
+
+        string citm;
+        string canada;
+
+        public JsonValueWriteBench() {
+            citm = File.ReadAllText("../../../../../../citm_catalog.json");
+            canada = File.ReadAllText("../../../../../../canada.json");
+        }
+
+        #region Voorhees
+        Voorhees.JsonMapper voorhees_mapper = new Voorhees.JsonMapper();
+        Voorhees.JsonTokenWriter voorhees_tokenWriter = new Voorhees.JsonTokenWriter(new StreamWriter(Stream.Null), false);
+
         Voorhees.JsonValue voorhees_citm;
 
         [IterationSetup(Target = nameof(Write_Citm_Voorhees))]
         public void Setup_Citm_Voorhees() {
-            voorhees_citm = Voorhees.JsonMapper.FromJson(new StreamReader(File.OpenRead("../../../../../../citm_catalog.json")));
+            voorhees_citm = Voorhees.JsonMapper.FromJson<Voorhees.JsonValue>(citm);
         }
 
         [Benchmark]
-        public string Write_Citm_Voorhees() => Voorhees.JsonMapper.ToJson(voorhees_citm);
+        public void Write_Citm_Voorhees() {
+            voorhees_mapper.Write(voorhees_citm, voorhees_tokenWriter);
+        }
+
+        Voorhees.JsonValue voorhees_canada;
 
         [IterationSetup(Target = nameof(Write_Canada_Voorhees))]
         public void Setup_Canada_Voorhees() {
-            voorhees_canada = Voorhees.JsonMapper.FromJson(new StreamReader(File.OpenRead("../../../../../../canada.json")));
+            voorhees_canada = Voorhees.JsonMapper.FromJson<Voorhees.JsonValue>(canada);
         }
 
         [Benchmark]
-        public string Write_Canada_Voorhees() => Voorhees.JsonMapper.ToJson(voorhees_canada);
+        public void Write_Canada_Voorhees() {
+            voorhees_mapper.Write(voorhees_canada, voorhees_tokenWriter);
+        }
+        #endregion
         
         #region LitJson
         LitJson.JsonData litjson_citm;
@@ -76,7 +110,6 @@ namespace bench {
 
         [IterationSetup(Target = nameof(Write_Citm_LitJson))]
         public void Setup_Citm_LitJson() {
-            var citm = File.ReadAllText("../../../../../../citm_catalog.json");
             litjson_citm = LitJson.JsonMapper.ToObject(citm);
         }
         
@@ -90,7 +123,6 @@ namespace bench {
         
         [IterationSetup(Target = nameof(Write_Canada_LitJson))]
         public void Setup_Canada_LitJson() {
-            var canada = File.ReadAllText("../../../../../../canada.json");
             litjson_canada = LitJson.JsonMapper.ToObject(canada);
         }
         
