@@ -21,7 +21,7 @@ TextReader json = new StringReader("{ \"someIntValue\": 3}");
 // Load the data into a JsonValue
 JsonValue jsonValue = JsonMapper.FromJson(json);
 
-Console.WriteLine(jsonValue.Type); // JsonType.Object
+Console.WriteLine(jsonValue.Type); // JsonValueType.Object
 Console.WriteLine((int)jsonValue["someIntValue"]); // 3
 ```
 

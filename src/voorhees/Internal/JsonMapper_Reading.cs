@@ -536,7 +536,7 @@ namespace Voorhees {
                     }
                 }
                 case JsonToken.ArrayStart: {
-                    var arrayValue = new JsonValue(JsonType.Array);
+                    var arrayValue = new JsonValue(JsonValueType.Array);
 
                     tokenReader.SkipToken(JsonToken.ArrayStart);
 
@@ -562,7 +562,7 @@ namespace Voorhees {
                     return arrayValue;
                 }
                 case JsonToken.ObjectStart: {
-                    var result = new JsonValue(JsonType.Object);
+                    var result = new JsonValue(JsonValueType.Object);
 
                     tokenReader.SkipToken(JsonToken.ObjectStart);
 

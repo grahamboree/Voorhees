@@ -8,7 +8,7 @@ namespace Voorhees.Tests {
 	class JsonValue_Undefined {
 		[Test]
 		public void ConstructingAnEmptyJsonValueSetsItsTypeToUnspecified() {
-			Assert.That(new JsonValue().Type, Is.EqualTo(JsonType.Unspecified));
+			Assert.That(new JsonValue().Type, Is.EqualTo(JsonValueType.Unspecified));
 		}
 		
 		[Test]
@@ -29,8 +29,8 @@ namespace Voorhees.Tests {
 		[Test]
 		public void ConstructingWithBoolSetsTypeToBoolean() {
 			Assert.Multiple(() => {
-				Assert.That(new JsonValue(true).Type, Is.EqualTo(JsonType.Boolean));
-				Assert.That(new JsonValue(false).Type, Is.EqualTo(JsonType.Boolean));
+				Assert.That(new JsonValue(true).Type, Is.EqualTo(JsonValueType.Boolean));
+				Assert.That(new JsonValue(false).Type, Is.EqualTo(JsonValueType.Boolean));
 			});
 		}
 
@@ -38,7 +38,7 @@ namespace Voorhees.Tests {
 		public void ImplicitConversionCreatesBoolValue() {
 			JsonValue test = false;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Boolean));
 			});
 		}
 
@@ -46,7 +46,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = false;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Boolean));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Boolean));
 				Assert.That((bool) test, Is.False);
 			});
 		}
@@ -89,14 +89,14 @@ namespace Voorhees.Tests {
 	class JsonValue_Double {
 		[Test]
 		public void ConstructingWithFloatSetsTypeToDouble() {
-			Assert.That(new JsonValue(1.0).Type, Is.EqualTo(JsonType.Double));
+			Assert.That(new JsonValue(1.0).Type, Is.EqualTo(JsonValueType.Double));
 		}
 
 		[Test]
 		public void ImplicitConversionCreatesFloatDouble() {
 			JsonValue test = 1.0;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Double));
 			});
 		}
 
@@ -104,7 +104,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = 1.0;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Double));
 				Assert.That((double) test, Is.EqualTo(1.0));
 			});
 		}
@@ -113,7 +113,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToFloat() {
 			JsonValue test = 1.0;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Double));
 				Assert.That((float) test, Is.EqualTo(1.0f));
 			});
 		}
@@ -122,7 +122,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToDecimal() {
 			JsonValue test = 1.0;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Double));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Double));
 				Assert.That((decimal) test, Is.EqualTo(1.0m));
 			});
 		}
@@ -151,14 +151,14 @@ namespace Voorhees.Tests {
 	class JsonValue_Integer {
 		[Test]
 		public void ConstructingWithIntSetsTypeToInt() {
-			Assert.That(new JsonValue(1).Type, Is.EqualTo(JsonType.Int));
+			Assert.That(new JsonValue(1).Type, Is.EqualTo(JsonValueType.Int));
 		}
 
 		[Test]
 		public void ImplicitConversionCreatesIntValue() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 			});
 		}
 
@@ -166,7 +166,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)test, Is.EqualTo(1));
 			});
 		}
@@ -175,7 +175,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToSByte() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((sbyte)test, Is.EqualTo((sbyte)1));
 			});
 		}
@@ -184,7 +184,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToByte() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((byte)test, Is.EqualTo((byte)1));
 			});
 		}
@@ -193,7 +193,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToShort() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((short)test, Is.EqualTo((short)1));
 			});
 		}
@@ -202,7 +202,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToUShort() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((ushort)test, Is.EqualTo((ushort)1));
 			});
 		}
@@ -211,7 +211,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToUInt() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((uint)test, Is.EqualTo(1U));
 			});
 		}
@@ -220,7 +220,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToLong() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((long)test, Is.EqualTo(1L));
 			});
 		}
@@ -229,7 +229,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToULong() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((ulong)test, Is.EqualTo(1ul));
 			});
 		}
@@ -239,7 +239,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorConvertsToChar() {
 			JsonValue test = 1;
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((char)test, Is.EqualTo((char)1));
 			});
 		}
@@ -275,14 +275,14 @@ namespace Voorhees.Tests {
 	class JsonValue_String {
 		[Test]
 		public void ConstructingWithStringSetsTypeToString() {
-			Assert.That(new JsonValue("test").Type, Is.EqualTo(JsonType.String));
+			Assert.That(new JsonValue("test").Type, Is.EqualTo(JsonValueType.String));
 		}
 
 		[Test]
 		public void ImplicitConversionCreatesIntValue() {
 			JsonValue test = "test";
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.String));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.String));
 			});
 		}
 
@@ -290,7 +290,7 @@ namespace Voorhees.Tests {
 		public void ExplicitConversionOperatorReturnsUnderlyingValue() {
 			JsonValue test = "test";
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.String));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.String));
 				Assert.That((string) test, Is.EqualTo("test"));
 			});
 		}
@@ -319,7 +319,7 @@ namespace Voorhees.Tests {
 	class JsonValue_Null {
 		[Test]
 		public void ConstructingWithNullSetsItToNull() {
-			Assert.That(new JsonValue(null).Type, Is.EqualTo(JsonType.Null));
+			Assert.That(new JsonValue(null).Type, Is.EqualTo(JsonValueType.Null));
 		}
 
 		[Test]
@@ -339,7 +339,7 @@ namespace Voorhees.Tests {
 	class JsonValue_Array {
 		[Test]
 		public void InitializingWithArraySetsTheTypeToArray() {
-			Assert.That(new JsonValue {1, 2, 3}.Type, Is.EqualTo(JsonType.Array));
+			Assert.That(new JsonValue {1, 2, 3}.Type, Is.EqualTo(JsonValueType.Array));
 		}
 		
 		[Test]
@@ -351,11 +351,11 @@ namespace Voorhees.Tests {
 				"blastoff!"
 			};
 			Assert.Multiple(() => {
-				Assert.That(test.Type, Is.EqualTo(JsonType.Array));
-				Assert.That(test[0].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test[1].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test[2].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test[3].Type, Is.EqualTo(JsonType.String));
+				Assert.That(test.Type, Is.EqualTo(JsonValueType.Array));
+				Assert.That(test[0].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test[1].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test[2].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test[3].Type, Is.EqualTo(JsonValueType.String));
 				Assert.That((int)test[0], Is.EqualTo(3));
 				Assert.That((int)test[1], Is.EqualTo(2));
 				Assert.That((int)test[2], Is.EqualTo(1));
@@ -487,17 +487,17 @@ namespace Voorhees.Tests {
 				
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
-				Assert.That(iterator.Current.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(iterator.Current.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)iterator.Current, Is.EqualTo(1));
 
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
-				Assert.That(iterator.Current.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(iterator.Current.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)iterator.Current, Is.EqualTo(2));
 				
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
-				Assert.That(iterator.Current.Type, Is.EqualTo(JsonType.Int));
+				Assert.That(iterator.Current.Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)iterator.Current, Is.EqualTo(3));
 				
 				Assert.That(iterator.MoveNext(), Is.False);
@@ -514,19 +514,19 @@ namespace Voorhees.Tests {
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
 				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
-				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(1));
 				
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
 				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
-				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(2));
 				
 				Assert.That(iterator.MoveNext(), Is.True);
 				Assert.That(iterator.Current, Is.Not.Null);
 				Assert.That(iterator.Current.GetType(), Is.EqualTo(typeof(JsonValue)));
-				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonType.Int));
+				Assert.That(((JsonValue)iterator.Current).Type, Is.EqualTo(JsonValueType.Int));
 				Assert.That((int)(JsonValue)iterator.Current, Is.EqualTo(3));
 				
 				Assert.That(iterator.MoveNext(), Is.False);
@@ -562,7 +562,7 @@ namespace Voorhees.Tests {
 				{"one", 1},
 				{"blast", "off!"}
 			};
-			Assert.That(test.Type, Is.EqualTo(JsonType.Object));
+			Assert.That(test.Type, Is.EqualTo(JsonValueType.Object));
 		}
 
 		[Test]
@@ -592,10 +592,10 @@ namespace Voorhees.Tests {
 			};
 
 			Assert.Multiple(() => {
-				Assert.That(test["three"].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test["two"].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test["one"].Type, Is.EqualTo(JsonType.Int));
-				Assert.That(test["blast"].Type, Is.EqualTo(JsonType.String));
+				Assert.That(test["three"].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test["two"].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test["one"].Type, Is.EqualTo(JsonValueType.Int));
+				Assert.That(test["blast"].Type, Is.EqualTo(JsonValueType.String));
 
 				Assert.That((int)test["three"], Is.EqualTo(3));
 				Assert.That((int)test["two"], Is.EqualTo(2));

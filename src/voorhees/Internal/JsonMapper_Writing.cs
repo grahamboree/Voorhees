@@ -197,12 +197,12 @@ namespace Voorhees {
             }
 
             switch (val.Type) {
-                case JsonType.Int:     tokenWriter.Write((int) val); break;
-                case JsonType.Double:   tokenWriter.Write((double) val); break;
-                case JsonType.Boolean: tokenWriter.Write((bool) val); break;
-                case JsonType.String:  tokenWriter.Write((string) val); break;
-                case JsonType.Null:    tokenWriter.WriteNull(); break;
-                case JsonType.Array: {
+                case JsonValueType.Int:     tokenWriter.Write((int) val); break;
+                case JsonValueType.Double:   tokenWriter.Write((double) val); break;
+                case JsonValueType.Boolean: tokenWriter.Write((bool) val); break;
+                case JsonValueType.String:  tokenWriter.Write((string) val); break;
+                case JsonValueType.Null:    tokenWriter.WriteNull(); break;
+                case JsonValueType.Array: {
                     tokenWriter.WriteArrayStart();
 
                     for (int i = 0; i < val.Count; ++i) {
@@ -217,7 +217,7 @@ namespace Voorhees {
 
                     tokenWriter.WriteArrayEnd();
                 } break;
-                case JsonType.Object: {
+                case JsonValueType.Object: {
                     tokenWriter.WriteObjectStart();
 
                     bool first = true;
@@ -237,7 +237,7 @@ namespace Voorhees {
 
                     tokenWriter.WriteObjectEnd();
                 } break;
-                case JsonType.Unspecified: 
+                case JsonValueType.Unspecified: 
                 default:
                     throw new InvalidOperationException("Can't write JsonValue instance because it is of unspecified type");
             }

@@ -7,40 +7,40 @@ namespace Voorhees {
    /// Provides IList and IDictionary interfaces for easy enumeration of JSON arrays and objects.
    /// Distinguishes between floating point and integral values even though JSON treats them both as doubles.
    public class JsonValue : IDictionary<string, JsonValue>, IList<JsonValue>, IEquatable<JsonValue> {
-      public JsonType Type { get; private set; }
+      public JsonValueType Type { get; private set; }
 
       #region Constructors
       public JsonValue(bool boolean) {
-         Type = JsonType.Boolean;
+         Type = JsonValueType.Boolean;
          numberValue = boolean ? 1.0 : 0.0;
       }
 
       public JsonValue(double number) {
-         Type = JsonType.Double;
+         Type = JsonValueType.Double;
          numberValue = number;
       }
 
       public JsonValue(int number) {
-         Type = JsonType.Int;
+         Type = JsonValueType.Int;
          numberValue = number;
       }
 
       public JsonValue(string str) {
          if (str == null) {
-            Type = JsonType.Null;
+            Type = JsonValueType.Null;
          } else {
-            Type = JsonType.String;
+            Type = JsonValueType.String;
             stringValue = str;
          }
       }
 
-      public JsonValue(JsonType type = JsonType.Unspecified) {
+      public JsonValue(JsonValueType type = JsonValueType.Unspecified) {
          Type = type;
          switch (type) {
-            case JsonType.Object:
+            case JsonValueType.Object:
                objectValue = new Dictionary<string, JsonValue>();
                break;
-            case JsonType.Array:
+            case JsonValueType.Array:
                arrayValue = new List<JsonValue>();
                break;
          }
@@ -56,14 +56,14 @@ namespace Voorhees {
 
       #region Explicit Conversions from JsonData to other types
       public static explicit operator bool(JsonValue data) {
-         if (data.Type != JsonType.Boolean) {
+         if (data.Type != JsonValueType.Boolean) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a boolean");
          }
          return data.numberValue == 1.0;
       }
 
       public static explicit operator double(JsonValue data) {
-         if (data.Type != JsonType.Double) {
+         if (data.Type != JsonValueType.Double) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a number");
          }
          return data.numberValue;
@@ -73,7 +73,7 @@ namespace Voorhees {
       public static explicit operator decimal(JsonValue data) { return (decimal)(double)data; }
       
       public static explicit operator int(JsonValue data) {
-         if (data.Type != JsonType.Int) {
+         if (data.Type != JsonValueType.Int) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a number");
          }
          return (int)data.numberValue;
@@ -92,7 +92,7 @@ namespace Voorhees {
       public static explicit operator char(JsonValue data) { return (char)(int)data; }
 
       public static explicit operator string(JsonValue data) {
-         if (data.Type != JsonType.String) {
+         if (data.Type != JsonValueType.String) {
             throw new InvalidCastException("Instance of JsonData doesn't hold a string");
          }
          return data.stringValue;
@@ -104,9 +104,9 @@ namespace Voorhees {
       IEnumerator<KeyValuePair<string, JsonValue>> IEnumerable<KeyValuePair<string, JsonValue>>.GetEnumerator() => EnsureObject().GetEnumerator();
       public IEnumerator GetEnumerator() {
          switch (Type) {
-            case JsonType.Array:
+            case JsonValueType.Array:
                return ((IEnumerable<JsonValue>)this).GetEnumerator();
-            case JsonType.Object:
+            case JsonValueType.Object:
                return ((IEnumerable<KeyValuePair<string, JsonValue>>)this).GetEnumerator();
             default:
                throw new InvalidOperationException($"Can't enumerate JsonValue of type {Type}");
@@ -123,8 +123,8 @@ namespace Voorhees {
 
       public void Clear() {
          switch (Type) {
-            case JsonType.Object: objectValue.Clear(); break;
-            case JsonType.Array: arrayValue.Clear(); break;
+            case JsonValueType.Object: objectValue.Clear(); break;
+            case JsonValueType.Array: arrayValue.Clear(); break;
             default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
          }
       }
@@ -132,8 +132,8 @@ namespace Voorhees {
       public int Count {
          get {
             switch (Type) {
-               case JsonType.Object: return objectValue.Count;
-               case JsonType.Array: return arrayValue.Count;
+               case JsonValueType.Object: return objectValue.Count;
+               case JsonValueType.Array: return arrayValue.Count;
                default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
             }
          }
@@ -153,7 +153,7 @@ namespace Voorhees {
       #region IEquatable<JsonValue>
       public bool Equals(JsonValue other) {
          if (other == null) {
-            return Type == JsonType.Null;
+            return Type == JsonValueType.Null;
          }
 
          if (Type != other.Type) {
@@ -161,12 +161,12 @@ namespace Voorhees {
          }
 
          switch (Type) {
-            case JsonType.Null: return true;
-            case JsonType.String: return stringValue == other.stringValue;
-            case JsonType.Boolean: return (numberValue == 1.0) == (other.numberValue == 1.0);
-            case JsonType.Int: return (int)numberValue == (int)other.numberValue;
-            case JsonType.Double: return numberValue == other.numberValue;
-            case JsonType.Object: {
+            case JsonValueType.Null: return true;
+            case JsonValueType.String: return stringValue == other.stringValue;
+            case JsonValueType.Boolean: return (numberValue == 1.0) == (other.numberValue == 1.0);
+            case JsonValueType.Int: return (int)numberValue == (int)other.numberValue;
+            case JsonValueType.Double: return numberValue == other.numberValue;
+            case JsonValueType.Object: {
                if (objectValue.Count != other.objectValue.Count) {
                   return false;
                }
@@ -183,7 +183,7 @@ namespace Voorhees {
 
                return true;
             }
-            case JsonType.Array: {
+            case JsonValueType.Array: {
                if (arrayValue.Count != other.arrayValue.Count) {
                   return false;
                }
@@ -230,12 +230,12 @@ namespace Voorhees {
       /////////////////////////////////////////////////
 
       IDictionary<string, JsonValue> EnsureObject() {
-         if (Type == JsonType.Unspecified) {
-            Type = JsonType.Object;
+         if (Type == JsonValueType.Unspecified) {
+            Type = JsonValueType.Object;
             objectValue = new Dictionary<string, JsonValue>();
          }
 
-         if (Type == JsonType.Object) {
+         if (Type == JsonValueType.Object) {
             return objectValue;
          }
 
@@ -243,12 +243,12 @@ namespace Voorhees {
       }
 
       IList<JsonValue> EnsureArray() {
-         if (Type == JsonType.Unspecified) {
-            Type = JsonType.Array;
+         if (Type == JsonValueType.Unspecified) {
+            Type = JsonValueType.Array;
             arrayValue = new List<JsonValue>();
          }
 
-         if (Type == JsonType.Array) {
+         if (Type == JsonValueType.Array) {
             return arrayValue;
          }
 

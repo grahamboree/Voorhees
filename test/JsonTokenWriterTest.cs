@@ -59,7 +59,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void WriteEmptyArray() {
-			var test = new JsonValue(JsonType.Array);
+			var test = new JsonValue(JsonValueType.Array);
 			Assert.That(JsonMapper.ToJson(test), Is.EqualTo("[]"));
 		}
 
@@ -77,7 +77,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void WriteEmptyObject() {
-			var test = new JsonValue(JsonType.Object);
+			var test = new JsonValue(JsonValueType.Object);
 			Assert.That(JsonMapper.ToJson(test), Is.EqualTo("{}"));
 		}
 
@@ -311,11 +311,11 @@ namespace Voorhees.Tests {
 		[Test]
 		public void PrettyPrintDeeplyNestedArray() {
 			// Tests that exceeding the tab cache will correctly generate the right number of tabs.
-			var test = new JsonValue(JsonType.Array);
+			var test = new JsonValue(JsonValueType.Array);
 
 			var current = test;
 			for (int i = 0; i < 21; ++i) {
-				var newVal = new JsonValue(JsonType.Array);
+				var newVal = new JsonValue(JsonValueType.Array);
 				current.Add(newVal);
 				current = newVal;
 			}

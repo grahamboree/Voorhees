@@ -50,7 +50,7 @@ namespace Voorhees.Tests {
 	public class JsonValue_Writing_Arrays {
 		[Test]
 		public void EmptyArray() {
-			var test = new JsonValue(JsonType.Array);
+			var test = new JsonValue(JsonValueType.Array);
 			Assert.That(JsonMapper.ToJson(test), Is.EqualTo("[]"));
 		}
 
@@ -87,8 +87,8 @@ namespace Voorhees.Tests {
 				true,
 				false,
 				null,
-				new JsonValue(JsonType.Array),
-				new JsonValue(JsonType.Object)
+				new JsonValue(JsonValueType.Array),
+				new JsonValue(JsonValueType.Object)
 			};
 			Assert.That(JsonMapper.ToJson(test), Is.EqualTo("[1,1.5,\"test\",true,false,null,[],{}]"));
 		}
@@ -98,7 +98,7 @@ namespace Voorhees.Tests {
     public class JsonValue_Writing_Objects {
         [Test]
 		public void EmptyObject() {
-			var test = new JsonValue(JsonType.Object);
+			var test = new JsonValue(JsonValueType.Object);
 			Assert.That(JsonMapper.ToJson(test), Is.EqualTo("{}"));
 		}
 

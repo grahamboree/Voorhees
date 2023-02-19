@@ -1,6 +1,6 @@
 ﻿namespace Voorhees {
     /// The type of a json value
-    public enum JsonType : byte {
+    public enum JsonValueType : byte {
         Unspecified,
 
         Null,
