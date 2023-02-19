@@ -27,7 +27,6 @@ namespace Voorhees {
 
         interface INumericValueParser<T> {
             T Parse(ReadOnlySpan<char> span);
-            bool TryParse(ReadOnlySpan<char> span, out T result);
         }
 
         class ByteValueParser : INumericValueParser<byte> {
@@ -35,10 +34,6 @@ namespace Voorhees {
 
             public byte Parse(ReadOnlySpan<char> span) {
                 return byte.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out byte result) {
-                return byte.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
             }
         }
 
@@ -48,10 +43,6 @@ namespace Voorhees {
             public sbyte Parse(ReadOnlySpan<char> span) {
                 return sbyte.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out sbyte result) {
-                return sbyte.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
-            }
         }
 
         class ShortValueParser : INumericValueParser<short> {
@@ -59,10 +50,6 @@ namespace Voorhees {
 
             public short Parse(ReadOnlySpan<char> span) {
                 return short.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out short result) {
-                return short.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
             }
         }
 
@@ -72,10 +59,6 @@ namespace Voorhees {
             public ushort Parse(ReadOnlySpan<char> span) {
                 return ushort.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out ushort result) {
-                return ushort.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
-            }
         }
 
         class IntValueParser : INumericValueParser<int> {
@@ -83,10 +66,6 @@ namespace Voorhees {
 
             public int Parse(ReadOnlySpan<char> span) {
                 return int.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out int result) {
-                return int.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
             }
         }
 
@@ -96,10 +75,6 @@ namespace Voorhees {
             public uint Parse(ReadOnlySpan<char> span) {
                 return uint.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out uint result) {
-                return uint.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
-            }
         }
 
         class LongValueParser : INumericValueParser<long> {
@@ -108,10 +83,6 @@ namespace Voorhees {
             public long Parse(ReadOnlySpan<char> span) {
                 return long.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out long result) {
-                return long.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
-            }
         }
 
         class ULongValueParser : INumericValueParser<ulong> {
@@ -119,10 +90,6 @@ namespace Voorhees {
 
             public ulong Parse(ReadOnlySpan<char> span) {
                 return ulong.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out ulong result) {
-                return ulong.TryParse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat, out result);
             }
         }
 
@@ -134,13 +101,6 @@ namespace Voorhees {
                                    NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
                                    CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out float result) {
-                return float.TryParse(span,
-                                      NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                      CultureInfo.InvariantCulture.NumberFormat,
-                                      out result);
-            }
         }
 
         class DoubleValueParser : INumericValueParser<double> {
@@ -151,13 +111,6 @@ namespace Voorhees {
                                     NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
                                     CultureInfo.InvariantCulture.NumberFormat);
             }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out double result) {
-                return double.TryParse(span,
-                                       NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                       CultureInfo.InvariantCulture.NumberFormat,
-                                       out result);
-            }
         }
 
         class DecimalValueParser : INumericValueParser<decimal> {
@@ -167,13 +120,6 @@ namespace Voorhees {
                 return decimal.Parse(span, 
                                      NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
                                      CultureInfo.InvariantCulture.NumberFormat);
-            }
-            
-            public bool TryParse(ReadOnlySpan<char> span, out decimal result) {
-                return decimal.TryParse(span,
-                                        NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                        CultureInfo.InvariantCulture.NumberFormat,
-                                        out result);
             }
         }
     }
@@ -274,12 +220,14 @@ namespace Voorhees {
                 case JsonToken.Number: {
                     var numberSpan = tokenReader.ConsumeNumber();
                     try {
-                        if (GetNumericValueParser<int>().TryParse(numberSpan, out int intVal)) {
+                        double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
+
+                        if (doubleVal == (int)doubleVal) {
                             jsonType = typeof(int);
-                            jsonValue = intVal; // TODO Boxing
+                            jsonValue = (int)doubleVal; // TODO Boxing
                         } else {
                             jsonType = typeof(double);
-                            jsonValue = GetNumericValueParser<double>().Parse(numberSpan); // TODO Boxing
+                            jsonValue = doubleVal; // TODO Boxing
                         }
                     } catch (InvalidJsonException inner) {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
@@ -528,10 +476,10 @@ namespace Voorhees {
                 case JsonToken.False: tokenReader.SkipToken(JsonToken.False); return new JsonValue(false);
                 case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
                 case JsonToken.Number: {
-                    var numberSpan = tokenReader.ConsumeNumber();
+                    string numberSpan = tokenReader.ConsumeNumber();
                     try {
-                        return GetNumericValueParser<int>().TryParse(numberSpan, out int intVal) ? new JsonValue(intVal)
-                            : new JsonValue(GetNumericValueParser<double>().Parse(numberSpan));
+                        double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
+                        return doubleVal == (int)doubleVal ? new JsonValue((int)doubleVal) : new JsonValue(doubleVal);
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
                         throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
