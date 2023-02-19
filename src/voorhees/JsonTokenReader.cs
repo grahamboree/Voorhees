@@ -10,6 +10,12 @@ namespace Voorhees {
         public JsonToken NextToken = JsonToken.None;
 
         /////////////////////////////////////////////////
+        
+        /// <summary>
+        /// Read tokens from the start of the json string.
+        /// </summary>
+        /// <param name="json">The JSON document to read</param>
+        public JsonTokenReader(TextReader json) : this (new Internal.DocumentCursor(json)) { }
 
         /// <summary>
         /// Read tokens using the given document cursor position 
@@ -19,12 +25,6 @@ namespace Voorhees {
             this.cursor = cursor;
             AdvanceToNextToken();
         }
-        
-        /// <summary>
-        /// Read tokens from the start of the json string.
-        /// </summary>
-        /// <param name="json">The JSON document to read</param>
-        public JsonTokenReader(TextReader json) : this (new Internal.DocumentCursor(json)) { }
 
         /// <summary>
         /// Skip over a token of the given type.  Ensures that a valid token of that type was actually skipped over.

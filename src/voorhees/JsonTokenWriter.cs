@@ -133,7 +133,8 @@ namespace Voorhees {
             }
         }
 
-        /// In pretty printing mode, writes tabs to indent to the correct level. 
+        /// In pretty printing mode, writes tabs to indent to the correct level.
+        /// If pretty printing is disable, this does nothing.
         void WriteIndent() {
             if (!prettyPrint) {
                 return;
