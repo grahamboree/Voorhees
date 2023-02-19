@@ -115,22 +115,28 @@ namespace Voorhees {
 
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(valueType);
+                
+                // This covers all valid enum underlying types per the C# language specification:
+                // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/enums
+                
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(byte)) { tokenWriter.Write((byte) obj); return; }
+                if (enumType == typeof(byte))        { tokenWriter.Write((byte) obj);}
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(sbyte)) { tokenWriter.Write((sbyte) obj); return; }
+                else if (enumType == typeof(sbyte))  { tokenWriter.Write((sbyte) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(short)) { tokenWriter.Write((short) obj); return; }
+                else if (enumType == typeof(short))  { tokenWriter.Write((short) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ushort)) { tokenWriter.Write((ushort) obj); return; }
+                else if (enumType == typeof(ushort)) { tokenWriter.Write((ushort) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(int)) { tokenWriter.Write((int) obj); return; }
+                else if (enumType == typeof(int))    { tokenWriter.Write((int) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(uint)) { tokenWriter.Write((uint) obj); return; }
+                else if (enumType == typeof(uint))   { tokenWriter.Write((uint) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(long)) { tokenWriter.Write((long) obj); return; }
+                else if (enumType == typeof(long))   { tokenWriter.Write((long) obj); }
                 // ReSharper disable once PossibleInvalidCastException
-                if (enumType == typeof(ulong)) { tokenWriter.Write((ulong) obj); return; }
+                else if (enumType == typeof(ulong))  { tokenWriter.Write((ulong) obj); }
+                
+                return; 
             }
 
             tokenWriter.WriteObjectStart();
