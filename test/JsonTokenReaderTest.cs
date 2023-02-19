@@ -117,6 +117,15 @@ namespace Voorhees.Tests {
 		}
 
 		[Test]
+		public void HittingEOFWhenSkippingStringThrows() {
+			Assert.Throws<InvalidJsonException>(() => {
+				using var json = new StringReader("\"test");
+				var tokenReader = new JsonTokenReader(json);
+				tokenReader.SkipToken(JsonToken.String);
+			});
+		}
+
+		[Test]
 		public void SkippingStringWithEscapedCharacter() {
 			var doc = new Internal.DocumentCursor(new StringReader("\"test\\\"\", false"));
 			var tokenReader = new JsonTokenReader(doc);
