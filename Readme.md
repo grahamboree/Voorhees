@@ -177,3 +177,52 @@ Console.WriteLine((int)intValue); // 3
 Console.WriteLine((double)doubleValue); // 3.5
 Console.WriteLine((string)stringValue); // lorem ipsum
 ```
+
+## Customizing Object Mapping & Operating on Streams
+
+JSON value reading and writing behavior can be completely customized by providing importer and exporter functions.  These custom functions are registered to a `JsonMapper` instance via the `RegisterImporter` and `RegisterExporter` methods.  Reading and writing with a `JsonMapper` instance (using any registered custom parsing functions) is done through the `Read()` and `Write()` methods, rather than the static `JsonMapper.ToJson()` and `JsonMapper.FromJson()` functions.
+
+The `Read` and `Write` methods of `JsonMapper` operate on `TextReader` and `TextWriter` streams.  This integrates with `CryptoStream` subclasses and allows for reading and writing to files, sockets, etc.  `TextReader` streams are wrapped in a `JsonTokenReader` instance, while `TextWriter` streams are wrapped in a `JsonTokenWriter` instance.  These wrappers provide json-specific reading and writing methods.
+
+``` C#
+using Voorhees;
+
+class MyNumber {
+	public int value;
+}
+
+// Creating a mapper instance allows us to customize mapping behavior.
+var mapper = new JsonMapper();
+
+// Parse an integer as a MyNumber instance.
+mapper.RegisterImporter<MyNumber>(reader => {
+	return new MyNumber {
+		value = int.Parse(reader.ConsumeNumber())
+	};
+});
+
+// Write MyNumber values as integers, rather than objects
+mapper.RegisterExporter((myNum, tokenWriter) => {
+	tokenWriter.Write(myNum.value);
+});
+
+var num = new MyNumber { value = 42 };
+
+// Write an instance 
+// Writes an instance of MyNumber to the StringBuilder via the StringWriter and JsonTokenWriter.
+var jsonBuilder = new StringBuilder();
+using (var stringWriter = new StringWriter(jsonBuilder)) {
+	var tokenWriter = new JsonTokenWriter(stringWriter, prettyPrint:false);
+
+	
+	mapper.Write(num, tokenWriter);
+}
+
+string json = jsonBuilder.ToString(); // "42"
+
+// Read a MyNumber instance from the json string we just made.
+using (var stringReader = new StringReader(json)) {
+	var tokenReader = new JsonTokenReader(stringReader);
+	num = mapper.Read<MyNumber>(tokenReader)
+}
+```
