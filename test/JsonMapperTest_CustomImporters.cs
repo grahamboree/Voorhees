@@ -16,7 +16,7 @@ namespace Voorhees.Tests {
         [Test]
         public void RegisterImporter() {
             var mapper = new JsonMapper();
-            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = (int)tokenReader.ConsumeNumber() });
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
@@ -40,7 +40,7 @@ namespace Voorhees.Tests {
                     Assert.Throws<InvalidCastException>(() => mapper.Read<TestType>(new JsonTokenReader(json)));
                 }
 
-                mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = int.Parse(tokenReader.ConsumeNumber()) });
+                mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = (int)tokenReader.ConsumeNumber() });
 
                 using (var json = new StringReader("42")) {
                     Assert.That(mapper.Read<TestType>(new JsonTokenReader(json)), Is.Not.Null);
@@ -63,7 +63,7 @@ namespace Voorhees.Tests {
         [Test]
         public void UnregistersSingleImporter() {
             var mapper = new JsonMapper();
-            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
+            mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = (int)tokenReader.ConsumeNumber() });
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {
@@ -87,8 +87,8 @@ namespace Voorhees.Tests {
         [Test]
         public void UnregistersMultipleImporters() {
             var mapper = new JsonMapper();
-            mapper.RegisterImporter(tokenReader => new TestType {PubIntVal = int.Parse(tokenReader.ConsumeNumber())});
-            mapper.RegisterImporter(tokenReader => new TestType2 {PubString = tokenReader.ConsumeString()});
+            mapper.RegisterImporter(tokenReader => new TestType { PubIntVal = (int)tokenReader.ConsumeNumber() });
+            mapper.RegisterImporter(tokenReader => new TestType2 { PubString = tokenReader.ConsumeString() });
 
             Assert.Multiple(() => {
                 using (var json = new StringReader("42")) {

@@ -26,101 +26,62 @@ namespace Voorhees {
         }
 
         interface INumericValueParser<T> {
-            T Parse(ReadOnlySpan<char> span);
+            T ConvertFrom(double value);
         }
 
         class ByteValueParser : INumericValueParser<byte> {
             public static readonly ByteValueParser Instance = new();
-
-            public byte Parse(ReadOnlySpan<char> span) {
-                return byte.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public byte ConvertFrom(double value) => (byte)value;
         }
 
         class SByteValueParser : INumericValueParser<sbyte> {
             public static readonly SByteValueParser Instance = new();
-
-            public sbyte Parse(ReadOnlySpan<char> span) {
-                return sbyte.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public sbyte ConvertFrom(double value) => (sbyte)value;
         }
 
         class ShortValueParser : INumericValueParser<short> {
             public static readonly ShortValueParser Instance = new();
-
-            public short Parse(ReadOnlySpan<char> span) {
-                return short.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public short ConvertFrom(double value) => (short)value;
         }
 
         class UShortValueParser : INumericValueParser<ushort> {
             public static readonly UShortValueParser Instance = new();
-
-            public ushort Parse(ReadOnlySpan<char> span) {
-                return ushort.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public ushort ConvertFrom(double value) => (ushort)value;
         }
 
         class IntValueParser : INumericValueParser<int> {
             public static readonly IntValueParser Instance = new();
-
-            public int Parse(ReadOnlySpan<char> span) {
-                return int.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public int ConvertFrom(double value) => (int)value;
         }
 
         class UIntValueParser : INumericValueParser<uint> {
             public static readonly UIntValueParser Instance = new();
-
-            public uint Parse(ReadOnlySpan<char> span) {
-                return uint.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public uint ConvertFrom(double value) => (uint)value;
         }
 
         class LongValueParser : INumericValueParser<long> {
             public static readonly LongValueParser Instance = new();
-
-            public long Parse(ReadOnlySpan<char> span) {
-                return long.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public long ConvertFrom(double value) => (long)value;
         }
 
         class ULongValueParser : INumericValueParser<ulong> {
             public static readonly ULongValueParser Instance = new();
-
-            public ulong Parse(ReadOnlySpan<char> span) {
-                return ulong.Parse(span, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public ulong ConvertFrom(double value) => (ulong)value;
         }
 
         class FloatValueParser : INumericValueParser<float> {
             public static readonly FloatValueParser Instance = new();
-
-            public float Parse(ReadOnlySpan<char> span) {
-                return float.Parse(span, 
-                                   NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                   CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public float ConvertFrom(double value) => (float)value;
         }
 
         class DoubleValueParser : INumericValueParser<double> {
             public static readonly DoubleValueParser Instance = new();
-
-            public double Parse(ReadOnlySpan<char> span) {
-                return double.Parse(span, 
-                                    NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                    CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public double ConvertFrom(double value) => value;
         }
 
         class DecimalValueParser : INumericValueParser<decimal> {
             public static readonly DecimalValueParser Instance = new();
-
-            public decimal Parse(ReadOnlySpan<char> span) {
-                return decimal.Parse(span, 
-                                     NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign,
-                                     CultureInfo.InvariantCulture.NumberFormat);
-            }
+            public decimal ConvertFrom(double value) => (decimal)value;
         }
     }
 
@@ -182,7 +143,7 @@ namespace Voorhees {
             try {
                 var numericParser = GetNumericValueParser<T>();
                 if (numericParser != null) {
-                    return numericParser.Parse(tokenReader.ConsumeNumber());
+                    return numericParser.ConvertFrom(tokenReader.ConsumeNumber());
                 }
                 
                 var stringParser = GetStringValueParser<T>();
@@ -218,16 +179,14 @@ namespace Voorhees {
                     jsonValue = tokenReader.ConsumeString();
                 } break;
                 case JsonToken.Number: {
-                    string numberSpan = tokenReader.ConsumeNumber();
+                    double numberValue = tokenReader.ConsumeNumber();
                     try {
-                        double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
-
-                        if (doubleVal == (int)doubleVal) {
+                        if (numberValue == (int)numberValue) {
                             jsonType = typeof(int);
-                            jsonValue = (int)doubleVal; // TODO Boxing
+                            jsonValue = (int)numberValue; // TODO Boxing
                         } else {
                             jsonType = typeof(double);
-                            jsonValue = doubleVal; // TODO Boxing
+                            jsonValue = numberValue; // TODO Boxing
                         }
                     } catch (InvalidJsonException inner) {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
@@ -476,20 +435,19 @@ namespace Voorhees {
                 case JsonToken.False: tokenReader.SkipToken(JsonToken.False); return new JsonValue(false);
                 case JsonToken.String: return new JsonValue(tokenReader.ConsumeString());
                 case JsonToken.Number: {
-                    string numberSpan;
+                    double number;
                     try {
-                        numberSpan = tokenReader.ConsumeNumber();
+                        number = tokenReader.ConsumeNumber();
                     } catch (InvalidJsonException inner) {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
                         throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
                     }
                     
                     try {
-                        double doubleVal = GetNumericValueParser<double>().Parse(numberSpan);
-                        return doubleVal == (int)doubleVal ? new JsonValue((int)doubleVal) : new JsonValue(doubleVal);
+                        return number == (int)number ? new JsonValue((int)number) : new JsonValue(number);
                     } catch (FormatException) {
                         // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
-                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse text \"{new string(numberSpan)}\" as a number.");
+                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse number.");
                     }
                 }
                 case JsonToken.ArrayStart: {

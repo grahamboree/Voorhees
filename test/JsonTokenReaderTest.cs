@@ -184,73 +184,73 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void Zero() {
-			TestString("0");
+			TestString("0", 0);
 		}
 
 		[Test]
 		public void NegativeZero() {
-			TestString("-0");
+			TestString("-0", -0);
 		}
 		
 		[Test]
 		public void PositiveInteger() {
-			TestString("123");
+			TestString("123", 123);
 		}
 		
 		[Test]
 		public void NegativeInteger() {
-			TestString("-123");
+			TestString("-123", -123);
 		}
 		
 		[Test]
 		public void PositiveDecimal() {
-			TestString("1.234");
+			TestString("1.234", 1.234);
 		}
 
 		[Test]
 		public void NegativeDecimal() {
-			TestString("-1.234");
+			TestString("-1.234", -1.234);
 		}
 
 		[Test]
 		public void PositiveLeadingZeroDecimal() {
-			TestString("0.123");
+			TestString("0.123", 0.123);
 		}
 		
 		[Test]
 		public void NegativeLeadingZeroDecimal() {
-			TestString("-0.123");
+			TestString("-0.123", -0.123);
 		}
 		
 		[Test]
 		public void PositiveExponent() {
-			TestString("0e3");
+			TestString("0e3", 0e3);
 		}
 		
 		[Test]
 		public void ExplicitlyPositiveExponent() {
-			TestString("0e+3");
+			TestString("0e+3", 0e+3);
 		}
 		
 		[Test]
 		public void NegativeExponent() {
-			TestString("0e-3");
+			TestString("0e-3", 0e-3);
 		}
 		
 		[Test]
 		public void NegativeNumberWithNegativeExponent() {
-			TestString("-0e-3");
+			TestString("-0e-3", -0e-3);
 		}
 		
 		[Test]
 		public void FractionalNumberWithExponentWithLeadingZeros() {
-			TestString("123.456E+007");
+			TestString("123.456E+007", 123.456E+007);
 		}
 
-		static void TestString(string json) {
+		static void TestString(string json, double expected) {
 			using var jsonStringReader = new StringReader(json);
-			string tokenString = new(new JsonTokenReader(jsonStringReader).ConsumeNumber());
-			Assert.That(tokenString, Is.EqualTo(json));
+			double number = new JsonTokenReader(jsonStringReader).ConsumeNumber();
+			Assert.That(number, Is.EqualTo(expected));
 		}
 	}
 

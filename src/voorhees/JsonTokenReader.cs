@@ -65,7 +65,7 @@ namespace Voorhees {
         /// </summary>
         /// <returns>The number's character span in the original json string</returns>
         /// <exception cref="InvalidOperationException">If the next token is not a properly formatted number</exception>
-        public string ConsumeNumber() {
+        public double ConsumeNumber() {
             if (NextToken != JsonToken.Number) {
                 throw new InvalidOperationException($"{cursor} Trying to consume a number, but the next JSON token is not a number");
             }
@@ -125,7 +125,12 @@ namespace Voorhees {
             }
             
             AdvanceToNextToken();
-            return new string(numberChars[..length]);
+            
+            try {
+                return double.Parse(numberChars[..length]);
+            } catch (FormatException) {
+                throw new InvalidJsonException($"Cannot parse \"{new string(numberChars[..length])}\" as a number.");
+            }
         }
 
         /// <summary>
