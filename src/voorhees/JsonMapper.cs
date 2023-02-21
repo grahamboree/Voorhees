@@ -25,6 +25,13 @@ namespace Voorhees {
             return stringBuilder.ToString();
         }
         
+        /// <summary>
+        /// High level API.
+        /// Reads a value from a json string.
+        /// </summary>
+        /// <param name="json">The json to parse</param>
+        /// <typeparam name="T">The type of the object to be read</typeparam>
+        /// <returns>A new instance of type <typeparamref name="T"/> with values read from <paramref name="json"/></returns>
         public static T FromJson<T>(string json) {
             return defaultInstance.Read<T>(new JsonTokenReader(new StringReader(json)));
         }
@@ -32,15 +39,12 @@ namespace Voorhees {
         static readonly JsonMapper defaultInstance = new();
     }
 
-    public partial class JsonMapper { // importers and exporters
-        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonTokenWriter tokenWriter);
-
-        public delegate T ImporterFunc<out T>(JsonTokenReader tokenReader);
-
+    public partial class JsonMapper { // instance
         /////////////////////////////////////////////////
 
         /// <summary>
-        /// Write a value to a token writer.
+        /// Writes the json representation of <paramref name="val"/> to <paramref name="tokenWriter"/>.
+        /// Uses any custom exporters registered to this mapper instance, or defaults to the normal memberwise serializer
         /// </summary>
         /// <param name="val">The value to write</param>
         /// <param name="tokenWriter">The tokenWriter to write the Json tokens to</param>
@@ -50,7 +54,8 @@ namespace Voorhees {
         }
 
         /// <summary>
-        /// Read a value from a token reader
+        /// Read a value of type <typeparamref name="T"/> from <paramref name="tokenReader"/>.
+        /// Uses any custom importers registered to this mapper instance, or defaults to the normal memberwise deserializer.
         /// </summary>
         /// <param name="tokenReader">The token reader to read from</param>
         /// <typeparam name="T">The type of value to read</typeparam>
@@ -66,15 +71,55 @@ namespace Voorhees {
             return result;
         }
         
-        #region Importers
+        #region Custom Importers
+        /// <summary>
+        /// A custom method for reading a value of type <typeparamref name="T"/> from a <c>JsonTokenReader</c>
+        /// </summary>
+        /// <typeparam name="T">The type of object to read</typeparam>
+        public delegate T ImporterFunc<out T>(JsonTokenReader tokenReader);
+
+        /// <summary>
+        /// Register a function that produces values of type <typeparamref name="T"/> from JSON data.
+        /// </summary>
+        /// <param name="importer">A custom importer function for values of type <typeparamref name="T"/></param>
+        /// <typeparam name="T">The type of value produced</typeparam>
         public void RegisterImporter<T>(ImporterFunc<T> importer) => importers[typeof(T)] = json => importer(json);
+        
+        /// <summary>
+        /// Unregisters any currently registered custom importer for values of type <typeparamref name="T"/> 
+        /// </summary>
+        /// <typeparam name="T">The type produced by the custom importer</typeparam>
         public void UnRegisterImporter<T>() => importers.Remove(typeof(T));
+        
+        /// <summary>
+        /// Clears all currently registered custom importers.
+        /// </summary>
         public void UnRegisterAllImporters() => importers.Clear();
         #endregion
         
-        #region Exporters
+        #region Custom Exporters
+        /// <summary>
+        /// A custom method for writing a value of type <typeparamref name="T"/> to a <c>JsonTokenWriter</c>
+        /// </summary>
+        /// <typeparam name="T">The type of object to write</typeparam>
+        public delegate void ExporterFunc<in T>(T objectToSerialize, JsonTokenWriter tokenWriter);
+        
+        /// <summary>
+        /// Registers a function that produces JSON given a value of type <typeparamref name="T"/>
+        /// </summary>
+        /// <param name="exporter">A custom exporter function for values of type <typeparamref name="T"/></param>
+        /// <typeparam name="T">The type of values this function converts to JSON</typeparam>
         public void RegisterExporter<T>(ExporterFunc<T> exporter) => exporters[typeof(T)] = (obj, os) => exporter((T)obj, os);
+        
+        /// <summary>
+        /// Unregisters any currently registered custom exporter for values of the type <typeparamref name="T"/>
+        /// </summary>
+        /// <typeparam name="T">The type of values the exporter converts to JSON</typeparam>
         public void UnRegisterExporter<T>() => exporters.Remove(typeof(T));
+        
+        /// <summary>
+        /// Clears all currently registered custom exporters.
+        /// </summary>
         public void UnRegisterAllExporters() => exporters.Clear();
         #endregion
         
