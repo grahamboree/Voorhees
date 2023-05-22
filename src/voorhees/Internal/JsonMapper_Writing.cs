@@ -22,12 +22,6 @@ namespace Voorhees {
             switch (obj) { 
                 case JsonValue jsonValue: WriteJsonValue(jsonValue, tokenWriter); return;
                 
-                // Special case built-in serializer for DateTime
-                case DateTime dateTime: tokenWriter.Write(dateTime.ToString("o")); return;
-                
-                // Special case built-in serializer for DateTimeOffset
-                case DateTimeOffset dateTimeOffset: tokenWriter.Write(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo)); return;
-
                 // JSON String
                 case string stringVal: tokenWriter.Write(stringVal); return;
                 case char charVal: tokenWriter.Write(charVal); return;
@@ -47,6 +41,12 @@ namespace Voorhees {
 
                 // JSON Boolean
                 case bool boolVal: tokenWriter.Write(boolVal); return;
+
+                // Special case built-in serializer for DateTime
+                case DateTime dateTime: tokenWriter.Write(dateTime.ToString("o")); return;
+                
+                // Special case built-in serializer for DateTimeOffset
+                case DateTimeOffset dateTimeOffset: tokenWriter.Write(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo)); return;
 
                 // JSON Array
                 case Array arrayVal: {
@@ -198,7 +198,7 @@ namespace Voorhees {
 
             switch (val.Type) {
                 case JsonValueType.Int:     tokenWriter.Write((int) val); break;
-                case JsonValueType.Double:   tokenWriter.Write((double) val); break;
+                case JsonValueType.Double:  tokenWriter.Write((double) val); break;
                 case JsonValueType.Boolean: tokenWriter.Write((bool) val); break;
                 case JsonValueType.String:  tokenWriter.Write((string) val); break;
                 case JsonValueType.Null:    tokenWriter.WriteNull(); break;
