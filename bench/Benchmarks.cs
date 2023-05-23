@@ -71,21 +71,17 @@ namespace bench {
         Voorhees.JsonValue voorhees_canada;
 
         [Benchmark]
-        public string Write_Citm_Voorhees() {
-            TextWriter textWriter = new StringWriter();
-            var voorhees_tokenWriter = new Voorhees.JsonTokenWriter(textWriter, false);
+        public void Write_Citm_Voorhees() {
+            var voorhees_tokenWriter = new Voorhees.JsonTokenWriter(TextWriter.Null, false);
             var voorhees_mapper = new Voorhees.JsonMapper();
             voorhees_mapper.Write(voorhees_citm, voorhees_tokenWriter);
-            return textWriter.ToString();
         }
 
         [Benchmark]
-        public string Write_Canada_Voorhees() {
-            TextWriter textWriter = new StringWriter();
-            var voorhees_tokenWriter = new Voorhees.JsonTokenWriter(textWriter, false);
+        public void Write_Canada_Voorhees() {
+            var voorhees_tokenWriter = new Voorhees.JsonTokenWriter(TextWriter.Null, false);
             var voorhees_mapper = new Voorhees.JsonMapper();
             voorhees_mapper.Write(voorhees_canada, voorhees_tokenWriter);
-            return textWriter.ToString();
         }
         #endregion
         
@@ -94,19 +90,15 @@ namespace bench {
         LitJson.JsonData litjson_canada;
         
         [Benchmark]
-        public string Write_Citm_LitJson() {
-            TextWriter textWriter = new StringWriter();
-            var writer = new LitJson.JsonWriter(textWriter);
+        public void Write_Citm_LitJson() {
+            var writer = new LitJson.JsonWriter(TextWriter.Null);
             litjson_citm.ToJson(writer);
-            return textWriter.ToString();
         }
         
         [Benchmark]
-        public string Write_Canada_LitJson() {
-            TextWriter textWriter = new StringWriter();
-            var writer = new LitJson.JsonWriter(textWriter);
+        public void Write_Canada_LitJson() {
+            var writer = new LitJson.JsonWriter(TextWriter.Null);
             litjson_canada.ToJson(writer);
-            return textWriter.ToString();
         }
         #endregion
         
@@ -115,19 +107,15 @@ namespace bench {
         Newtonsoft.Json.Linq.JObject newtonsoft_canada;
 
         [Benchmark]
-        public string Write_Citm_Newtonsoft() {
-            TextWriter textWriter = new StringWriter();
-            var writer = new Newtonsoft.Json.JsonTextWriter(textWriter);
+        public void Write_Citm_Newtonsoft() {
+            var writer = new Newtonsoft.Json.JsonTextWriter(TextWriter.Null);
             newtonsoft_citm.WriteTo(writer);
-            return textWriter.ToString();
         }
         
         [Benchmark]
-        public string Write_Canada_Newtonsoft() {
-            TextWriter textWriter = new StringWriter();
-            var writer = new Newtonsoft.Json.JsonTextWriter(textWriter);
+        public void Write_Canada_Newtonsoft() {
+            var writer = new Newtonsoft.Json.JsonTextWriter(TextWriter.Null);
             newtonsoft_canada.WriteTo(writer);
-            return textWriter.ToString();
         }
         #endregion
     }
