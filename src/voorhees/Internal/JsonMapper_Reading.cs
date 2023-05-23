@@ -26,61 +26,73 @@ namespace Voorhees {
 
         interface INumericValueParser<T> {
             T ConvertFrom(double value);
+            void WriteTo(T value, JsonTokenWriter tokenWriter);
         }
 
         class ByteValueParser : INumericValueParser<byte> {
             public static readonly ByteValueParser Instance = new();
             public byte ConvertFrom(double value) => (byte)value;
+            public void WriteTo(byte value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class SByteValueParser : INumericValueParser<sbyte> {
             public static readonly SByteValueParser Instance = new();
             public sbyte ConvertFrom(double value) => (sbyte)value;
+            public void WriteTo(sbyte value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class ShortValueParser : INumericValueParser<short> {
             public static readonly ShortValueParser Instance = new();
             public short ConvertFrom(double value) => (short)value;
+            public void WriteTo(short value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class UShortValueParser : INumericValueParser<ushort> {
             public static readonly UShortValueParser Instance = new();
             public ushort ConvertFrom(double value) => (ushort)value;
+            public void WriteTo(ushort value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class IntValueParser : INumericValueParser<int> {
             public static readonly IntValueParser Instance = new();
             public int ConvertFrom(double value) => (int)value;
+            public void WriteTo(int value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class UIntValueParser : INumericValueParser<uint> {
             public static readonly UIntValueParser Instance = new();
             public uint ConvertFrom(double value) => (uint)value;
+            public void WriteTo(uint value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class LongValueParser : INumericValueParser<long> {
             public static readonly LongValueParser Instance = new();
             public long ConvertFrom(double value) => (long)value;
+            public void WriteTo(long value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class ULongValueParser : INumericValueParser<ulong> {
             public static readonly ULongValueParser Instance = new();
             public ulong ConvertFrom(double value) => (ulong)value;
+            public void WriteTo(ulong value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class FloatValueParser : INumericValueParser<float> {
             public static readonly FloatValueParser Instance = new();
             public float ConvertFrom(double value) => (float)value;
+            public void WriteTo(float value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class DoubleValueParser : INumericValueParser<double> {
             public static readonly DoubleValueParser Instance = new();
             public double ConvertFrom(double value) => value;
+            public void WriteTo(double value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
 
         class DecimalValueParser : INumericValueParser<decimal> {
             public static readonly DecimalValueParser Instance = new();
             public decimal ConvertFrom(double value) => (decimal)value;
+            public void WriteTo(decimal value, JsonTokenWriter tokenWriter) => tokenWriter.Write(value);
         }
     }
 

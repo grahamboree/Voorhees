@@ -50,7 +50,12 @@ namespace Voorhees {
         /// <param name="tokenWriter">The tokenWriter to write the Json tokens to</param>
         /// <typeparam name="T">The type of <paramref name="val"/></typeparam>
         public void Write<T>(T val, JsonTokenWriter tokenWriter) {
-            WriteValue(val, typeof(T), val?.GetType(), tokenWriter);
+            var numeric = GetNumericValueParser<T>();
+            if (numeric != null) {
+                numeric.WriteTo(val, tokenWriter);
+            } else {
+                WriteValue(val, typeof(T), val?.GetType(), tokenWriter);
+            }
         }
 
         /// <summary>
