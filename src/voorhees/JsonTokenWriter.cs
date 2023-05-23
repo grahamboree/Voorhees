@@ -12,28 +12,165 @@ namespace Voorhees {
         }
 
         #region Null
-        public void WriteNull() { WriteIndent(); textWriter.Write("null"); }
+        public void WriteNull() {
+            WriteIndent();
+            // Write char by char to avoid string copies.
+            textWriter.Write('n');
+            textWriter.Write('u');
+            textWriter.Write('l');
+            textWriter.Write('l');
+        }
         #endregion
 
         #region Boolean
-        public void Write(bool val) { WriteIndent(); textWriter.Write(val ? "true" : "false"); }
+        public void Write(bool val) {
+            WriteIndent();
+            // Write char by char to avoid string copies.
+            if (val) {
+                textWriter.Write('t');
+                textWriter.Write('r');
+                textWriter.Write('u');
+                textWriter.Write('e');
+            } else {
+                textWriter.Write('f');
+                textWriter.Write('a');
+                textWriter.Write('l');
+                textWriter.Write('s');
+                textWriter.Write('e');
+            }
+        }
         #endregion
 
         #region Number
         // Integral types
-        public void Write(byte val)   { WriteIndent(); textWriter.Write(val); }
-        public void Write(sbyte val)  { WriteIndent(); textWriter.Write(val); }
-        public void Write(short val)  { WriteIndent(); textWriter.Write(val); }
-        public void Write(ushort val) { WriteIndent(); textWriter.Write(val); }
-        public void Write(int val)    { WriteIndent(); textWriter.Write(val); }
-        public void Write(uint val)   { WriteIndent(); textWriter.Write(val); }
-        public void Write(long val)   { WriteIndent(); textWriter.Write(val); }
-        public void Write(ulong val)  { WriteIndent(); textWriter.Write(val); }
+        public void Write(byte val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+        
+        public void Write(sbyte val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+
+        public void Write(short val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+
+        public void Write(ushort val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+        public void Write(int val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+        public void Write(uint val) {
+            WriteIndent(); 
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+        public void Write(long val) {
+            WriteIndent(); 
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
+        public void Write(ulong val) {
+            WriteIndent(); 
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[128];
+            if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to the built-in writer
+                textWriter.Write(val);
+            }
+        }
 
         // Floating point types
-        public void Write(float val)   { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(double val)  { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
-        public void Write(decimal val) { WriteIndent(); textWriter.Write(val.ToString(CultureInfo.InvariantCulture)); }
+        public void Write(float val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[256];
+            if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to using ToString()
+                textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
+            }
+        }
+        
+        public void Write(double val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[256];
+            if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to using ToString()
+                textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
+            }
+        }
+        
+        public void Write(decimal val) {
+            WriteIndent();
+            // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
+            Span<char> buffer = stackalloc char[256];
+            if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
+                textWriter.Write(buffer[..charsWritten]);
+            } else {
+                // If for some reason the formatting fails, fall back to using ToString()
+                textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
+            }
+        }
         #endregion
 
         #region String
@@ -42,21 +179,62 @@ namespace Voorhees {
         #endregion
 
         #region Array
-        public void WriteArrayStart() { WriteIndent(); textWriter.Write(prettyPrint ? "[\n" : "["); indentLevel++; }
-        public void WriteArrayEnd()   { indentLevel--; WriteIndent(); textWriter.Write("]"); }
+        public void WriteArrayStart() {
+            WriteIndent();
+            textWriter.Write('[');
+            if (prettyPrint) {
+                textWriter.Write('\n');
+            }
+            indentLevel++;
+        }
+
+        public void WriteArrayEnd() {
+            indentLevel--;
+            WriteIndent();
+            textWriter.Write(']');
+        }
         #endregion
 
         #region Object
-        public void WriteObjectStart() { WriteIndent(); textWriter.Write(prettyPrint ? "{\n" : "{"); indentLevel++; }
-        public void WriteObjectKey(string key) { Write(key); textWriter.Write(prettyPrint ? ": " : ":"); skipNextTabs = true; }
-        public void WriteObjectEnd() { indentLevel--; WriteIndent(); textWriter.Write("}"); }
+        public void WriteObjectStart() {
+            WriteIndent();
+            textWriter.Write('{');
+            if (prettyPrint) {
+                textWriter.Write('\n');
+            }
+            indentLevel++;
+        }
+
+        public void WriteObjectKey(string key) {
+            Write(key);
+            textWriter.Write(':');
+            if (prettyPrint) {
+                textWriter.Write(' ');
+            }
+            skipNextTabs = true;
+        }
+
+        public void WriteObjectEnd() {
+            indentLevel--;
+            WriteIndent();
+            textWriter.Write('}');
+        }
         #endregion
         
         /// Separator between elements of an array or key value pairs in an object.
-        public void WriteArrayOrObjectSeparator() { textWriter.Write(prettyPrint ? ",\n" : ","); }
-        
+        public void WriteArrayOrObjectSeparator() {
+            textWriter.Write(',');
+            if (prettyPrint) {
+                textWriter.Write('\n');
+            }
+        }
+
         /// Call this before writing the end token for arrays and objects.  Adds a newline in pretty printing mode. 
-        public void WriteArrayOrObjectBodyTerminator() { if (prettyPrint) { textWriter.Write("\n"); } }
+        public void WriteArrayOrObjectBodyTerminator() {
+            if (prettyPrint) {
+                textWriter.Write('\n');
+            }
+        }
         
         /////////////////////////////////////////////////
         
@@ -94,42 +272,44 @@ namespace Voorhees {
             
             if (extraLength == 0) {
                 // No special characters, so no escaping necessary; just quote it.
-                Span<char> buffer = stackalloc char[val.Length + 2];
-                buffer[0] = '\"';
-                val.AsSpan().CopyTo(buffer[1..]);
-                buffer[val.Length + 1] = '\"';
-                textWriter.Write(buffer);
+                // Write each char in the string to avoid copies.
+                textWriter.Write('\"');
+                foreach (char c in val) {
+                    textWriter.Write(c);
+                }
+                textWriter.Write('\"');
             } else {
                 // There are special characters in the string we need to escape.
-                Span<char> buffer = stackalloc char[val.Length + 2 + extraLength];
-                int bufferIndex = 0;
-                buffer[bufferIndex++] = '\"';
+                textWriter.Write('\"');
+                Span<char> hexBuffer = stackalloc char[4];
                 foreach (char c in val) {
                     switch (c) {
-                        case '\\': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '\\'; break;
-                        case '\"': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '"';  break;
-                        case '/':  buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '/';  break;
-                        case '\b': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'b';  break;
-                        case '\f': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'f';  break;
-                        case '\n': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'n';  break;
-                        case '\r': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'r';  break;
-                        case '\t': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 't';  break;
+                        case '\\': textWriter.Write('\\'); textWriter.Write('\\'); break;
+                        case '\"': textWriter.Write('\\'); textWriter.Write('"');  break;
+                        case '/':  textWriter.Write('\\'); textWriter.Write('/');  break;
+                        case '\b': textWriter.Write('\\'); textWriter.Write('b');  break;
+                        case '\f': textWriter.Write('\\'); textWriter.Write('f');  break;
+                        case '\n': textWriter.Write('\\'); textWriter.Write('n');  break;
+                        case '\r': textWriter.Write('\\'); textWriter.Write('r');  break;
+                        case '\t': textWriter.Write('\\'); textWriter.Write('t');  break;
                         default: {
                             if (c < 32) {
-                                buffer[bufferIndex++] = '\\';
-                                buffer[bufferIndex++] = 'u';
-                                // TODO: This might be faster if it avoided the ToString()?
-                                string hex = ((int)c).ToString("X4");
-                                hex.AsSpan().CopyTo(buffer.Slice(bufferIndex, 4));
-                                bufferIndex += 4;
+                                textWriter.Write('\\');
+                                textWriter.Write('u');
+                                
+                                if (((int)c).TryFormat(hexBuffer, out int charsWritten, "X4", CultureInfo.InvariantCulture)) {
+                                    textWriter.Write(hexBuffer[..charsWritten]);
+                                } else {
+                                    // If for some reason the formatting fails, fall back to ToString()
+                                    textWriter.Write(((int)c).ToString("X4"));
+                                }
                             } else {
-                                buffer[bufferIndex++] = c;
+                                textWriter.Write(c);
                             }
                         } break;
                     }
                 }
-                buffer[bufferIndex] = '\"';
-                textWriter.Write(buffer);
+                textWriter.Write('\"');
             }
         }
 
@@ -144,16 +324,10 @@ namespace Voorhees {
                 skipNextTabs = false;
                 return;
             }
-
-            if (indentLevel == 0) {
-                return;
-            }
             
-            Span<char> buffer = stackalloc char[indentLevel];
             for (int i = 0; i < indentLevel; ++i) {
-                buffer[i] = '\t';
+                textWriter.Write('\t');
             }
-            textWriter.Write(buffer);
         }
     }
 }
