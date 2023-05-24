@@ -46,7 +46,7 @@ namespace Voorhees {
         public void Write(byte val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[4];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -58,7 +58,7 @@ namespace Voorhees {
         public void Write(sbyte val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[4];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -70,7 +70,7 @@ namespace Voorhees {
         public void Write(short val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[8];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -82,7 +82,7 @@ namespace Voorhees {
         public void Write(ushort val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[8];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -93,7 +93,7 @@ namespace Voorhees {
         public void Write(int val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[16];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -104,7 +104,7 @@ namespace Voorhees {
         public void Write(uint val) {
             WriteIndent(); 
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[16];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -115,7 +115,7 @@ namespace Voorhees {
         public void Write(long val) {
             WriteIndent(); 
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -126,7 +126,7 @@ namespace Voorhees {
         public void Write(ulong val) {
             WriteIndent(); 
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[128];
+            Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -139,7 +139,7 @@ namespace Voorhees {
         public void Write(float val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[256];
+            Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
@@ -151,7 +151,7 @@ namespace Voorhees {
         public void Write(double val) {
             WriteIndent();
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
-            Span<char> buffer = stackalloc char[256];
+            Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
                 textWriter.Write(buffer[..charsWritten]);
             } else {
