@@ -48,7 +48,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[4];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -60,7 +62,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[4];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -72,7 +76,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[8];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -84,7 +90,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[8];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -95,7 +103,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[16];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -106,7 +116,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[16];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -117,7 +129,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -128,7 +142,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "D", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to the built-in writer
                 textWriter.Write(val);
@@ -141,7 +157,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to using ToString()
                 textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
@@ -153,7 +171,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[32];
             if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to using ToString()
                 textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
@@ -165,7 +185,9 @@ namespace Voorhees {
             // Using TryFormat and passing the resulting span to the textWriter avoids strings and copies. 
             Span<char> buffer = stackalloc char[256];
             if (val.TryFormat(buffer, out int charsWritten, "G", CultureInfo.InvariantCulture)) {
-                textWriter.Write(buffer[..charsWritten]);
+                for (int bufferIndex = 0; bufferIndex < charsWritten; ++bufferIndex) {
+                    textWriter.Write(buffer[bufferIndex]);
+                }
             } else {
                 // If for some reason the formatting fails, fall back to using ToString()
                 textWriter.Write(val.ToString(CultureInfo.InvariantCulture).AsSpan());
