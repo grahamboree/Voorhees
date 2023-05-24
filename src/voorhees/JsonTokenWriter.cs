@@ -250,67 +250,37 @@ namespace Voorhees {
         /// </summary>
         /// <param name="val">The string value to write to the text writer</param>
         void WriteString(string val) {
-            int extraLength = 0;
+            Span<char> hexBuffer = stackalloc char[4];
+            
+            textWriter.Write('\"');
             foreach (char c in val) {
                 switch (c) {
-                    case '\\': 
-                    case '\"': 
-                    case '/':  
-                    case '\b': 
-                    case '\f': 
-                    case '\n': 
-                    case '\r': 
-                    case '\t': 
-                        extraLength++; break;
+                    case '\\': textWriter.Write('\\'); textWriter.Write('\\'); break;
+                    case '\"': textWriter.Write('\\'); textWriter.Write('"');  break;
+                    case '/':  textWriter.Write('\\'); textWriter.Write('/');  break;
+                    case '\b': textWriter.Write('\\'); textWriter.Write('b');  break;
+                    case '\f': textWriter.Write('\\'); textWriter.Write('f');  break;
+                    case '\n': textWriter.Write('\\'); textWriter.Write('n');  break;
+                    case '\r': textWriter.Write('\\'); textWriter.Write('r');  break;
+                    case '\t': textWriter.Write('\\'); textWriter.Write('t');  break;
                     default: {
                         if (c < 32) {
-                            extraLength += 5;
+                            textWriter.Write('\\');
+                            textWriter.Write('u');
+                            
+                            if (((int)c).TryFormat(hexBuffer, out int charsWritten, "X4", CultureInfo.InvariantCulture)) {
+                                textWriter.Write(hexBuffer[..charsWritten]);
+                            } else {
+                                // If for some reason the formatting fails, fall back to ToString()
+                                textWriter.Write(((int)c).ToString("X4"));
+                            }
+                        } else {
+                            textWriter.Write(c);
                         }
                     } break;
                 }
             }
-            
-            if (extraLength == 0) {
-                // No special characters, so no escaping necessary; just quote it.
-                // Write each char in the string to avoid copies.
-                textWriter.Write('\"');
-                foreach (char c in val) {
-                    textWriter.Write(c);
-                }
-                textWriter.Write('\"');
-            } else {
-                // There are special characters in the string we need to escape.
-                textWriter.Write('\"');
-                Span<char> hexBuffer = stackalloc char[4];
-                foreach (char c in val) {
-                    switch (c) {
-                        case '\\': textWriter.Write('\\'); textWriter.Write('\\'); break;
-                        case '\"': textWriter.Write('\\'); textWriter.Write('"');  break;
-                        case '/':  textWriter.Write('\\'); textWriter.Write('/');  break;
-                        case '\b': textWriter.Write('\\'); textWriter.Write('b');  break;
-                        case '\f': textWriter.Write('\\'); textWriter.Write('f');  break;
-                        case '\n': textWriter.Write('\\'); textWriter.Write('n');  break;
-                        case '\r': textWriter.Write('\\'); textWriter.Write('r');  break;
-                        case '\t': textWriter.Write('\\'); textWriter.Write('t');  break;
-                        default: {
-                            if (c < 32) {
-                                textWriter.Write('\\');
-                                textWriter.Write('u');
-                                
-                                if (((int)c).TryFormat(hexBuffer, out int charsWritten, "X4", CultureInfo.InvariantCulture)) {
-                                    textWriter.Write(hexBuffer[..charsWritten]);
-                                } else {
-                                    // If for some reason the formatting fails, fall back to ToString()
-                                    textWriter.Write(((int)c).ToString("X4"));
-                                }
-                            } else {
-                                textWriter.Write(c);
-                            }
-                        } break;
-                    }
-                }
-                textWriter.Write('\"');
-            }
+            textWriter.Write('\"');
         }
 
         /// In pretty printing mode, writes tabs to indent to the correct level.
