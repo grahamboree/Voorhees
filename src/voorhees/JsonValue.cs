@@ -37,7 +37,7 @@ namespace Voorhees {
       public JsonValue(JsonValueType type = JsonValueType.Unspecified) {
          Type = type;
          if (type == JsonValueType.Object) {
-            objectValue = new Dictionary<string, JsonValue>();
+            ObjectValue = new Dictionary<string, JsonValue>();
          } else if (type == JsonValueType.Array) {
             arrayValue = new List<JsonValue>();
          }
@@ -126,7 +126,7 @@ namespace Voorhees {
 
       public void Clear() {
          switch (Type) {
-            case JsonValueType.Object: objectValue.Clear(); break;
+            case JsonValueType.Object: ObjectValue.Clear(); break;
             case JsonValueType.Array: arrayValue.Clear(); break;
             default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
          }
@@ -135,7 +135,7 @@ namespace Voorhees {
       public int Count {
          get {
             switch (Type) {
-               case JsonValueType.Object: return objectValue.Count;
+               case JsonValueType.Object: return ObjectValue.Count;
                case JsonValueType.Array: return arrayValue.Count;
                default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
             }
@@ -170,12 +170,12 @@ namespace Voorhees {
             case JsonValueType.Int: return (int)numberValue == (int)other.numberValue;
             case JsonValueType.Double: return numberValue == other.numberValue;
             case JsonValueType.Object: {
-               if (objectValue.Count != other.objectValue.Count) {
+               if (ObjectValue.Count != other.ObjectValue.Count) {
                   return false;
                }
 
-               foreach (var kvp in objectValue) {
-                  if (!other.objectValue.TryGetValue(kvp.Key, out var bValue)) {
+               foreach (var kvp in ObjectValue) {
+                  if (!other.ObjectValue.TryGetValue(kvp.Key, out var bValue)) {
                      return false; // key missing in b
                   }
 
@@ -228,18 +228,20 @@ namespace Voorhees {
       readonly double numberValue;
       readonly string stringValue;
       List<JsonValue> arrayValue;
-      Dictionary<string, JsonValue> objectValue;
+      
+      // This needs to be internal so we can enumerate the key value pairs when writing without allocating.
+      internal Dictionary<string, JsonValue> ObjectValue;
       
       /////////////////////////////////////////////////
 
       IDictionary<string, JsonValue> EnsureObject() {
          if (Type == JsonValueType.Unspecified) {
             Type = JsonValueType.Object;
-            objectValue = new Dictionary<string, JsonValue>();
+            ObjectValue = new Dictionary<string, JsonValue>();
          }
 
          if (Type == JsonValueType.Object) {
-            return objectValue;
+            return ObjectValue;
          }
 
          throw new InvalidOperationException("Instance of JsonValue is not an object");

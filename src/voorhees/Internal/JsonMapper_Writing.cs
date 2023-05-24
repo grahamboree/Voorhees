@@ -221,17 +221,20 @@ namespace Voorhees {
                     tokenWriter.WriteObjectStart();
 
                     bool first = true;
-                    foreach (var objectPair in (IEnumerable<KeyValuePair<string, JsonValue>>)val) {
+                    bool empty = true;
+
+                    foreach ((string objKey, var objVal) in val.ObjectValue) {
+                        empty = false;
                         if (!first) {
                             tokenWriter.WriteArrayOrObjectSeparator();
                         }
                         first = false;
 
-                        tokenWriter.WriteObjectKey(objectPair.Key);
-                        WriteJsonValue(objectPair.Value, tokenWriter);
+                        tokenWriter.WriteObjectKey(objKey);
+                        WriteJsonValue(objVal, tokenWriter);
                     }
 
-                    if (val.Count > 0) {
+                    if (!empty) {
                         tokenWriter.WriteArrayOrObjectBodyTerminator();
                     }
 
