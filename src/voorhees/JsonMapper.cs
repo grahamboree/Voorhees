@@ -10,7 +10,6 @@ namespace Voorhees {
     /// Writes values to JsonTokenWriter and reads values from JsonTokenReader.
     public partial class JsonMapper { // statics
         /// <summary>
-        /// High level API.
         /// Generates a JSON string by serializing the given object.
         /// </summary>
         /// <param name="val">The value to serialize</param>
@@ -24,16 +23,36 @@ namespace Voorhees {
             }
             return stringBuilder.ToString();
         }
+
+        /// <summary>
+        /// Writes a JSON representation of <paramref name="val"/> to <paramref name="textWriter"/>
+        /// </summary>
+        /// <param name="val">The value to write</param>
+        /// <param name="textWriter">Where to write JSON data</param>
+        /// <param name="prettyPrint">If true, adds newlines and tabs to nicely format the json.  If false, generates as compact json as possible.</param>
+        /// <typeparam name="T">The type of <paramref name="val"/></typeparam>
+        public static void ToJson<T>(T val, TextWriter textWriter, bool prettyPrint = false) {
+            defaultInstance.Write(val, new JsonTokenWriter(textWriter, prettyPrint));
+        }
         
         /// <summary>
-        /// High level API.
         /// Reads a value from a json string.
         /// </summary>
         /// <param name="json">The json to parse</param>
-        /// <typeparam name="T">The type of the object to be read</typeparam>
+        /// <typeparam name="T">The type of the value to be read</typeparam>
         /// <returns>A new instance of type <typeparamref name="T"/> with values read from <paramref name="json"/></returns>
         public static T FromJson<T>(string json) {
             return defaultInstance.Read<T>(new JsonTokenReader(new StringReader(json)));
+        }
+
+        /// <summary>
+        /// Reads a value from a json stream.
+        /// </summary>
+        /// <param name="textReader">The stream to read from</param>
+        /// <typeparam name="T">The type of the value to be read</typeparam>
+        /// <returns>A new instance of type <typeparamref name="T"/> with values read from <paramref name="textReader"/></returns>
+        public static T FromJson<T>(TextReader textReader) {
+            return defaultInstance.Read<T>(new JsonTokenReader(textReader));
         }
 
         static readonly JsonMapper defaultInstance = new();

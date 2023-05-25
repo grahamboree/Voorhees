@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using NUnit.Framework;
 
 namespace Voorhees.Tests {
@@ -525,6 +527,26 @@ namespace Voorhees.Tests {
         [Test]
         public void ListWithoutClosingBracket() {
             Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<List<int>>("[1,2,3"));
+        }
+    }
+
+    [TestFixture]
+    public class JsonMapper_Read_StaticReadFunctions {
+        [Test]
+        public static void StreamReadIsIdenticalToStringRead() {
+            const string JSON = "42";
+            using var reader = new StringReader(JSON);
+            Assert.That(JsonMapper.FromJson<int>(JSON), Is.EqualTo(JsonMapper.FromJson<int>(reader)));
+        }
+
+        [Test]
+        public static void StreamWriteIsIdenticalToStringWrite() {
+            const int DATA = 42;
+            var stringBuilder = new StringBuilder();
+            using (var writer = new StringWriter(stringBuilder)) {
+                JsonMapper.ToJson(DATA, writer);
+            }
+            Assert.That(stringBuilder.ToString(), Is.EqualTo(JsonMapper.ToJson(DATA)));
         }
     }
 }
