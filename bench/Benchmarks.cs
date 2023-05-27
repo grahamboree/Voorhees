@@ -14,36 +14,25 @@ namespace bench {
         }
 
         [Benchmark]
-        public Voorhees.JsonValue Read_Citm_Voorhees() {
-            var citm_tokenReader = new Voorhees.JsonTokenReader(new StringReader(citm));
-            var voorhees_mapper = new Voorhees.JsonMapper();
-            return voorhees_mapper.Read<Voorhees.JsonValue>(citm_tokenReader);
-        }
+        public void Read_Citm_Voorhees() => Voorhees.JsonMapper.FromJson<Voorhees.JsonValue>(citm);
 
         [Benchmark]
-        public Voorhees.JsonValue Read_Canada_Voorhees() {
-            var canada_tokenReader = new Voorhees.JsonTokenReader(new StringReader(canada));
-            var voorhees_mapper = new Voorhees.JsonMapper();
-            return voorhees_mapper.Read<Voorhees.JsonValue>(canada_tokenReader);
-        }
+        public void Read_Canada_Voorhees() => Voorhees.JsonMapper.FromJson<Voorhees.JsonValue>(canada);
 
         [Benchmark]
-        public LitJson.JsonData Read_Citm_LitJson() => LitJson.JsonMapper.ToObject(new StringReader(citm));
+        public void Read_Citm_LitJson() => LitJson.JsonMapper.ToObject(new StringReader(citm));
 
         [Benchmark]
-        public LitJson.JsonData Read_Canada_LitJson() => LitJson.JsonMapper.ToObject(new StringReader(canada));
+        public void Read_Canada_LitJson() => LitJson.JsonMapper.ToObject(new StringReader(canada));
 
         [Benchmark]
-        public Newtonsoft.Json.Linq.JObject Read_Citm_NewtonSoft() {
-            var reader = new Newtonsoft.Json.JsonTextReader(new StringReader(citm));
-            return Newtonsoft.Json.Linq.JObject.Load(reader);
-        }
+        public void Read_Citm_NewtonSoft() => Newtonsoft.Json.Linq.JObject.Load(new Newtonsoft.Json.JsonTextReader(new StringReader(citm)));
 
         [Benchmark]
-        public Newtonsoft.Json.Linq.JObject Read_Canada_NewtonSoft() {
-            var reader = new Newtonsoft.Json.JsonTextReader(new StringReader(canada));
-            return Newtonsoft.Json.Linq.JObject.Load(reader);
-        }
+        public void Read_Canada_NewtonSoft() => Newtonsoft.Json.Linq.JObject.Load(new Newtonsoft.Json.JsonTextReader(new StringReader(canada)));
+
+        [Benchmark]
+        public void Read_Citm_SystemTextJson() => System.Text.Json.Nodes.JsonNode.Parse(citm);
     }
     
     [MemoryDiagnoser]
@@ -64,6 +53,9 @@ namespace bench {
 
             newtonsoft_citm = Newtonsoft.Json.Linq.JObject.Load(new Newtonsoft.Json.JsonTextReader(new StringReader(citm)));
             newtonsoft_canada = Newtonsoft.Json.Linq.JObject.Load(new Newtonsoft.Json.JsonTextReader(new StringReader(canada)));
+
+            stj_citm = System.Text.Json.Nodes.JsonNode.Parse(citm);
+            stj_canada = System.Text.Json.Nodes.JsonNode.Parse(canada);
         }
 
         #region Voorhees
@@ -116,6 +108,21 @@ namespace bench {
         public void Write_Canada_Newtonsoft() {
             var writer = new Newtonsoft.Json.JsonTextWriter(TextWriter.Null);
             newtonsoft_canada.WriteTo(writer);
+        }
+        #endregion
+
+        #region System.Text.Json
+        System.Text.Json.Nodes.JsonNode stj_citm;
+        System.Text.Json.Nodes.JsonNode stj_canada;
+
+        [Benchmark]
+        public void Write_Citm_SystemTextJson() {
+            System.Text.Json.JsonSerializer.Serialize(Stream.Null, stj_citm);
+        }
+
+        [Benchmark]
+        public void Write_Canada_SystemTextJson() {
+            System.Text.Json.JsonSerializer.Serialize(Stream.Null, stj_canada);
         }
         #endregion
     }
