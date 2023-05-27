@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees", "src\voorhees\vo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "voorhees.tests", "test\voorhees.tests.csproj", "{87A03AFD-70B1-4D78-8F5E-8F32298CEE11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bench", "bench\bench.csproj", "{1990DD98-4E83-4AAB-AB0D-41E92D68892D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{87A03AFD-70B1-4D78-8F5E-8F32298CEE11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87A03AFD-70B1-4D78-8F5E-8F32298CEE11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87A03AFD-70B1-4D78-8F5E-8F32298CEE11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1990DD98-4E83-4AAB-AB0D-41E92D68892D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1990DD98-4E83-4AAB-AB0D-41E92D68892D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1990DD98-4E83-4AAB-AB0D-41E92D68892D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1990DD98-4E83-4AAB-AB0D-41E92D68892D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A472BAFE-9AD6-429F-893C-F6E2551B3CB1} = {ABE97F6D-B727-4642-9BDF-6C010C31DCA4}
