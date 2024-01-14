@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -9,6 +7,7 @@ namespace Voorhees {
     /// registered for specific types.
     /// Writes values to JsonTokenWriter and reads values from JsonTokenReader.
     public partial class JsonMapper { // statics
+        #region Static Methods
         /// <summary>
         /// Generates a JSON string by serializing the given object.
         /// </summary>
@@ -54,12 +53,7 @@ namespace Voorhees {
         public static T FromJson<T>(TextReader textReader) {
             return defaultInstance.Read<T>(new JsonTokenReader(textReader));
         }
-
-        static readonly JsonMapper defaultInstance = new();
-    }
-
-    public partial class JsonMapper { // instance
-        /////////////////////////////////////////////////
+        #endregion
 
         /// <summary>
         /// Writes the json representation of <paramref name="val"/> to <paramref name="tokenWriter"/>.
@@ -146,13 +140,5 @@ namespace Voorhees {
         /// </summary>
         public void UnRegisterAllExporters() => exporters.Clear();
         #endregion
-        
-        /////////////////////////////////////////////////
-        
-        delegate void ExporterFunc(object obj, JsonTokenWriter os);
-        delegate object ImporterFunc(JsonTokenReader tokenReader);
-        
-        readonly Dictionary<Type, ImporterFunc> importers = new();
-        readonly Dictionary<Type, ExporterFunc> exporters = new();
     }
 }
