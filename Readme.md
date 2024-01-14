@@ -31,6 +31,7 @@ using Voorhees;
 JsonValue jsonValue = JsonMapper.FromJson<JsonValue>("{ \"someIntValue\": 3}");
 
 Console.WriteLine(jsonValue.Type); // JsonValueType.Object
+Console.WriteLine(jsonValue["someIntValue"].Type); // JsonValueType.Int
 Console.WriteLine((int)jsonValue["someIntValue"]); // 3
 ```
 
