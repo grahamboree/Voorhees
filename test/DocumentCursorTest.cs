@@ -33,5 +33,15 @@ namespace Voorhees.Tests {
                 Assert.That(doc.ToString(), Is.EqualTo("line: 1 col: 3"));
             });
         }
+
+        [Test]
+        public void ReadingANewLineIncrementsLineNumberAndResetsColumnNumberToOne() {
+            var doc = new Internal.DocumentCursor(new StringReader("a\nb"));
+            doc.Advance(2);
+            Assert.Multiple(() => {
+                Assert.That(doc.Line, Is.EqualTo(2));
+                Assert.That(doc.Column, Is.EqualTo(1));
+            });
+        }
     }
 }
