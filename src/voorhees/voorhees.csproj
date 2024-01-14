@@ -8,6 +8,19 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\$(Configuration)</OutputPath>
     <LangVersion>9</LangVersion>
+
+    <PackageId>Voorhees</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>Graham Pentheny</Authors>
+    <Description>A terrifyingly fast C# JSON framework with a focus CPU performance and minimizing allocations</Description>
+    <Copyright>2021 Graham Pentheny</Copyright>
+    <Product>Voorhees</Product>
+    <PackageProjectUrl>https://github.com/grahamboree/Voorhees</PackageProjectUrl>
+    <!-- <PackageReadmeFile>..\..\Readme.md</PackageReadmeFile>  -->
+    <RepositoryUrl>https://github.com/grahamboree/Voorhees</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>json</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>
