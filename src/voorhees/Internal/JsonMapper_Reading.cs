@@ -5,52 +5,6 @@ using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
 namespace Voorhees {
-
-    public partial class JsonMapper {
-
-    }
-
-    public partial class JsonMapper {
-        static IStringValueParser<T> GetStringValueParser<T>() {
-            var destinationType = typeof(T);
-            if (destinationType == typeof(char)) { return (IStringValueParser<T>)CharValueParser.Instance; }
-            if (destinationType == typeof(DateTime)) { return (IStringValueParser<T>)DateTimeValueParser.Instance; }
-            if (destinationType == typeof(DateTimeOffset)) { return (IStringValueParser<T>)DateTimeOffsetValueParser.Instance; }
-            return null;
-        }
-        
-        interface IStringValueParser<out T> {
-            T Parse(string str);
-        }
-        
-        class CharValueParser : IStringValueParser<char> {
-            public static readonly CharValueParser Instance = new();
-            
-            public char Parse(string str) {
-                if (str.Length != 1) {
-                    throw new FormatException($"Trying to map a string of length != 1 to a char: \"{str}\"");
-                }
-                return str[0];
-            }
-        }
-        
-        class DateTimeValueParser : IStringValueParser<DateTime> {
-            public static readonly DateTimeValueParser Instance = new();
-            
-            public DateTime Parse(string str) {
-                return DateTime.Parse(str);
-            }
-        }
-        
-        class DateTimeOffsetValueParser : IStringValueParser<DateTimeOffset> {
-            public static readonly DateTimeOffsetValueParser Instance = new();
-            
-            public DateTimeOffset Parse(string str) {
-                return DateTimeOffset.Parse(str);
-            }
-        }
-    }
-    
     public partial class JsonMapper {
         T ReadValueOfType<T>(JsonTokenReader tokenReader) {
             var destinationType = typeof(T);
@@ -71,7 +25,7 @@ namespace Voorhees {
                     return numericParser.ConvertFrom(tokenReader.ConsumeNumber());
                 }
                 
-                var stringParser = GetStringValueParser<T>();
+                var stringParser = Internal.StringValueParsers.Get<T>();
                 if (stringParser != null) {
                     return stringParser.Parse(tokenReader.ConsumeString());
                 }
