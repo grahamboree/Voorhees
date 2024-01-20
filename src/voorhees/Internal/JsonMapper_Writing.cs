@@ -20,7 +20,7 @@ namespace Voorhees {
 
             switch (obj) { 
                 case JsonValue jsonValue: WriteJsonValue(jsonValue, tokenWriter); return;
-                
+
                 // JSON String
                 case string stringVal: tokenWriter.Write(stringVal); return;
                 case char charVal: tokenWriter.Write(charVal); return;
@@ -43,7 +43,7 @@ namespace Voorhees {
 
                 // Special case built-in serializer for DateTime
                 case DateTime dateTime: tokenWriter.Write(dateTime.ToString("o")); return;
-                
+
                 // Special case built-in serializer for DateTimeOffset
                 case DateTimeOffset dateTimeOffset: tokenWriter.Write(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz", DateTimeFormatInfo.InvariantInfo)); return;
 
@@ -54,7 +54,7 @@ namespace Voorhees {
                         Write1DArray(arrayVal, tokenWriter);
                         return;
                     }
-                    
+
                     // Handles arbitrary dimension arrays.
                     int[] index = new int[arrayVal.Rank];
 
@@ -66,12 +66,12 @@ namespace Voorhees {
                             index[currentDimension] = i;
 
                             if (currentDimension == arr.Rank - 1) {
-                                object arrayObject = arr.GetValue(index);
+                                object arrayObject = arr.GetValue(index); // TODO Boxing
                                 WriteValue(arrayObject, arr.GetType().GetElementType(), arrayObject.GetType(), tokenWriter);
                             } else {
                                 JsonifyArray(arr, currentDimension + 1);
                             }
-                            
+
                             if (i < length - 1) {
                                 tokenWriter.WriteArrayOrObjectSeparator();
                             } else {
@@ -92,13 +92,13 @@ namespace Voorhees {
 
                     int entryIndex = 0;
                     int length = dictionary.Count;
-                    
+
                     foreach (DictionaryEntry entry in dictionary) {
                         string propertyName = entry.Key as string ?? Convert.ToString(entry.Key, CultureInfo.InvariantCulture);
                         tokenWriter.WriteObjectKey(propertyName);
                         object value = entry.Value;
                         WriteValue(value, value.GetType(), value.GetType(), tokenWriter);
-                        
+
                         if (entryIndex < length - 1) {
                             tokenWriter.WriteArrayOrObjectSeparator();
                         } else {
@@ -114,10 +114,10 @@ namespace Voorhees {
 
             if (obj is Enum) {
                 var enumType = Enum.GetUnderlyingType(valueType);
-                
+
                 // This covers all valid enum underlying types per the C# language specification:
                 // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/enums
-                
+
                 // ReSharper disable once PossibleInvalidCastException
                 if (enumType == typeof(byte))        { tokenWriter.Write((byte) obj);}
                 // ReSharper disable once PossibleInvalidCastException
@@ -145,20 +145,20 @@ namespace Voorhees {
                 tokenWriter.Write(valueType.AssemblyQualifiedName);
                 tokenWriter.WriteArrayOrObjectSeparator();
             }
-            
+
             var fieldsAndProperties = TypeInfo.GetTypePropertyMetadata(valueType);
 
             // Write the object's field and property values
             for (int fieldIndex = 0; fieldIndex < fieldsAndProperties.Count; fieldIndex++) {
                 var propertyMetadata = fieldsAndProperties[fieldIndex];
-                
+
                 if (propertyMetadata.IsField) {
-                    var fieldInfo = (FieldInfo) propertyMetadata.Info;
+                    var fieldInfo = (FieldInfo)propertyMetadata.Info;
                     object value = fieldInfo.GetValue(obj);
                     tokenWriter.WriteObjectKey(fieldInfo.Name);
                     WriteValue(value, fieldInfo.FieldType, value != null ? value.GetType() : fieldInfo.FieldType, tokenWriter);
                 } else {
-                    var propertyInfo = (PropertyInfo) propertyMetadata.Info;
+                    var propertyInfo = (PropertyInfo)propertyMetadata.Info;
                     object value = propertyInfo.GetValue(obj);
                     tokenWriter.WriteObjectKey(propertyInfo.Name);
                     WriteValue(value, propertyInfo.PropertyType, value.GetType(), tokenWriter);

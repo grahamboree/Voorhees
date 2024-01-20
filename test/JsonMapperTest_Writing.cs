@@ -7,27 +7,46 @@ namespace Voorhees.Tests {
     public class JsonMapper_Write_Numbers {
         [Test]
         public void BasicByteMapping() {
-            Assert.That(JsonMapper.ToJson((byte) 42), Is.EqualTo("42"));
+            byte value = byte.MinValue;
+            do {
+                Assert.That(JsonMapper.ToJson(value), Is.EqualTo(value.ToString()));
+                value++;
+            } while (value > byte.MinValue);
         }
 
         [Test]
         public void BasicSByteMapping() {
-            Assert.That(JsonMapper.ToJson((sbyte) 42), Is.EqualTo("42"));
+            sbyte value = sbyte.MinValue;
+            do {
+                Assert.That(JsonMapper.ToJson(value), Is.EqualTo(value.ToString()));
+                value++;
+            } while (value > sbyte.MinValue);
         }
 
         [Test]
         public void BasicShortMapping() {
-            Assert.That(JsonMapper.ToJson((short) 42), Is.EqualTo("42"));
+            short value = short.MinValue;
+            do {
+                Assert.That(JsonMapper.ToJson(value), Is.EqualTo(value.ToString()));
+                value++;
+            } while (value > short.MinValue);
         }
 
         [Test]
         public void BasicUShortMapping() {
-            Assert.That(JsonMapper.ToJson((ushort) 42), Is.EqualTo("42"));
+            ushort value = ushort.MinValue;
+            do {
+                Assert.That(JsonMapper.ToJson(value), Is.EqualTo(value.ToString()));
+                value++;
+            } while (value > ushort.MinValue);
         }
+
+        // Testing all the values of any types that are larger than ushort takes too long.
 
         [Test]
         public void BasicIntMapping() {
             Assert.That(JsonMapper.ToJson(42), Is.EqualTo("42"));
+            Assert.That(JsonMapper.ToJson(-42), Is.EqualTo("-42"));
         }
 
         [Test]
@@ -38,6 +57,7 @@ namespace Voorhees.Tests {
         [Test]
         public void BasicLongMapping() {
             Assert.That(JsonMapper.ToJson(42L), Is.EqualTo("42"));
+            Assert.That(JsonMapper.ToJson(-42L), Is.EqualTo("-42"));
         }
 
         [Test]
@@ -47,17 +67,27 @@ namespace Voorhees.Tests {
 
         [Test]
         public void BasicFloatMapping() {
-            Assert.That(JsonMapper.ToJson(0.01f), Is.EqualTo("0.01"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(0.01f), Is.EqualTo("0.01"));
+                Assert.That(JsonMapper.ToJson(-0.01f), Is.EqualTo("-0.01"));
+                Assert.That(JsonMapper.ToJson(1e-9f), Is.EqualTo("1E-09"));
+            });
         }
 
         [Test]
         public void BasicDoubleMapping() {
-            Assert.That(JsonMapper.ToJson(0.01d), Is.EqualTo("0.01"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(0.01d), Is.EqualTo("0.01"));
+            });
         }
 
         [Test]
         public void BasicDecimalMapping() {
-            Assert.That(JsonMapper.ToJson(0.01m), Is.EqualTo("0.01"));
+            Assert.Multiple(() => {
+                Assert.That(JsonMapper.ToJson(0.01m), Is.EqualTo("0.01"));
+                Assert.That(JsonMapper.ToJson(-0.01m), Is.EqualTo("-0.01"));
+                // Assert.That(JsonMapper.ToJson(1e-9m), Is.EqualTo("1E-09"));
+            });
         }
     }
 
