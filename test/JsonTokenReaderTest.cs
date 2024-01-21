@@ -368,7 +368,7 @@ namespace Voorhees.Tests {
 
 		[Test]
 		public void ConsumingANonStringTypeAsStringThrows() {
-			Assert.Throws<InvalidOperationException>(() => {
+			Assert.Throws<InvalidJsonException>(() => {
 				using var json = new StringReader("3");
 				var tokenReader = new JsonTokenReader(json);
 				string _ = tokenReader.ConsumeString();

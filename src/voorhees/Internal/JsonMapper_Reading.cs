@@ -319,13 +319,8 @@ namespace Voorhees {
                         // Need to re-throw these because the value parsers don't have access to the line & column info
                         throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
                     }
-                    
-                    try {
-                        return number == (int)number ? new JsonValue((int)number) : new JsonValue(number);
-                    } catch (FormatException) {
-                        // TODO this line/col number is wrong.  It points to after the number token that we failed to parse.
-                        throw new InvalidJsonException($"{tokenReader.LineColString} Can't parse number.");
-                    }
+                    // JsonValue distinguishes between int values and double values, even though Json does not.
+                    return number == (int)number ? new JsonValue((int)number) : new JsonValue(number);
                 }
                 case JsonToken.ArrayStart: {
                     var arrayValue = new JsonValue(JsonValueType.Array);

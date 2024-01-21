@@ -54,6 +54,29 @@ namespace Voorhees.Tests {
                 JsonMapper.FromJson<TestObject>("{\"IntVal\" 123, \"StringVal\": \"str\"}");
             });
         }
+
+        [Test]
+        public void ReadingAnInvalidJsonValueThrows() {
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<JsonValue>(@"");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<JsonValue>(@"{");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<JsonValue>(@"{""test""");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<JsonValue>(@"{""test"": 1 2");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<JsonValue>(@"{""test"": 1,}");
+            });
+        }
     }
 
     [TestFixture]

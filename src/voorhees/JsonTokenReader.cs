@@ -146,7 +146,7 @@ namespace Voorhees {
         [return: NotNull] // If we're consuming a string, it's always a valid string token, so it'll never be null.
         public string ConsumeString() {
             if (NextToken != JsonToken.String) {
-                throw new InvalidOperationException($"{cursor} Trying to consume a string, but the next JSON token is not a string");
+                throw new InvalidJsonException($"{cursor} Trying to consume a string, but the next JSON token is not a string");
             }
             
             cursor.Advance(); // Skip the "
