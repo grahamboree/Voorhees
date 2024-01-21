@@ -475,7 +475,7 @@ namespace Voorhees.Tests {
         [Test]
         public void ThrowsIfAssemblyQualifiedNameDoesNotExist() {
             const string BOGUS_AQN = "TopNamespace.SubNameSpace.ContainingClass+NestedClass, MyAssembly, Version=1.3.0.0, Culture=neutral, PublicKeyToken=b17a5c561934e089";
-            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<object>("{\"$t\"=\"" + BOGUS_AQN + "\",\"foo\":\"bar\"}"));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<object>("{\"$t\":\"" + BOGUS_AQN + "\",\"foo\":\"bar\"}"));
         }
 
         [Test]
