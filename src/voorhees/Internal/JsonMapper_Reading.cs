@@ -58,18 +58,24 @@ namespace Voorhees {
                     jsonValue = tokenReader.ConsumeString();
                 } break;
                 case JsonToken.Number: {
+                    // All numbers in json are represented as doubles.
                     double numberValue = tokenReader.ConsumeNumber();
-                    try {
-                        if (numberValue == (int)numberValue) {
-                            jsonType = typeof(int);
-                            jsonValue = (int)numberValue; // TODO Boxing
-                        } else {
-                            jsonType = typeof(double);
-                            jsonValue = numberValue; // TODO Boxing
+                    if (numberValue == (int)numberValue) {
+                        jsonType = typeof(int);
+                        jsonValue = (int)numberValue; // TODO Boxing
+
+                        // Integral value can be converted to enum values
+                        if (valueType.IsEnum) {
+                            return Convert.ChangeType(Enum.ToObject(valueType, jsonValue), destinationType);
                         }
-                    } catch (InvalidJsonException inner) {
-                        // Need to re-throw these because the value parsers don't have access to the line & column info
-                        throw new InvalidJsonException(tokenReader.LineColString + " " + inner.Message);
+                    } else {
+                        jsonType = typeof(double);
+                        jsonValue = numberValue; // TODO Boxing
+
+                        // Double values can be converted to floats
+                        if (valueType == typeof(float)) {
+                            return Convert.ToSingle(jsonValue); // TODO boxing
+                        }
                     }
                 } break;
                 case JsonToken.True: {
@@ -93,16 +99,6 @@ namespace Voorhees {
 
             if (valueType.IsAssignableFrom(jsonType)) {
                 return Convert.ChangeType(Convert.ChangeType(jsonValue, valueType), destinationType);
-            }
-
-            // Integral value can be converted to enum values
-            if (jsonType == typeof(int) && valueType.IsEnum) {
-                return Convert.ChangeType(Enum.ToObject(valueType, jsonValue), destinationType);
-            }
-            
-            // Double values can be converted to floats
-            if (jsonType == typeof(double) && valueType == typeof(float)) {
-                return Convert.ToSingle(jsonValue); // TODO boxing
             }
 
             // Try using an implicit conversion operator
