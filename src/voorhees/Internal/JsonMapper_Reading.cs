@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using TypeInfo = Voorhees.Internal.TypeInfo;
 
@@ -179,9 +180,8 @@ namespace Voorhees {
                 int rank = arrayMetadata.ArrayRank;
                 var elementType = destinationType.GetElementType();
 
-                if (elementType == null) {
-                    throw new InvalidOperationException("Attempting to map an array but the array element type is null");
-                }
+                // If we've parsed it as an array previously, GetElementType() should never return null.
+                Debug.Assert(elementType != null);
 
                 if (rank == 1) { // Simple array
                     var tempValues = new List<object>(); // TODO Temp alloc
