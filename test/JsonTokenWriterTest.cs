@@ -321,8 +321,8 @@ namespace Voorhees.Tests {
 			}
             current.Add(new JsonValue(42));
 			
-			var expected
-				= "[\n"
+			const string EXPECTED =
+				"[\n"
 				+ "\t[\n"
 				+ "\t\t[\n"
 				+ "\t\t\t[\n"
@@ -367,7 +367,7 @@ namespace Voorhees.Tests {
 				+ "\t\t]\n"
 				+ "\t]\n"
 				+ "]";
-			Assert.That(JsonMapper.ToJson(test, true), Is.EqualTo(expected));
+			Assert.That(JsonMapper.ToJson(test, true), Is.EqualTo(EXPECTED));
 		}
 	}
 }

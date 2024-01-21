@@ -6,6 +6,16 @@ using NUnit.Framework;
 
 namespace Voorhees.Tests {
     [TestFixture]
+    public class JsonMapper_Read_InvalidJson {
+        [Test]
+        public void InvalidJsonThrows() {
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int>(@"1\\\\22");
+            });
+        }
+    }
+
+    [TestFixture]
     public class JsonMapper_Read_Null {
         class TestReferenceType {
         }
