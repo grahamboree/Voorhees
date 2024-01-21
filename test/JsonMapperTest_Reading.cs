@@ -34,6 +34,10 @@ namespace Voorhees.Tests {
             Assert.Throws<InvalidJsonException>(() => {
                 JsonMapper.FromJson<int[,]>(@"[[1][2,3]]");
             });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int[,]>(@"[[1][2,");
+            });
         }
 
         class TestObject {
