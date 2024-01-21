@@ -8,9 +8,46 @@ namespace Voorhees.Tests {
     [TestFixture]
     public class JsonMapper_Read_InvalidJson {
         [Test]
-        public void InvalidJsonThrows() {
+        public void InvalidNumberJsonThrows() {
             Assert.Throws<InvalidJsonException>(() => {
                 JsonMapper.FromJson<int>(@"1\\\\22");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int>(@"1eeee2");
+            });
+        }
+
+        [Test]
+        public void InvalidNumberArrayJsonThrows() {
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int[]>(@"[1\\\\22]");
+            });
+        }
+
+        [Test]
+        public void InvalidNumberMultiDimensionalArrayJsonThrows() {
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int[,]>(@"[[1,2][3]]");
+            });
+
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<int[,]>(@"[[1][2,3]]");
+            });
+        }
+
+        class TestObject {
+            public int IntVal;
+            public string StringVal;
+        }
+
+        [Test]
+        public void InvalidObjectJsonThrows() {
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<TestObject>("{\"IntVal\": 123 \"StringVal\": \"str\"}");
+            });
+            Assert.Throws<InvalidJsonException>(() => {
+                JsonMapper.FromJson<TestObject>("{\"IntVal\" 123, \"StringVal\": \"str\"}");
             });
         }
     }
@@ -405,7 +442,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void PublicReadOnlyProperties() {
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}"));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<ObjectWithReadOnlyProperties>("{\"publicProperty\": 3, \"publicProperty2\": 5}"));
         }
 
         [Test]
@@ -416,7 +453,7 @@ namespace Voorhees.Tests {
 
         [Test]
         public void MappingObjectWithExtraKeyThrows() {
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>("{\"publicField\":1,\"publicField2\":2,\"publicField3\":3}"));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<ObjectWithFields>("{\"publicField\":1,\"publicField2\":2,\"publicField3\":3}"));
         }
     }
 
@@ -493,7 +530,7 @@ namespace Voorhees.Tests {
         [Test]
         public void JsonContainsReadOnlyWriteOnlyAndComputedProperties() {
             string json = "{\"ReadOnlyProperty\": 5, \"WriteOnlyProperty\": 3, \"ComputedProperty\": 8}";
-            Assert.Throws<InvalidOperationException>(() => JsonMapper.FromJson<ObjectWithFields>(json));
+            Assert.Throws<InvalidJsonException>(() => JsonMapper.FromJson<ObjectWithFields>(json));
         }
     }
 

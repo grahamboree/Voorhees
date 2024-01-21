@@ -36,7 +36,7 @@ namespace Voorhees {
         /// </exception>
         public void SkipToken(JsonToken tokenType) {
             if (tokenType != NextToken) {
-                throw new InvalidOperationException($"Attempting to skip a token of type {tokenType} but the next token is {NextToken}");
+                throw new InvalidJsonException($"Attempting to skip a token of type {tokenType} but the next token is {NextToken}");
             }
 
             switch (tokenType) {
@@ -55,7 +55,7 @@ namespace Voorhees {
                 // Can't skip these tokens
                 case JsonToken.None:
                 case JsonToken.EOF:
-                default: throw new InvalidOperationException($"Can't skip token of type {tokenType}");
+                default: throw new InvalidJsonException($"Can't skip token of type {tokenType}");
             }
             AdvanceToNextToken();
         }

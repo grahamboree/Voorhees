@@ -106,14 +106,14 @@ namespace Voorhees.Tests {
 		public void SkippingTheWrongTokenThrows() {
 			using var json = new StringReader("true, false");
 			var tokenReader = new JsonTokenReader(json);
-			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.ArrayStart));
+			Assert.Throws<InvalidJsonException>(() => tokenReader.SkipToken(JsonToken.ArrayStart));
 		}
 		
 		[Test]
 		public void SkippingEOFThrows() {
 			using var json = new StringReader("");
 			var tokenReader = new JsonTokenReader(json);
-			Assert.Throws<InvalidOperationException>(() => tokenReader.SkipToken(JsonToken.EOF));
+			Assert.Throws<InvalidJsonException>(() => tokenReader.SkipToken(JsonToken.EOF));
 		}
 
 		[Test]

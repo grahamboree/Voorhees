@@ -281,20 +281,22 @@ namespace Voorhees {
                             if (propertyInfo.CanWrite) {
                                 propertyInfo.SetValue(instance, ReadValueOfType(tokenReader, propertyMetadata.Type), null);
                             } else {
-                                throw new InvalidOperationException("Read property value from json but the property " +
-                                                                    $"{propertyInfo.Name} in type {destinationType} is read-only.");
+                                throw new InvalidJsonException("Read property value from json but the property " +
+                                                               $"{propertyInfo.Name} in type {destinationType} is read-only.");
                             }
                         }
                     }
                 } else if (objectMetadata.IsDictionary) {
                     ((IDictionary)instance).Add(propertyName, ReadValueOfType(tokenReader, objectMetadata.ElementType));
                 } else {
-                    throw new InvalidOperationException($"The type {destinationType} doesn't have the property '{propertyName}'");
+                    throw new InvalidJsonException($"The type {destinationType} doesn't have the property '{propertyName}'");
                 }
 
                 if (tokenReader.NextToken == JsonToken.Separator) {
                     expectingValue = true;
                     tokenReader.SkipToken(JsonToken.Separator);
+                } else if (tokenReader.NextToken != JsonToken.ObjectEnd) {
+                    throw new InvalidJsonException($"Expecting an comma or }} but found {tokenReader.NextToken}");
                 }
             }
 
