@@ -52,8 +52,8 @@ namespace Voorhees {
                     }
                     throw new InvalidCastException($"{tokenReader} Can't assign null to an instance of type {destinationType}");
                 }
-                case JsonToken.ObjectStart: return MapObject(tokenReader, destinationType);
-                case JsonToken.ArrayStart: return MapArray(tokenReader, destinationType);
+                case JsonToken.ObjectStart: return ReadObject(tokenReader, destinationType);
+                case JsonToken.ArrayStart: return ReadArray(tokenReader, destinationType);
                 case JsonToken.String: {
                     jsonType = typeof(string);
                     jsonValue = tokenReader.ConsumeString();
@@ -173,7 +173,7 @@ namespace Voorhees {
             }
         }
 
-        object MapArray(JsonTokenReader tokenReader, Type destinationType) {
+        object ReadArray(JsonTokenReader tokenReader, Type destinationType) {
             var arrayMetadata = TypeInfo.GetCachedArrayMetadata(destinationType);
 
             if (arrayMetadata.IsArray) {
@@ -223,7 +223,7 @@ namespace Voorhees {
             throw new InvalidCastException($"Type {destinationType} can't act as an array");
         }
 
-        object MapObject(JsonTokenReader tokenReader, Type destinationType) {
+        object ReadObject(JsonTokenReader tokenReader, Type destinationType) {
             var valueType = destinationType;
             tokenReader.SkipToken(JsonToken.ObjectStart);
 
