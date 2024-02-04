@@ -41,8 +41,8 @@ namespace Voorhees.Tests {
         }
 
         class TestObject {
-            public int IntVal;
-            public string StringVal;
+            public int IntVal = default;
+            public string StringVal = default;
         }
 
         [Test]
