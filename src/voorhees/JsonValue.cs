@@ -1,6 +1,8 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Voorhees {
    /// A union-type representing a value in a JSON document.
@@ -25,7 +27,7 @@ namespace Voorhees {
          numberValue = number;
       }
 
-      public JsonValue(string str) {
+      public JsonValue(string? str) {
          if (str == null) {
             Type = JsonValueType.Null;
          } else {
@@ -84,16 +86,14 @@ namespace Voorhees {
       public static explicit operator long(JsonValue data) { return (int)data; }
       public static explicit operator ulong(JsonValue data) { return (ulong)(int)data; }
       
-      public static explicit operator string(JsonValue data) {
-         if (data.Type != JsonValueType.String) {
-            throw new InvalidCastException("Instance of JsonData doesn't hold a string");
-         }
-         return data.stringValue;
+      public static explicit operator string?(JsonValue data) {
+         return data.Type == JsonValueType.String ? data.stringValue
+            : throw new InvalidCastException("Instance of JsonData doesn't hold a string");
       }
 
       public static explicit operator char(JsonValue data) {
          if (data.Type == JsonValueType.String) {
-            return ((string)data)[0];
+            return ((string?)data)![0];
          }
          if (data.Type == JsonValueType.Int) {
             return (char)(int)data.numberValue;
@@ -126,8 +126,8 @@ namespace Voorhees {
 
       public void Clear() {
          switch (Type) {
-            case JsonValueType.Object: ObjectValue.Clear(); break;
-            case JsonValueType.Array: arrayValue.Clear(); break;
+            case JsonValueType.Object: ObjectValue!.Clear(); break;
+            case JsonValueType.Array: arrayValue!.Clear(); break;
             default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
          }
       }
@@ -135,8 +135,8 @@ namespace Voorhees {
       public int Count {
          get {
             switch (Type) {
-               case JsonValueType.Object: return ObjectValue.Count;
-               case JsonValueType.Array: return arrayValue.Count;
+               case JsonValueType.Object: return ObjectValue!.Count;
+               case JsonValueType.Array: return arrayValue!.Count;
                default: throw new InvalidOperationException("Instance of JsonValue is not an array or object");
             }
          }
@@ -154,7 +154,7 @@ namespace Voorhees {
       #endregion
 
       #region IEquatable<JsonValue>
-      public bool Equals(JsonValue other) {
+      public bool Equals(JsonValue? other) {
          if (other == null) {
             return Type == JsonValueType.Null;
          }
@@ -170,7 +170,7 @@ namespace Voorhees {
             case JsonValueType.Int: return (int)numberValue == (int)other.numberValue;
             case JsonValueType.Double: return numberValue == other.numberValue;
             case JsonValueType.Object: {
-               if (ObjectValue.Count != other.ObjectValue.Count) {
+               if (ObjectValue!.Count != other.ObjectValue!.Count) {
                   return false;
                }
 
@@ -187,7 +187,7 @@ namespace Voorhees {
                return true;
             }
             case JsonValueType.Array: {
-               if (arrayValue.Count != other.arrayValue.Count) {
+               if (arrayValue!.Count != other.arrayValue!.Count) {
                   return false;
                }
 
@@ -218,7 +218,7 @@ namespace Voorhees {
       public ICollection<string> Keys => EnsureObject().Keys;
       public ICollection<JsonValue> Values => EnsureObject().Values;
       public void Add(string key, JsonValue value) => EnsureObject().Add(key, value);
-      public bool TryGetValue(string key, out JsonValue value) => EnsureObject().TryGetValue(key, out value);
+      public bool TryGetValue(string key, [MaybeNullWhen(false)] out JsonValue value) => EnsureObject().TryGetValue(key, out value);
       public bool Remove(string key) => EnsureObject().Remove(key);
       public bool ContainsKey(string key) => EnsureObject().ContainsKey(key);
       #endregion
@@ -226,11 +226,11 @@ namespace Voorhees {
       /////////////////////////////////////////////////
       
       readonly double numberValue;
-      readonly string stringValue;
-      List<JsonValue> arrayValue;
+      readonly string? stringValue;
+      List<JsonValue>? arrayValue;
       
       // This needs to be internal so we can enumerate the key value pairs when writing without allocating.
-      internal Dictionary<string, JsonValue> ObjectValue;
+      internal Dictionary<string, JsonValue>? ObjectValue;
       
       /////////////////////////////////////////////////
 
@@ -241,7 +241,7 @@ namespace Voorhees {
          }
 
          if (Type == JsonValueType.Object) {
-            return ObjectValue;
+            return ObjectValue!;
          }
 
          throw new InvalidOperationException("Instance of JsonValue is not an object");
@@ -254,7 +254,7 @@ namespace Voorhees {
          }
 
          if (Type == JsonValueType.Array) {
-            return arrayValue;
+            return arrayValue!;
          }
 
          throw new InvalidOperationException("Instance of JsonValue is not an array");
